@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Knitting My Life Away</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero-media">
+          <img id="hero-image" class="hero-image" alt="Featured knitting project" src="assets/shawl-hero.svg" />
+        </div>
+        <p class="eyebrow">Cozy maker planner</p>
+        <h1>Knitting My Life Away</h1>
+        <p class="subtitle">
+          Knit as if your life depended on it.
+        </p>
+        <p class="subtitle secondary-subtitle">
+          Plans, patterns and notes.
+        </p>
+      </section>
+
+      <section class="panel form-panel">
+        <h2>Add a project</h2>
+        <form id="project-form">
+          <label>
+            Project name
+            <input id="project-name" type="text" placeholder="e.g. Moonlight scarf" required />
+          </label>
+
+          <label>
+            Pattern
+            <input id="pattern-name" type="text" placeholder="e.g. Garter rib" required />
+          </label>
+
+          <label>
+            Knitting needles
+            <input id="needle-size" type="text" placeholder="e.g. 4 mm circular" />
+          </label>
+
+          <label>
+            Progress
+            <select id="project-status">
+              <option value="Planning">Planning</option>
+              <option value="In progress">In progress</option>
+              <option value="Finished">Finished</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </label>
+
+          <label>
+            Pattern rating
+            <select id="project-rating">
+              <option value="0">No rating</option>
+              <option value="1">1 star</option>
+              <option value="2">2 stars</option>
+              <option value="3">3 stars</option>
+              <option value="4">4 stars</option>
+              <option value="5">5 stars</option>
+            </select>
+          </label>
+
+          <label>
+            Difficulty
+            <select id="project-difficulty">
+              <option value="0">No difficulty</option>
+              <option value="1">1 heart</option>
+              <option value="2">2 hearts</option>
+              <option value="3">3 hearts</option>
+              <option value="4">4 hearts</option>
+              <option value="5">5 hearts</option>
+            </select>
+          </label>
+
+          <label>
+            Notes
+            <textarea id="project-notes" rows="4" placeholder="Add yarn details, gauge, or reminders..."></textarea>
+          </label>
+
+          <label>
+            Pattern link or file
+            <input id="pattern-link" type="text" placeholder="https://... or file name" />
+          </label>
+
+          <label>
+            Project photo
+            <input id="project-image" type="file" accept="image/*" />
+          </label>
+
+          <button type="submit">Save note</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Your projects</h2>
+          <p id="project-count">0 projects</p>
+        </div>
+        <div class="search-controls">
+          <label class="search-label">
+            <span>Search projects</span>
+            <input id="project-search" type="text" placeholder="Search by name, pattern, or notes" />
+          </label>
+          <label class="search-label">
+            <span>Filter by status</span>
+            <select id="project-status-filter">
+              <option value="all">All statuses</option>
+              <option value="Planning">Planning</option>
+              <option value="In progress">In progress</option>
+              <option value="Finished">Finished</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </label>
+          <label class="search-label">
+            <span>Filter by stars</span>
+            <div class="filter-chip-group" role="group" aria-label="Filter by stars">
+              <input type="hidden" id="project-rating-filter" value="all" />
+              <button type="button" class="filter-chip active" data-rating-filter="all">All</button>
+              <button type="button" class="filter-chip" data-rating-filter="1">★</button>
+              <button type="button" class="filter-chip" data-rating-filter="2">★★</button>
+              <button type="button" class="filter-chip" data-rating-filter="3">★★★</button>
+              <button type="button" class="filter-chip" data-rating-filter="4">★★★★</button>
+              <button type="button" class="filter-chip" data-rating-filter="5">★★★★★</button>
+            </div>
+          </label>
+          <label class="search-label">
+            <span>Filter by level</span>
+            <div class="filter-chip-group" role="group" aria-label="Filter by level">
+              <input type="hidden" id="project-difficulty-filter" value="all" />
+              <button type="button" class="filter-chip active" data-difficulty-filter="all">All</button>
+              <button type="button" class="filter-chip" data-difficulty-filter="1">♡</button>
+              <button type="button" class="filter-chip" data-difficulty-filter="2">♡♡</button>
+              <button type="button" class="filter-chip" data-difficulty-filter="3">♡♡♡</button>
+              <button type="button" class="filter-chip" data-difficulty-filter="4">♡♡♡♡</button>
+              <button type="button" class="filter-chip" data-difficulty-filter="5">♡♡♡♡♡</button>
+            </div>
+          </label>
+        </div>
+        <div id="project-list" class="project-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Groups & chat</h2>
+          <p>Invite knitters and share pattern ideas</p>
+        </div>
+
+        <div class="group-dashboard">
+          <div class="group-sidebar">
+            <form id="group-form" class="group-form">
+              <label>
+                Group name
+                <input id="group-name" type="text" placeholder="e.g. Weekend knit circle" required />
+              </label>
+              <label>
+                Invite people
+                <input id="group-invites" type="text" placeholder="Maja, Lars, Emma" />
+              </label>
+              <button type="submit">Create group</button>
+            </form>
+
+            <div id="group-list" class="group-list compact"></div>
+          </div>
+
+          <div class="group-chat-panel">
+            <div class="group-chat-header">
+              <div>
+                <p class="eyebrow small">Active group</p>
+                <h3 id="active-group-name">Pattern circle</h3>
+              </div>
+              <button type="button" id="copy-invite-link" class="ghost-btn">Copy invite link</button>
+            </div>
+
+            <div class="group-members-card">
+              <h4>Invited people</h4>
+              <ul id="group-members" class="group-members"></ul>
+            </div>
+
+            <div id="chat-messages" class="chat-messages"></div>
+
+            <form id="chat-form" class="chat-form">
+              <input id="chat-message" type="text" placeholder="Share a pattern idea..." />
+              <button type="submit">Send</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
