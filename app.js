@@ -594,6 +594,7 @@ function renderProjects() {
         <span class="round-display">${getRounds(project.id)}</span>
         <span class="round-label">omgange</span>
         <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(project.id)}">+</button>
+        <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(project.id)}" title="Nulstil">↺</button>
       </div>
     `;
 
@@ -628,6 +629,15 @@ function renderProjects() {
       projectRounds[project.id] = getRounds(project.id) + 1;
       saveRounds();
       card.querySelector('.round-display').textContent = getRounds(project.id);
+    });
+
+    card.querySelector('.round-reset').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm('Nulstil omgangstælleren til 0?')) {
+        projectRounds[project.id] = 0;
+        saveRounds();
+        card.querySelector('.round-display').textContent = 0;
+      }
     });
 
     card.querySelector('.delete-btn').addEventListener('click', (e) => {

@@ -144,6 +144,22 @@ body {
   text-align: center;
 }
 
+.auth-welcome {
+  color: #7a4b5d;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 0 0 8px;
+  text-align: center;
+  border-bottom: 1px dashed #f4b5c7;
+  padding-bottom: 12px;
+}
+
+.round-reset {
+  background: #f5e6ea;
+  color: #a63d57;
+  font-size: 1rem;
+}
+
 /* ── User bar ─────────────────────────────────────────────────────────────── */
 
 .user-bar-name {
