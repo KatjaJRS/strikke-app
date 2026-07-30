@@ -1683,13 +1683,30 @@ chatForm.addEventListener('submit', async (event) => {
 async function loadAllData() {
   // Projects
   const { data: pData } = await sb.from('projects').select('*').eq('user_id', currentUser.id);
-  projects = (pData || []).map(p => ({
+  const allProjects = (pData || []).map(p => ({
     id: p.id, name: p.name, pattern: p.pattern || '',
     status: p.status || 'Planning', notes: p.notes || '',
     patternLink: p.pattern_link || '', needles: p.needles || [],
     yarns: p.yarns || [], rating: p.rating || 0, difficulty: p.difficulty || 0,
     image: p.image || '', lastViewedAt: p.last_viewed_at || 0
   }));
+
+  // Deduplicate: keep only the most recently viewed project per name
+  const seen = new Map();
+  const toDelete = [];
+  allProjects.sort((a, b) => b.lastViewedAt - a.lastViewedAt); // newest first
+  for (const p of allProjects) {
+    const key = p.name.trim().toLowerCase();
+    if (seen.has(key)) {
+      toDelete.push(p.id); // duplicate — delete older one
+    } else {
+      seen.set(key, p);
+    }
+  }
+  if (toDelete.length > 0) {
+    await sb.from('projects').delete().in('id', toDelete);
+  }
+  projects = [...seen.values()];
   normalizeProjects();
 
   // Groups + messages
