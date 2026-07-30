@@ -155,21 +155,15 @@
             </label>
             <div class="yarns-section">
               <h4 data-i18n="yarnsLabel">Yarns used</h4>
-              <div class="yarn-entry">
-                <input id="yarn-1-type" type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
-                <input id="yarn-1-color" type="text" class="yarn-type" placeholder="Colour" />
-                <input id="yarn-1-amount" type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount used" />
+              <div id="yarn-rows-container">
+                <div class="yarn-entry">
+                  <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
+                  <input type="text" class="yarn-color" placeholder="Colour" />
+                  <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount used" />
+                  <button type="button" class="yarn-remove-btn" title="Remove row">✕</button>
+                </div>
               </div>
-              <div class="yarn-entry">
-                <input id="yarn-2-type" type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
-                <input id="yarn-2-color" type="text" class="yarn-type" placeholder="Colour" />
-                <input id="yarn-2-amount" type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount used" />
-              </div>
-              <div class="yarn-entry">
-                <input id="yarn-3-type" type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
-                <input id="yarn-3-color" type="text" class="yarn-type" placeholder="Colour" />
-                <input id="yarn-3-amount" type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount used" />
-              </div>
+              <button type="button" id="add-yarn-btn" class="add-row-btn">+ Tilføj garn</button>
             </div>
             <div class="needles-section">
               <h4 data-i18n="needleLabel">Knitting needles</h4>

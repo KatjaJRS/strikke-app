@@ -590,8 +590,49 @@ label {
 
 .yarn-entry {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr auto;
   gap: 8px;
+  align-items: center;
+}
+
+.yarn-remove-btn {
+  background: #ffe0e8;
+  color: #a63d57;
+  border: 0;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.yarn-remove-btn:hover {
+  background: #ffc8d5;
+}
+
+.add-row-btn {
+  background: none;
+  border: 1.5px dashed #e35c86;
+  color: #e35c86;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s;
+}
+
+.add-row-btn:hover {
+  background: #ffe7ee;
+}
+
+.project-card {
+  cursor: pointer;
 }
 
 .yarn-type,

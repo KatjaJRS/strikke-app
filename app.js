@@ -9,11 +9,45 @@ const needleInputs = [
   document.getElementById('needle-2-type'),
   document.getElementById('needle-3-type'),
 ];
-const yarnInputs = [
-  { type: document.getElementById('yarn-1-type'), color: document.getElementById('yarn-1-color'), amount: document.getElementById('yarn-1-amount') },
-  { type: document.getElementById('yarn-2-type'), color: document.getElementById('yarn-2-color'), amount: document.getElementById('yarn-2-amount') },
-  { type: document.getElementById('yarn-3-type'), color: document.getElementById('yarn-3-color'), amount: document.getElementById('yarn-3-amount') },
-];
+const yarnRowsContainer = document.getElementById('yarn-rows-container');
+const addYarnBtn = document.getElementById('add-yarn-btn');
+
+function getYarnInputs() {
+  return Array.from(yarnRowsContainer.querySelectorAll('.yarn-entry')).map(entry => ({
+    type: entry.querySelector('.yarn-type'),
+    color: entry.querySelector('.yarn-color'),
+    amount: entry.querySelector('.yarn-amount'),
+  }));
+}
+
+function addYarnRow(typeVal = '', colorVal = '', amountVal = '') {
+  const entry = document.createElement('div');
+  entry.className = 'yarn-entry';
+  entry.innerHTML = `
+    <input type="text" class="yarn-type" placeholder="${translations[currentLanguage].yarnTypePlaceholder || 'Yarn type'}" value="${typeVal}" />
+    <input type="text" class="yarn-color" placeholder="Colour" value="${colorVal}" />
+    <input type="text" class="yarn-amount" placeholder="${translations[currentLanguage].yarnAmountPlaceholder || 'Amount used'}" value="${amountVal}" />
+    <button type="button" class="yarn-remove-btn" title="Remove row">✕</button>
+  `;
+  entry.querySelector('.yarn-remove-btn').addEventListener('click', () => {
+    if (yarnRowsContainer.querySelectorAll('.yarn-entry').length > 1) entry.remove();
+    autoSaveDraft();
+  });
+  entry.querySelectorAll('input').forEach(inp => inp.addEventListener('input', autoSaveDraft));
+  yarnRowsContainer.appendChild(entry);
+}
+
+// Wire up remove on the initial row
+document.querySelector('#yarn-rows-container .yarn-remove-btn').addEventListener('click', function() {
+  if (yarnRowsContainer.querySelectorAll('.yarn-entry').length > 1) this.closest('.yarn-entry').remove();
+  autoSaveDraft();
+});
+document.querySelectorAll('#yarn-rows-container input').forEach(inp => inp.addEventListener('input', autoSaveDraft));
+
+addYarnBtn.addEventListener('click', () => addYarnRow());
+
+// Legacy yarnInputs alias for any remaining old references
+const yarnInputs = { map: (fn) => getYarnInputs().map(fn), forEach: (fn) => getYarnInputs().forEach(fn) };
 const ratingInput = document.getElementById('project-rating');
 const ratingValueInput = document.getElementById('project-rating-value');
 const difficultyInput = document.getElementById('project-difficulty');
@@ -441,14 +475,12 @@ function populateFormWithProject(project) {
     btn.classList.toggle('active', isActive);
   });
   
-  // Populate yarns
+  // Populate yarns — rebuild rows dynamically
   const yarns = project.yarns || [];
-  yarnInputs.forEach((yarnGroup, index) => {
-    const yarn = yarns[index] || { type: '', color: '', amount: '' };
-    yarnGroup.type.value = yarn.type || '';
-    yarnGroup.color.value = yarn.color || '';
-    yarnGroup.amount.value = yarn.amount || '';
-  });
+  yarnRowsContainer.innerHTML = '';
+  const yarnList = yarns.filter(y => y.type || y.color || y.amount);
+  if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
+  yarnList.forEach(yarn => addYarnRow(yarn.type || '', yarn.color || '', yarn.amount || ''));
   
   // Populate needles
   const needles = project.needles || [];
@@ -547,8 +579,7 @@ function renderProjects() {
       </div>
     `;
 
-    card.querySelector('.edit-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
+    function openProjectForEditing() {
       projects = projects.map((p) => ({
         ...p,
         lastViewedAt: p.id === project.id ? Date.now() : p.lastViewedAt
@@ -557,6 +588,14 @@ function renderProjects() {
       renderProjects();
       updateHeroImage();
       switchSection('current-project');
+    }
+
+    // Click anywhere on card to open for editing
+    card.addEventListener('click', openProjectForEditing);
+
+    card.querySelector('.edit-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openProjectForEditing();
     });
     
     card.querySelector('.delete-btn').addEventListener('click', (e) => {
@@ -1035,6 +1074,65 @@ function undoDeleteProject() {
   }
 }
 
+// ── Auto-save draft ──────────────────────────────────────────────────────────
+const DRAFT_KEY = 'knitting-form-draft';
+
+function autoSaveDraft() {
+  const draft = {
+    name: nameInput.value,
+    pattern: patternInput.value,
+    notes: notesInput.value,
+    patternLink: patternLinkInput.value,
+    status: statusInput.value,
+    rating: ratingValueInput.value,
+    difficulty: difficultyValueInput.value,
+    yarns: getYarnInputs().map(y => ({ type: y.type.value, color: y.color.value, amount: y.amount.value })),
+    needles: needleInputs.map(n => n.value),
+  };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+}
+
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+function restoreDraft() {
+  const raw = localStorage.getItem(DRAFT_KEY);
+  if (!raw) return;
+  try {
+    const draft = JSON.parse(raw);
+    nameInput.value = draft.name || '';
+    patternInput.value = draft.pattern || '';
+    notesInput.value = draft.notes || '';
+    patternLinkInput.value = draft.patternLink || '';
+    statusInput.value = draft.status || 'Planning';
+    ratingValueInput.value = draft.rating || 0;
+    difficultyValueInput.value = draft.difficulty || 0;
+
+    Array.from(ratingInput.querySelectorAll('.star-btn')).forEach(btn => {
+      btn.classList.toggle('active', Number(btn.dataset.value) <= Number(draft.rating));
+    });
+    Array.from(difficultyInput.querySelectorAll('.heart-btn')).forEach(btn => {
+      btn.classList.toggle('active', Number(btn.dataset.value) <= Number(draft.difficulty));
+    });
+
+    yarnRowsContainer.innerHTML = '';
+    const yarnList = (draft.yarns || []).filter(y => y.type || y.color || y.amount);
+    if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
+    yarnList.forEach(y => addYarnRow(y.type, y.color, y.amount));
+
+    (draft.needles || []).forEach((val, i) => { if (needleInputs[i]) needleInputs[i].value = val; });
+  } catch (e) {}
+}
+
+// Wire auto-save to all static form inputs
+[nameInput, patternInput, notesInput, patternLinkInput].forEach(el => el.addEventListener('input', autoSaveDraft));
+statusInput.addEventListener('change', autoSaveDraft);
+needleInputs.forEach(n => n.addEventListener('input', autoSaveDraft));
+
+// Restore draft on load
+restoreDraft();
+
 // Language button event listeners
 langButtons.forEach((button) => {
   button.addEventListener('click', () => {
@@ -1201,7 +1299,10 @@ form.addEventListener('submit', async (event) => {
   saveProjects();
   renderProjects();
   updateHeroImage();
+  clearDraft();
   form.reset();
+  yarnRowsContainer.innerHTML = '';
+  addYarnRow();
   nameInput.focus();
 });
 
