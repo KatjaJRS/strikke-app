@@ -524,20 +524,24 @@ function renderCurrentProject() {
   const translatedStatus = translateStatus(currentProject.status);
   
   card.innerHTML = `
-    <div class="card-top">
-      <div class="card-main-info">
-        <div class="header-with-rating">
-          <h3>${escapeHTML(currentProject.name)}</h3>
-          ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
+    <div class="card-layout">
+      <div class="card-text">
+        <div class="card-top">
+          <div class="card-main-info">
+            <div class="header-with-rating">
+              <h3>${escapeHTML(currentProject.name)}</h3>
+              ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
+            </div>
+            ${difficultyDisplay}
+            ${yarnsDisplay}
+            ${needlesDisplay}
+            ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
+          </div>
+          <span class="status-badge">${escapeHTML(translatedStatus)}</span>
         </div>
-        ${difficultyDisplay}
-        ${yarnsDisplay}
-        ${needlesDisplay}
-        <p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes || '')}</p>
       </div>
-      <span class="status-badge">${escapeHTML(translatedStatus)}</span>
+      ${currentProject.image ? `<img class="card-img-square" src="${currentProject.image}" alt="${escapeHTML(currentProject.name)}" />` : ''}
     </div>
-    ${currentProject.image ? `<img class="project-image" src="${currentProject.image}" alt="${escapeHTML(currentProject.name)}" />` : ''}
   `;
   currentProjectCard.innerHTML = '';
   currentProjectCard.appendChild(card);
@@ -578,19 +582,24 @@ function renderProjects() {
     const currentLabel = isCurrent ? `<span class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</span>` : '';
     
     card.innerHTML = `
-      <div class="card-top">
-        <div class="card-main-info">
-          <div class="header-with-rating">
-            <h3>${escapeHTML(project.name)}</h3>
-            ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
-            ${currentLabel}
+      <div class="card-layout">
+        <div class="card-text">
+          <div class="card-top">
+            <div class="card-main-info">
+              <div class="header-with-rating">
+                <h3>${escapeHTML(project.name)}</h3>
+                ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
+                ${currentLabel}
+              </div>
+              ${difficultyDisplay}
+              ${yarnsDisplay}
+              ${needlesDisplay}
+              ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
+            </div>
+            <span class="status-badge">${escapeHTML(translatedStatus)}</span>
           </div>
-          ${difficultyDisplay}
-          ${yarnsDisplay}
-          ${needlesDisplay}
-          ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
         </div>
-        <span class="status-badge">${escapeHTML(translatedStatus)}</span>
+        ${project.image ? `<img class="card-img-square" src="${project.image}" alt="${escapeHTML(project.name)}" />` : ''}
       </div>
       <div class="card-buttons">
         <button class="edit-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].editButton}</button>
@@ -733,7 +742,14 @@ function normalizeProjects() {
 async function saveProjects() {
   if (!currentUser) return true;
   try {
-    await sb.from('projects').upsert(
+    // Ensure profile row exists before saving (avoids FK constraint failures)
+    await sb.from('profiles').upsert({
+      id: currentUser.id,
+      name: myProfileName || currentUser.email || 'User',
+      profile_pic: myProfilePic || ''
+    });
+
+    const { error } = await sb.from('projects').upsert(
       projects.map(p => ({
         id: p.id,
         user_id: currentUser.id,
@@ -750,6 +766,7 @@ async function saveProjects() {
         last_viewed_at: p.lastViewedAt || 0
       }))
     );
+    if (error) console.warn('Projects upsert warning:', error.message);
     return true;
   } catch (e) { console.error('Error saving projects:', e); return false; }
 }
