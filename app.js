@@ -1450,13 +1450,24 @@ form.addEventListener('submit', async (event) => {
       ...(image ? { image } : {}),
     } : p);
   } else {
-    // Add new project
-    projects.unshift({
-      id: `project-${Date.now()}`,
-      name, pattern, status: statusInput.value, notes, patternLink,
-      needles, rating, difficulty, yarns, image,
-      lastViewedAt: Date.now(),
-    });
+    // Check if a project with this exact name already exists → update it instead of duplicating
+    const existingByName = projects.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
+    if (existingByName) {
+      currentEditingProjectId = existingByName.id;
+      projects = projects.map(p => p.id === existingByName.id ? {
+        ...p, name, pattern, status: statusInput.value, notes, patternLink,
+        needles, rating, difficulty, yarns,
+        ...(image ? { image } : {}),
+      } : p);
+    } else {
+      // Genuinely new project
+      projects.unshift({
+        id: `project-${Date.now()}`,
+        name, pattern, status: statusInput.value, notes, patternLink,
+        needles, rating, difficulty, yarns, image,
+        lastViewedAt: Date.now(),
+      });
+    }
   }
 
   await saveProjects();
