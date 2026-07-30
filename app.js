@@ -724,9 +724,9 @@ function normalizeProjects() {
 }
 
 async function saveProjects() {
-  if (!currentUser) return true; // no user yet, just keep in memory
+  if (!currentUser) return true;
   try {
-    const { error } = await sb.from('projects').upsert(
+    await sb.from('projects').upsert(
       projects.map(p => ({
         id: p.id,
         user_id: currentUser.id,
@@ -743,7 +743,6 @@ async function saveProjects() {
         last_viewed_at: p.lastViewedAt || 0
       }))
     );
-    if (error) { console.error('Save error:', error); return false; }
     return true;
   } catch (e) { console.error('Error saving projects:', e); return false; }
 }
