@@ -522,20 +522,18 @@ function renderCurrentProject() {
   const translatedStatus = translateStatus(currentProject.status);
   
   card.innerHTML = `
+    <div class="card-header">
+      <div class="header-with-rating">
+        <h3>${escapeHTML(currentProject.name)}</h3>
+        ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
+      </div>
+      <span class="status-badge">${escapeHTML(translatedStatus)}</span>
+    </div>
     <div class="card-layout">
-      <div class="card-text">
-        <div class="card-top">
-          <div class="card-main-info">
-            <div class="header-with-rating">
-              <h3>${escapeHTML(currentProject.name)}</h3>
-              ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
-            </div>
-            ${difficultyDisplay}
-            ${yarnsDisplay}
-            ${needlesDisplay}
-          </div>
-          <span class="status-badge">${escapeHTML(translatedStatus)}</span>
-        </div>
+      <div class="card-col">
+        ${difficultyDisplay}
+        ${yarnsDisplay}
+        ${needlesDisplay}
       </div>
       <div class="card-notes">
         ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
@@ -582,21 +580,19 @@ function renderProjects() {
     const currentLabel = isCurrent ? `<span class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</span>` : '';
     
     card.innerHTML = `
+      <div class="card-header">
+        <div class="header-with-rating">
+          <h3>${escapeHTML(project.name)}</h3>
+          ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
+          ${currentLabel}
+        </div>
+        <span class="status-badge">${escapeHTML(translatedStatus)}</span>
+      </div>
       <div class="card-layout">
-        <div class="card-text">
-          <div class="card-top">
-            <div class="card-main-info">
-              <div class="header-with-rating">
-                <h3>${escapeHTML(project.name)}</h3>
-                ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
-                ${currentLabel}
-              </div>
-              ${difficultyDisplay}
-              ${yarnsDisplay}
-              ${needlesDisplay}
-            </div>
-            <span class="status-badge">${escapeHTML(translatedStatus)}</span>
-          </div>
+        <div class="card-col">
+          ${difficultyDisplay}
+          ${yarnsDisplay}
+          ${needlesDisplay}
         </div>
         <div class="card-notes">
           ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}

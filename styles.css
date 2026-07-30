@@ -1430,14 +1430,22 @@ button:hover {
   border: 1px solid #f2b0c0;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .card-layout {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 14px;
-  align-items: start;
+  align-items: stretch;
 }
 
-.card-text {
+.card-col {
   min-width: 0;
 }
 
@@ -1454,7 +1462,8 @@ button:hover {
 
 .card-img-square {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 100%;
+  min-height: 80px;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid #f2b0c0;
@@ -1462,7 +1471,7 @@ button:hover {
 
 .card-img-placeholder {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  min-height: 80px;
 }
 
 .delete-btn {
