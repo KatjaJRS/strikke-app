@@ -1432,7 +1432,7 @@ button:hover {
 
 .card-layout {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 14px;
   align-items: start;
 }
@@ -1441,13 +1441,28 @@ button:hover {
   min-width: 0;
 }
 
+.card-notes {
+  min-width: 0;
+  color: #5f493c;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.card-notes p {
+  margin: 0;
+}
+
 .card-img-square {
-  width: 110px;
-  height: 110px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid #f2b0c0;
-  flex-shrink: 0;
+}
+
+.card-img-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .delete-btn {

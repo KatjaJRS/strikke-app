@@ -533,12 +533,14 @@ function renderCurrentProject() {
             ${difficultyDisplay}
             ${yarnsDisplay}
             ${needlesDisplay}
-            ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
           </div>
           <span class="status-badge">${escapeHTML(translatedStatus)}</span>
         </div>
       </div>
-      ${currentProject.image ? `<img class="card-img-square" src="${currentProject.image}" alt="${escapeHTML(currentProject.name)}" />` : ''}
+      <div class="card-notes">
+        ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
+      </div>
+      ${currentProject.image ? `<img class="card-img-square" src="${currentProject.image}" alt="${escapeHTML(currentProject.name)}" />` : '<div class="card-img-placeholder"></div>'}
     </div>
   `;
   currentProjectCard.innerHTML = '';
@@ -592,12 +594,14 @@ function renderProjects() {
               ${difficultyDisplay}
               ${yarnsDisplay}
               ${needlesDisplay}
-              ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
             </div>
             <span class="status-badge">${escapeHTML(translatedStatus)}</span>
           </div>
         </div>
-        ${project.image ? `<img class="card-img-square" src="${project.image}" alt="${escapeHTML(project.name)}" />` : ''}
+        <div class="card-notes">
+          ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
+        </div>
+        ${project.image ? `<img class="card-img-square" src="${project.image}" alt="${escapeHTML(project.name)}" />` : '<div class="card-img-placeholder"></div>'}
       </div>
       <div class="card-buttons">
         <button class="edit-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].editButton}</button>
