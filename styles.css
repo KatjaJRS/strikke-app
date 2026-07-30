@@ -1401,6 +1401,54 @@ button:hover {
   justify-self: start;
 }
 
+.round-counter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff0f5;
+  border: 1px solid #f4b5c7;
+  border-radius: 12px;
+  padding: 8px 14px;
+  justify-self: start;
+}
+
+.round-btn {
+  background: #e35c86;
+  color: white;
+  border: 0;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.round-btn:hover {
+  background: #cf4774;
+}
+
+.round-display {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #7a2742;
+  min-width: 36px;
+  text-align: center;
+}
+
+.round-label {
+  font-size: 0.8rem;
+  color: #9a6070;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .edit-btn {
   background: #e35c86;
 }

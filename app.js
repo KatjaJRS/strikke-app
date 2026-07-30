@@ -87,7 +87,14 @@ const LANGUAGE_STORAGE_KEY = 'knitting-language';
 const PROFILE_PIC_KEY = 'knitting-profile-picture';
 const PROFILE_NAME_KEY = 'knitting-profile-name';
 const HERO_IMAGE_KEY = 'knitting-hero-image';
+const ROUNDS_KEY = 'knitting-rounds';
 const ADMIN_EMAIL = 'roldsgaard@gmail.com';
+
+// Round counter (per device, tracks own knitting progress)
+let projectRounds = JSON.parse(localStorage.getItem(ROUNDS_KEY) || '{}');
+
+function getRounds(projectId) { return projectRounds[projectId] || 0; }
+function saveRounds() { localStorage.setItem(ROUNDS_KEY, JSON.stringify(projectRounds)); }
 
 // Filter state
 let filterStatus = 'all';
@@ -582,6 +589,12 @@ function renderProjects() {
         <button class="edit-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].editButton}</button>
         <button class="delete-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].deleteButton}</button>
       </div>
+      <div class="round-counter" data-project-id="${escapeHTML(project.id)}">
+        <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(project.id)}">−</button>
+        <span class="round-display">${getRounds(project.id)}</span>
+        <span class="round-label">omgange</span>
+        <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(project.id)}">+</button>
+      </div>
     `;
 
     function openProjectForEditing() {
@@ -602,7 +615,21 @@ function renderProjects() {
       e.stopPropagation();
       openProjectForEditing();
     });
-    
+
+    card.querySelector('.round-minus').addEventListener('click', (e) => {
+      e.stopPropagation();
+      projectRounds[project.id] = Math.max(0, getRounds(project.id) - 1);
+      saveRounds();
+      card.querySelector('.round-display').textContent = getRounds(project.id);
+    });
+
+    card.querySelector('.round-plus').addEventListener('click', (e) => {
+      e.stopPropagation();
+      projectRounds[project.id] = getRounds(project.id) + 1;
+      saveRounds();
+      card.querySelector('.round-display').textContent = getRounds(project.id);
+    });
+
     card.querySelector('.delete-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       
@@ -895,7 +922,7 @@ function renderGroups() {
         if (message.image) {
           contentHTML += `<img class="chat-img" src="${message.image}" alt="shared image" />`;
         }
-        if (message.link) {
+        if (message.link && isMe) {
           const label = escapeHTML(message.linkLabel || message.link);
           contentHTML += `<a class="chat-link" href="${escapeHTML(message.link)}" target="_blank" rel="noopener noreferrer">🔗 ${label}</a>`;
         }
@@ -1670,6 +1697,7 @@ function launchApp(user, profile) {
       if (newEmail !== user.email) await sb.auth.updateUser({ email: newEmail });
       await sb.from('profiles').upsert({ id: currentUser.id, name: newName, profile_pic: myProfilePic || '' });
       if (profile) profile.name = newName;
+      else profile = { name: newName, profile_pic: myProfilePic || '' };
       myProfileName = newName;
       localStorage.setItem(PROFILE_NAME_KEY, newName);
       refreshUserBar();
