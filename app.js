@@ -41,16 +41,17 @@ const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-message');
 const copyInviteButton = document.getElementById('copy-invite-link');
 
-const STORAGE_KEY = 'knitting-notes-projects';
-const GROUPS_STORAGE_KEY = 'knitting-groups-chat';
+// ── Supabase ─────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://ekwslhhhdawzudjwlrss.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_aFZ8R-s3cpJgZUTFp_AsKw_eSC3xW0C';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+
 const GROUPS_READ_KEY = 'knitting-groups-last-read';
 const GROUP_QUERY_PARAM = 'group';
 const LANGUAGE_STORAGE_KEY = 'knitting-language';
 const PROFILE_PIC_KEY = 'knitting-profile-picture';
 const PROFILE_NAME_KEY = 'knitting-profile-name';
-const MEMBERSHIP_REQUESTS_KEY = 'knitting-membership-requests';
-const USERS_KEY = 'knitting-users';
-const SESSION_KEY = 'knitting-session';
 const ADMIN_EMAIL = 'roldsgaard@gmail.com';
 
 // Filter state
@@ -62,60 +63,18 @@ let filterDifficulty = 'all';
 let lastDeletedProject = null;
 let undoTimeoutId = null;
 
-let projects = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-let groups = JSON.parse(localStorage.getItem(GROUPS_STORAGE_KEY) || '[]');
-let membershipRequests = JSON.parse(localStorage.getItem(MEMBERSHIP_REQUESTS_KEY) || '[]');
+let projects = [];
+let groups = [];
+let membershipRequests = [];
 let groupsLastRead = Number(localStorage.getItem(GROUPS_READ_KEY) || '0');
 let activeGroupId = null;
 let currentLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en';
 let myProfilePic = localStorage.getItem(PROFILE_PIC_KEY) || '';
 let myProfileName = localStorage.getItem(PROFILE_NAME_KEY) || 'You';
 
-// Initialize with sample data if empty
-if (projects.length === 0) {
-  projects = [
-    {
-      id: 'project-moonlight-scarf',
-      name: 'Moonlight scarf',
-      pattern: 'Garter rib',
-      needles: ['4 mm circular'],
-      status: 'In progress',
-      notes: 'Need a second ball of yarn and keep the edges neat.',
-      patternLink: 'https://example.com/moonlight-scarf',
-      rating: 5,
-      difficulty: 2,
-      yarns: [
-        { type: 'Merino wool', color: '#4a4a4a', amount: '50g used' },
-        { type: 'Silk blend', color: '#daa520', amount: '30g used' },
-        { type: '', color: '', amount: '' },
-      ],
-      image: '',
-      lastViewedAt: Date.now(),
-    },
-    {
-      id: 'project-weekend-hat',
-      name: 'Weekend hat',
-      pattern: 'Cable twist',
-      needles: ['3.5 mm double-pointed'],
-      status: 'Planning',
-      notes: 'Test the gauge before casting on.',
-      patternLink: 'https://example.com/weekend-hat',
-      rating: 4,
-      difficulty: 3,
-      yarns: [
-        { type: 'Cotton', color: '#f5f5dc', amount: '100g' },
-        { type: '', color: '', amount: '' },
-        { type: '', color: '', amount: '' },
-      ],
-      image: '',
-      lastViewedAt: Date.now() - 86400000,
-    },
-  ];
-}
+// Sample data added by loadAllData if DB is empty
 
-normalizeProjects();
-saveProjects();
-normalizeGroups();
+// Supabase replaces localStorage init — data loaded asynchronously in loadAllData()
 
 const broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('knitting-groups-chat') : null;
 
@@ -682,8 +641,27 @@ function normalizeProjects() {
   });
 }
 
-function saveProjects() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+async function saveProjects() {
+  if (!currentUser) return;
+  try {
+    await sb.from('projects').upsert(
+      projects.map(p => ({
+        id: p.id,
+        user_id: currentUser.id,
+        name: p.name,
+        pattern: p.pattern || '',
+        status: p.status || 'Planning',
+        notes: p.notes || '',
+        pattern_link: p.patternLink || '',
+        needles: p.needles || [],
+        yarns: p.yarns || [],
+        rating: p.rating || 0,
+        difficulty: p.difficulty || 0,
+        image: p.image || '',
+        last_viewed_at: p.lastViewedAt || 0
+      }))
+    );
+  } catch (e) { console.error('Error saving projects:', e); }
 }
 
 function normalizeGroups() {
@@ -741,12 +719,28 @@ function markGroupsAsRead() {
   updateGroupsBadge();
 }
 
-function saveGroups() {
-  localStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(groups));
-  if (broadcastChannel) {
-    broadcastChannel.postMessage({ type: 'sync', groups });
-  }
-  updateGroupsBadge();
+async function saveGroups() {
+  try {
+    await sb.from('groups').upsert(
+      groups.map(g => ({ id: g.id, name: g.name, invited_people: g.invitedPeople || [] }))
+    );
+    updateGroupsBadge();
+  } catch (e) { console.error('Error saving groups:', e); }
+}
+
+async function saveNewMessage(groupId, message) {
+  try {
+    await sb.from('messages').insert({
+      id: message.id,
+      group_id: groupId,
+      sender_name: message.sender || 'You',
+      text: message.text || '',
+      image: message.image || '',
+      link: message.link || '',
+      link_label: message.linkLabel || '',
+      created_at: new Date(message.createdAt).toISOString()
+    });
+  } catch (e) { console.error('Error saving message:', e); }
 }
 
 function setActiveGroup(groupId) {
@@ -1194,25 +1188,27 @@ form.addEventListener('submit', async (event) => {
   nameInput.focus();
 });
 
-function saveMembershipRequests() {
-  localStorage.setItem(MEMBERSHIP_REQUESTS_KEY, JSON.stringify(membershipRequests));
-}
+async function saveMembershipRequests() {}
 
-function acceptMember(id) {
+async function acceptMember(id) {
   const req = membershipRequests.find(r => r.id === id);
   if (!req) return;
-  // Add to first group's invitedPeople (or create a global members concept)
   if (groups.length > 0) {
-    groups = groups.map((g, i) => i === 0 ? { ...g, invitedPeople: [...new Set([...g.invitedPeople, req.name])] } : g);
-    saveGroups();
+    const g = groups[0];
+    const newInvited = [...new Set([...g.invitedPeople, req.name])];
+    groups = groups.map((gr, i) => i === 0 ? { ...gr, invitedPeople: newInvited } : gr);
+    await sb.from('groups').update({ invited_people: newInvited }).eq('id', g.id);
   }
+  await sb.from('membership_requests').delete().eq('id', id);
   membershipRequests = membershipRequests.filter(r => r.id !== id);
-  saveMembershipRequests();
   renderGroups();
 }
 
-function rejectMember(id) {
+async function rejectMember(id) {
+  await sb.from('membership_requests').delete().eq('id', id);
   membershipRequests = membershipRequests.filter(r => r.id !== id);
+  renderGroups();
+}
   saveMembershipRequests();
   renderGroups();
 }
@@ -1275,18 +1271,23 @@ const joinRequestForm = document.getElementById('join-request-form');
 const requestNameInput = document.getElementById('request-name-input');
 const requestEmailInput = document.getElementById('request-email-input');
 
-joinRequestForm.addEventListener('submit', (event) => {
+joinRequestForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const name = requestNameInput.value.trim();
   const email = requestEmailInput.value.trim();
   if (!name) return;
 
   const newRequest = { id: `req-${Date.now()}`, name, email, createdAt: Date.now() };
-  membershipRequests.push(newRequest);
-  saveMembershipRequests();
+  try {
+    await sb.from('membership_requests').insert({
+      id: newRequest.id, name: newRequest.name,
+      email: newRequest.email || '',
+      created_at: new Date(newRequest.createdAt).toISOString()
+    });
+    membershipRequests.push(newRequest);
+  } catch (e) { console.error('Error saving request:', e); }
   renderGroups();
 
-  // Open mailto to notify admin
   const subject = encodeURIComponent(`New membership request: ${name}`);
   const body = encodeURIComponent(`Hi,\n\nA new person wants to join Knitting My Life Away:\n\nName: ${name}\nEmail: ${email || '(not provided)'}\n\nPlease open the app to accept or reject this request.\n\nKnitting My Life Away`);
   window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
@@ -1296,7 +1297,7 @@ joinRequestForm.addEventListener('submit', (event) => {
 });
 
 // Group form
-groupForm.addEventListener('submit', (event) => {
+groupForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const name = groupNameInput.value.trim();
@@ -1307,19 +1308,16 @@ groupForm.addEventListener('submit', (event) => {
 
   if (!name) return;
 
-  const newGroup = {
-    id: `group-${Date.now()}`,
-    name,
-    invitedPeople: invites,
-    messages: [],
-  };
+  const newGroup = { id: `group-${Date.now()}`, name, invitedPeople: invites, messages: [] };
 
-  groups.push(newGroup);
-  saveGroups();
-  activeGroupId = newGroup.id;
-  renderGroups();
-  groupNameInput.value = '';
-  groupInvitesInput.value = '';
+  try {
+    await sb.from('groups').insert({ id: newGroup.id, name: newGroup.name, invited_people: invites });
+    groups.push(newGroup);
+    activeGroupId = newGroup.id;
+    renderGroups();
+    groupNameInput.value = '';
+    groupInvitesInput.value = '';
+  } catch (e) { console.error('Error creating group:', e); }
 });
 
 // Chat attachments
@@ -1353,7 +1351,7 @@ chatLinkBtn.addEventListener('click', () => {
   if (!chatLinkRow.classList.contains('hidden')) chatLinkInput.focus();
 });
 
-chatForm.addEventListener('submit', (event) => {
+chatForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const messageText = chatInput.value.trim();
@@ -1363,27 +1361,23 @@ chatForm.addEventListener('submit', (event) => {
 
   if (!activeGroup || (!messageText && !pendingChatImage && !link)) return;
 
+  const newMsg = {
+    id: `message-${Date.now()}`,
+    sender: myProfileName,
+    text: messageText,
+    image: pendingChatImage || '',
+    link: link || '',
+    linkLabel: linkLabel || '',
+    createdAt: Date.now(),
+  };
+
   groups = groups.map((group) =>
     group.id === activeGroup.id
-      ? {
-          ...group,
-          messages: [
-            ...group.messages,
-            {
-              id: `message-${Date.now()}`,
-              sender: myProfileName,
-              text: messageText,
-              image: pendingChatImage || '',
-              link: link || '',
-              linkLabel: linkLabel || '',
-              createdAt: Date.now(),
-            },
-          ],
-        }
+      ? { ...group, messages: [...group.messages, newMsg] }
       : group
   );
 
-  saveGroups();
+  await saveNewMessage(activeGroup.id, newMsg);
   renderGroups();
   chatInput.value = '';
   pendingChatImage = '';
@@ -1395,33 +1389,43 @@ chatForm.addEventListener('submit', (event) => {
   chatLinkRow.classList.add('hidden');
 });
 
-// ── Authentication ──────────────────────────────────────────────────────────
+// ── Authentication (Supabase) ─────────────────────────────────────────────
 
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'knitting-salt-2026');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
+async function loadAllData() {
+  // Projects
+  const { data: pData } = await sb.from('projects').select('*').eq('user_id', currentUser.id);
+  projects = (pData || []).map(p => ({
+    id: p.id, name: p.name, pattern: p.pattern || '',
+    status: p.status || 'Planning', notes: p.notes || '',
+    patternLink: p.pattern_link || '', needles: p.needles || [],
+    yarns: p.yarns || [], rating: p.rating || 0, difficulty: p.difficulty || 0,
+    image: p.image || '', lastViewedAt: p.last_viewed_at || 0
+  }));
+  normalizeProjects();
 
-function getUsers() {
-  return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-}
+  // Groups + messages
+  const { data: gData } = await sb.from('groups').select('*, messages(*)');
+  groups = (gData || []).map(g => ({
+    id: g.id, name: g.name,
+    invitedPeople: g.invited_people || [],
+    messages: ((g.messages || [])
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+      .map(m => ({
+        id: m.id, sender: m.sender_name || 'You',
+        text: m.text || '', image: m.image || '',
+        link: m.link || '', linkLabel: m.link_label || '',
+        createdAt: new Date(m.created_at).getTime()
+      })))
+  }));
+  if (groups.length > 0 && !groups.some(g => g.id === activeGroupId)) activeGroupId = groups[0].id;
+  else if (groups.length === 0) activeGroupId = null;
 
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-function getSession() {
-  return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-}
-
-function saveSession(session) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-}
-
-function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
+  // Membership requests
+  const { data: rData } = await sb.from('membership_requests').select('*');
+  membershipRequests = (rData || []).map(r => ({
+    id: r.id, name: r.name, email: r.email || '',
+    createdAt: new Date(r.created_at).getTime()
+  }));
 }
 
 function showAuthForm(formId) {
@@ -1436,11 +1440,10 @@ function showAuthError(id, msg) {
   el.classList.remove('hidden');
 }
 
-function launchApp(user) {
+function launchApp(user, profile) {
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app-shell-wrapper').classList.remove('hidden');
 
-  // Show logged-in user name + logout button in lang switcher area
   let userBar = document.getElementById('user-bar');
   if (!userBar) {
     userBar = document.createElement('div');
@@ -1450,40 +1453,38 @@ function launchApp(user) {
   }
 
   function refreshUserBar() {
-    const initials = user.name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-    const hue = [...user.name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+    const displayName = profile?.name || user.email;
+    const initials = displayName.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const hue = [...displayName].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
     const pic = myProfilePic;
     const avatarHTML = pic
-      ? `<img src="${pic}" class="avatar user-bar-avatar" alt="${escapeHTML(user.name)}" />`
+      ? `<img src="${pic}" class="avatar user-bar-avatar" alt="${escapeHTML(displayName)}" />`
       : `<span class="avatar avatar-initials user-bar-avatar" style="background:hsl(${hue},55%,65%)">${escapeHTML(initials)}</span>`;
-
     userBar.innerHTML = `
       <button type="button" id="open-profile-btn" class="user-bar-profile-btn" title="Edit profile">
         ${avatarHTML}
-        <span class="user-bar-name">${escapeHTML(user.name)}</span>
+        <span class="user-bar-name">${escapeHTML(displayName)}</span>
       </button>
       <button type="button" id="logout-btn" class="user-bar-logout" data-i18n="logoutLabel">Sign out</button>
     `;
-    document.getElementById('logout-btn').addEventListener('click', () => { clearSession(); location.reload(); });
-    document.getElementById('open-profile-btn').addEventListener('click', () => openProfileModal(user));
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await sb.auth.signOut();
+      location.reload();
+    });
+    document.getElementById('open-profile-btn').addEventListener('click', () => openProfileModal());
   }
 
   refreshUserBar();
 
-  // Profile modal logic
-  function openProfileModal(u) {
+  function openProfileModal() {
     const modal = document.getElementById('profile-modal');
     modal.classList.remove('hidden');
-
-    // Fill current values
-    document.getElementById('profile-edit-name').value = u.name;
-    document.getElementById('profile-edit-email').value = u.email;
+    document.getElementById('profile-edit-name').value = profile?.name || '';
+    document.getElementById('profile-edit-email').value = user.email || '';
     document.getElementById('profile-current-password').value = '';
     document.getElementById('profile-new-password').value = '';
     document.getElementById('profile-edit-error').classList.add('hidden');
     document.getElementById('profile-edit-success').classList.add('hidden');
-
-    // Avatar preview in modal
     updateModalAvatar();
   }
 
@@ -1497,13 +1498,144 @@ function launchApp(user) {
       av.className = 'avatar profile-modal-avatar';
     } else {
       av.style.backgroundImage = '';
-      const initials = user.name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-      const hue = [...user.name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+      const name = profile?.name || user.email || 'U';
+      const initials = name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const hue = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
       av.className = 'avatar avatar-initials profile-modal-avatar';
       av.style.background = `hsl(${hue},55%,65%)`;
       av.textContent = initials;
     }
   }
+
+  document.getElementById('profile-modal-close').addEventListener('click', () =>
+    document.getElementById('profile-modal').classList.add('hidden'));
+  document.getElementById('profile-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('profile-modal'))
+      document.getElementById('profile-modal').classList.add('hidden');
+  });
+  document.getElementById('profile-modal-pic-btn').addEventListener('click', () =>
+    document.getElementById('profile-modal-pic-input').click());
+  document.getElementById('profile-modal-pic-input').addEventListener('change', async () => {
+    const file = document.getElementById('profile-modal-pic-input').files[0];
+    if (!file) return;
+    myProfilePic = await readImageAsDataURL(file);
+    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+    await sb.from('profiles').upsert({ id: currentUser.id, name: profile?.name || '', profile_pic: myProfilePic });
+    updateModalAvatar();
+    refreshUserBar();
+    renderGroups();
+    if (typeof updateProfilePreview === 'function') updateProfilePreview();
+  });
+
+  document.getElementById('profile-edit-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newName = document.getElementById('profile-edit-name').value.trim();
+    const newEmail = document.getElementById('profile-edit-email').value.trim().toLowerCase();
+    const newPw = document.getElementById('profile-new-password').value;
+    const errEl = document.getElementById('profile-edit-error');
+    const successEl = document.getElementById('profile-edit-success');
+    errEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+
+    try {
+      if (newPw) {
+        if (newPw.length < 6) {
+          errEl.textContent = translations[currentLanguage].profileErrorShortPw;
+          errEl.classList.remove('hidden');
+          return;
+        }
+        await sb.auth.updateUser({ password: newPw });
+      }
+      if (newEmail !== user.email) await sb.auth.updateUser({ email: newEmail });
+      await sb.from('profiles').upsert({ id: currentUser.id, name: newName, profile_pic: myProfilePic || '' });
+      if (profile) profile.name = newName;
+      myProfileName = newName;
+      localStorage.setItem(PROFILE_NAME_KEY, newName);
+      refreshUserBar();
+      renderGroups();
+      successEl.classList.remove('hidden');
+      document.getElementById('profile-current-password').value = '';
+      document.getElementById('profile-new-password').value = '';
+    } catch (err) {
+      errEl.textContent = err.message || 'Error saving changes.';
+      errEl.classList.remove('hidden');
+    }
+  });
+
+  applyLanguage(currentLanguage);
+  renderProjects();
+  updateHeroImage();
+  renderGroups();
+  updateGroupsBadge();
+}
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+
+  if (session) {
+    currentUser = session.user;
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (profile) {
+      myProfileName = profile.name || currentUser.email;
+      myProfilePic = profile.profile_pic || '';
+      localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+      localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+    }
+    await loadAllData();
+    launchApp(currentUser, profile);
+    return;
+  }
+
+  document.getElementById('auth-overlay').classList.remove('hidden');
+
+  document.getElementById('show-register').addEventListener('click', () => showAuthForm('register-form'));
+  document.getElementById('show-login').addEventListener('click', () => showAuthForm('login-form'));
+  document.getElementById('show-forgot').addEventListener('click', () => showAuthForm('forgot-form'));
+  document.getElementById('show-login-from-forgot').addEventListener('click', () => showAuthForm('login-form'));
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { showAuthError('login-error', translations[currentLanguage].loginErrorWrong); return; }
+    currentUser = data.user;
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (profile) {
+      myProfileName = profile.name || email;
+      myProfilePic = profile.profile_pic || '';
+      localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+      localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+    }
+    await loadAllData();
+    launchApp(currentUser, profile);
+  });
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim().toLowerCase();
+    const password = document.getElementById('register-password').value;
+    if (password.length < 6) { showAuthError('register-error', translations[currentLanguage].registerErrorShort); return; }
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) { showAuthError('register-error', error.message); return; }
+    currentUser = data.user;
+    await sb.from('profiles').upsert({ id: currentUser.id, name, profile_pic: '' });
+    myProfileName = name;
+    localStorage.setItem(PROFILE_NAME_KEY, name);
+    await loadAllData();
+    launchApp(currentUser, { name, profile_pic: '' });
+  });
+
+  document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+    if (error) { showAuthError('forgot-error', error.message); return; }
+    alert(translations[currentLanguage].forgotSuccessMsg);
+    showAuthForm('login-form');
+  });
+}
 
   document.getElementById('profile-modal-close').addEventListener('click', () => {
     document.getElementById('profile-modal').classList.add('hidden');
@@ -1583,69 +1715,6 @@ function launchApp(user) {
   updateGroupsBadge();
 }
 
-async function initAuth() {
-  const session = getSession();
-  if (session) {
-    const users = getUsers();
-    const user = users.find(u => u.id === session.userId);
-    if (user) { launchApp(user); return; }
-  }
-
-  // Show auth overlay
-  document.getElementById('auth-overlay').classList.remove('hidden');
-
-  // Wire up form toggles
-  document.getElementById('show-register').addEventListener('click', () => showAuthForm('register-form'));
-  document.getElementById('show-login').addEventListener('click', () => showAuthForm('login-form'));
-  document.getElementById('show-forgot').addEventListener('click', () => showAuthForm('forgot-form'));
-  document.getElementById('show-login-from-forgot').addEventListener('click', () => showAuthForm('login-form'));
-
-  // Login
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value.trim().toLowerCase();
-    const password = document.getElementById('login-password').value;
-    const users = getUsers();
-    const user = users.find(u => u.email === email);
-    if (!user) { showAuthError('login-error', translations[currentLanguage].loginErrorNotFound); return; }
-    const hash = await hashPassword(password);
-    if (hash !== user.passwordHash) { showAuthError('login-error', translations[currentLanguage].loginErrorWrong); return; }
-    saveSession({ userId: user.id, loggedInAt: Date.now() });
-    launchApp(user);
-  });
-
-  // Register
-  document.getElementById('register-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('register-name').value.trim();
-    const email = document.getElementById('register-email').value.trim().toLowerCase();
-    const password = document.getElementById('register-password').value;
-    if (password.length < 6) { showAuthError('register-error', translations[currentLanguage].registerErrorShort); return; }
-    const users = getUsers();
-    if (users.find(u => u.email === email)) { showAuthError('register-error', translations[currentLanguage].registerErrorExists); return; }
-    const hash = await hashPassword(password);
-    const newUser = { id: `user-${Date.now()}`, name, email, passwordHash: hash, createdAt: Date.now() };
-    users.push(newUser);
-    saveUsers(users);
-    saveSession({ userId: newUser.id, loggedInAt: Date.now() });
-    launchApp(newUser);
-  });
-
-  // Forgot password
-  document.getElementById('forgot-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
-    const users = getUsers();
-    const user = users.find(u => u.email === email);
-    if (!user) { showAuthError('forgot-error', translations[currentLanguage].forgotNotFound); return; }
-    const subject = encodeURIComponent(`Password reset request: ${user.name}`);
-    const body = encodeURIComponent(`Hi,\n\n${user.name} (${user.email}) has requested a password reset for Knitting My Life Away.\n\nPlease open the app admin panel to reset their password.\n\nKnitting My Life Away`);
-    window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
-    alert(translations[currentLanguage].forgotSuccessMsg);
-  });
-}
-
-// ── Initialize ───────────────────────────────────────────────────────────────
+// -- Initialize --
 applyLanguage(currentLanguage);
 initAuth();
-updateGroupsBadge();
