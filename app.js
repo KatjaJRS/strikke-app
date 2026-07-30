@@ -531,8 +531,8 @@ function renderCurrentProject() {
           ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
         </div>
         ${difficultyDisplay}
-        ${needlesDisplay}
         ${yarnsDisplay}
+        ${needlesDisplay}
         <p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes || '')}</p>
       </div>
       <span class="status-badge">${escapeHTML(translatedStatus)}</span>
@@ -586,8 +586,8 @@ function renderProjects() {
             ${currentLabel}
           </div>
           ${difficultyDisplay}
-          ${needlesDisplay}
           ${yarnsDisplay}
+          ${needlesDisplay}
           ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
         </div>
         <span class="status-badge">${escapeHTML(translatedStatus)}</span>
