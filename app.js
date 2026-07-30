@@ -615,10 +615,12 @@ function renderProjects() {
     `;
 
     function openProjectForEditing() {
+      currentEditingProjectId = project.id; // ← must be set BEFORE renderProjects
       projects = projects.map((p) => ({
         ...p,
         lastViewedAt: p.id === project.id ? Date.now() : p.lastViewedAt
       }));
+      populateFormWithProject(project);
       saveProjects();
       renderProjects();
       updateHeroImage();
