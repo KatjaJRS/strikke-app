@@ -13,7 +13,7 @@ body {
   margin: 0;
   min-height: 100vh;
   background: linear-gradient(135deg, #ffe7ee 0%, #ffc8d7 100%);
-  padding: 60px 24px 24px;
+  padding: 24px;
 }
 
 /* ── Auth overlay ─────────────────────────────────────────────────────────── */
@@ -470,22 +470,13 @@ body {
   }
 }
 
-/* ── Fixed header (always visible, never scrolls away) ─────────────────── */
+/* ── Top header bar (scrolls with page) ─────────────────────────────────── */
 .fixed-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  pointer-events: none;
-}
-
-.fixed-header > * {
-  pointer-events: auto;
+  padding: 10px 0;
+  margin-bottom: 8px;
 }
 
 /* ── User bar (inside fixed-header) ──────────────────────────────────── */
