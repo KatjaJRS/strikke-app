@@ -724,9 +724,9 @@ function normalizeProjects() {
 }
 
 async function saveProjects() {
-  if (!currentUser) return;
+  if (!currentUser) return true; // no user yet, just keep in memory
   try {
-    await sb.from('projects').upsert(
+    const { error } = await sb.from('projects').upsert(
       projects.map(p => ({
         id: p.id,
         user_id: currentUser.id,
@@ -743,7 +743,9 @@ async function saveProjects() {
         last_viewed_at: p.lastViewedAt || 0
       }))
     );
-  } catch (e) { console.error('Error saving projects:', e); }
+    if (error) { console.error('Save error:', error); return false; }
+    return true;
+  } catch (e) { console.error('Error saving projects:', e); return false; }
 }
 
 function normalizeGroups() {
@@ -1168,9 +1170,34 @@ function restoreDraft() {
 }
 
 // Wire auto-save to all static form inputs
-[nameInput, patternInput, notesInput, patternLinkInput].forEach(el => el.addEventListener('input', autoSaveDraft));
-statusInput.addEventListener('change', autoSaveDraft);
-needleInputs.forEach(n => n.addEventListener('input', autoSaveDraft));
+[nameInput, patternInput, notesInput, patternLinkInput].forEach(el => el.addEventListener('input', () => { autoSaveDraft(); autoSaveCurrentProject(); }));
+statusInput.addEventListener('change', () => { autoSaveDraft(); autoSaveCurrentProject(); });
+needleInputs.forEach(n => n.addEventListener('input', () => { autoSaveDraft(); autoSaveCurrentProject(); }));
+
+let autoSaveTimer = null;
+function autoSaveCurrentProject() {
+  const orderedProjects = getOrderedProjects();
+  const current = orderedProjects[0];
+  if (!current) return;
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(async () => {
+    const updatedProject = {
+      ...current,
+      name: nameInput.value.trim() || current.name,
+      pattern: patternInput.value.trim(),
+      notes: notesInput.value.trim(),
+      patternLink: patternLinkInput.value.trim(),
+      status: statusInput.value,
+      rating: Number(ratingValueInput.value) || current.rating,
+      difficulty: Number(difficultyValueInput.value) || current.difficulty,
+      needles: needleInputs.map(n => n.value.trim()).filter(Boolean),
+      yarns: getYarnInputs().map(y => ({ type: y.type.value.trim(), color: y.color.value.trim(), amount: y.amount.value.trim() })),
+    };
+    projects = projects.map(p => p.id === current.id ? updatedProject : p);
+    await saveProjects();
+    renderProjects();
+  }, 2000);
+}
 
 // Restore draft on load
 restoreDraft();
@@ -1192,12 +1219,48 @@ navButtons.forEach((button) => {
   });
 });
 
-// Hero image click to cycle projects
+const HERO_PAN_KEY = 'knitting-hero-pan';
+
+// Hero image click to cycle projects + drag to pan
 if (heroImage) {
   const savedHeroImage = localStorage.getItem(HERO_IMAGE_KEY);
   if (savedHeroImage) heroImage.src = savedHeroImage;
 
-  heroImage.addEventListener('click', () => {
+  const savedPan = JSON.parse(localStorage.getItem(HERO_PAN_KEY) || '{"x":50,"y":50}');
+  heroImage.style.objectPosition = `${savedPan.x}% ${savedPan.y}%`;
+
+  let isDragging = false, dragStartX = 0, dragStartY = 0, panX = savedPan.x, panY = savedPan.y;
+
+  heroImage.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    heroImage.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = (e.clientX - dragStartX) / heroImage.offsetWidth * -100;
+    const dy = (e.clientY - dragStartY) / heroImage.offsetHeight * -100;
+    panX = Math.max(0, Math.min(100, savedPan.x + dx));
+    panY = Math.max(0, Math.min(100, savedPan.y + dy));
+    heroImage.style.objectPosition = `${panX}% ${panY}%`;
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    heroImage.style.cursor = 'grab';
+    savedPan.x = panX;
+    savedPan.y = panY;
+    localStorage.setItem(HERO_PAN_KEY, JSON.stringify({ x: panX, y: panY }));
+  });
+
+  heroImage.style.cursor = 'grab';
+
+  heroImage.addEventListener('click', (e) => {
+    if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) return;
     const orderedProjects = getOrderedProjects();
     if (orderedProjects.length > 1) {
       projects = projects.map((p) => ({
@@ -1338,7 +1401,11 @@ form.addEventListener('submit', async (event) => {
     lastViewedAt: Date.now(),
   });
 
-  saveProjects();
+  const saved = await saveProjects();
+  if (saved === false) {
+    alert('Fejl: Projektet kunne ikke gemmes i databasen. Prøv igen.');
+    return;
+  }
   renderProjects();
   updateHeroImage();
   clearDraft();
