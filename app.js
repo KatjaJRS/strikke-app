@@ -508,10 +508,8 @@ function renderCurrentProject() {
     return;
   }
   
-  // Only populate form if we are editing this project (not in new-project mode)
-  if (currentEditingProjectId === null) {
-    // New project mode — show card but don’t touch the form
-  } else {
+  // Only populate form when editing the EXACT project that was opened for editing
+  if (currentEditingProjectId !== null && currentProject.id === currentEditingProjectId) {
     populateFormWithProject(currentProject);
   }
 
@@ -1201,26 +1199,26 @@ needleInputs.forEach(n => n.addEventListener('input', () => { autoSaveDraft(); a
 
 let autoSaveTimer = null;
 function autoSaveCurrentProject() {
-  const orderedProjects = getOrderedProjects();
-  const current = orderedProjects[0];
-  if (!current) return;
+  // Only auto-save when the user is actively editing an EXISTING project
+  if (!currentEditingProjectId) return;
+  const project = projects.find(p => p.id === currentEditingProjectId);
+  if (!project) return;
   clearTimeout(autoSaveTimer);
   autoSaveTimer = setTimeout(async () => {
     const updatedProject = {
-      ...current,
-      name: nameInput.value.trim() || current.name,
+      ...project,
+      name: nameInput.value.trim() || project.name,
       pattern: patternInput.value.trim(),
       notes: notesInput.value.trim(),
       patternLink: patternLinkInput.value.trim(),
       status: statusInput.value,
-      rating: Number(ratingValueInput.value) || current.rating,
-      difficulty: Number(difficultyValueInput.value) || current.difficulty,
+      rating: Number(ratingValueInput.value) || project.rating,
+      difficulty: Number(difficultyValueInput.value) || project.difficulty,
       needles: needleInputs.map(n => n.value.trim()).filter(Boolean),
       yarns: getYarnInputs().map(y => ({ type: y.type.value.trim(), color: y.color.value.trim(), amount: y.amount.value.trim() })),
     };
-    projects = projects.map(p => p.id === current.id ? updatedProject : p);
+    projects = projects.map(p => p.id === currentEditingProjectId ? updatedProject : p);
     await saveProjects();
-    renderProjects();
   }, 2000);
 }
 
