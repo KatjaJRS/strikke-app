@@ -1209,9 +1209,6 @@ async function rejectMember(id) {
   membershipRequests = membershipRequests.filter(r => r.id !== id);
   renderGroups();
 }
-  saveMembershipRequests();
-  renderGroups();
-}
 
 // Profile setup
 const profileNameInput = document.getElementById('profile-name-input');
@@ -1635,84 +1632,6 @@ async function initAuth() {
     alert(translations[currentLanguage].forgotSuccessMsg);
     showAuthForm('login-form');
   });
-}
-
-  document.getElementById('profile-modal-close').addEventListener('click', () => {
-    document.getElementById('profile-modal').classList.add('hidden');
-  });
-
-  document.getElementById('profile-modal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('profile-modal')) {
-      document.getElementById('profile-modal').classList.add('hidden');
-    }
-  });
-
-  document.getElementById('profile-modal-pic-btn').addEventListener('click', () => {
-    document.getElementById('profile-modal-pic-input').click();
-  });
-
-  document.getElementById('profile-modal-pic-input').addEventListener('change', async () => {
-    const file = document.getElementById('profile-modal-pic-input').files[0];
-    if (!file) return;
-    myProfilePic = await readImageAsDataURL(file);
-    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
-    updateModalAvatar();
-    refreshUserBar();
-    renderGroups();
-    // Sync with groups profile setup if visible
-    if (typeof updateProfilePreview === 'function') updateProfilePreview();
-  });
-
-  document.getElementById('profile-edit-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const newName = document.getElementById('profile-edit-name').value.trim();
-    const newEmail = document.getElementById('profile-edit-email').value.trim().toLowerCase();
-    const currentPw = document.getElementById('profile-current-password').value;
-    const newPw = document.getElementById('profile-new-password').value;
-    const errEl = document.getElementById('profile-edit-error');
-    const successEl = document.getElementById('profile-edit-success');
-    errEl.classList.add('hidden');
-    successEl.classList.add('hidden');
-
-    const users = getUsers();
-    let updatedUser = { ...user, name: newName, email: newEmail };
-
-    // Handle password change if requested
-    if (currentPw || newPw) {
-      const currentHash = await hashPassword(currentPw);
-      if (currentHash !== user.passwordHash) {
-        errEl.textContent = translations[currentLanguage].profileErrorWrongPw;
-        errEl.classList.remove('hidden');
-        return;
-      }
-      if (newPw.length < 6) {
-        errEl.textContent = translations[currentLanguage].profileErrorShortPw;
-        errEl.classList.remove('hidden');
-        return;
-      }
-      updatedUser.passwordHash = await hashPassword(newPw);
-    }
-
-    const newUsers = users.map(u => u.id === user.id ? updatedUser : u);
-    saveUsers(newUsers);
-    Object.assign(user, updatedUser);
-
-    // Update display name in groups profile too
-    myProfileName = newName;
-    localStorage.setItem(PROFILE_NAME_KEY, newName);
-
-    refreshUserBar();
-    renderGroups();
-    successEl.classList.remove('hidden');
-    document.getElementById('profile-current-password').value = '';
-    document.getElementById('profile-new-password').value = '';
-  });
-
-  applyLanguage(currentLanguage);
-  renderProjects();
-  updateHeroImage();
-  renderGroups();
-  updateGroupsBadge();
 }
 
 // -- Initialize --
