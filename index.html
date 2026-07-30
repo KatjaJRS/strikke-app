@@ -122,6 +122,10 @@
       <section class="hero">
         <div class="hero-media">
           <img id="hero-image" class="hero-image" alt="Featured knitting project" src="assets/shawl-hero.svg" />
+          <label class="hero-upload-btn" title="Change front image">
+            📷
+            <input id="hero-image-input" type="file" accept="image/*" class="hidden-file-input" />
+          </label>
         </div>
         <p class="eyebrow" data-i18n="heroEyebrow">Fru Sminges kølige håndværksplanlægger</p>
         <h1 data-i18n="heroTitle">Knitting My Life Away</h1>
@@ -130,7 +134,7 @@
         </p>
       </section>
 
-      <div class="navigation-buttons">
+      <div class="navigation-bar sticky-nav">
         <button type="button" class="nav-btn active" data-section="current-project" data-i18n="currentProjectHeading">Current project</button>
         <button type="button" class="nav-btn" data-section="previous-projects" data-i18n="projectsHeading">Previous projects</button>
         <button type="button" class="nav-btn" data-section="groups-chats" data-i18n="groupsHeading">Groups and Chats</button>

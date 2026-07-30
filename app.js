@@ -52,6 +52,7 @@ const GROUP_QUERY_PARAM = 'group';
 const LANGUAGE_STORAGE_KEY = 'knitting-language';
 const PROFILE_PIC_KEY = 'knitting-profile-picture';
 const PROFILE_NAME_KEY = 'knitting-profile-name';
+const HERO_IMAGE_KEY = 'knitting-hero-image';
 const ADMIN_EMAIL = 'roldsgaard@gmail.com';
 
 // Filter state
@@ -1053,6 +1054,9 @@ navButtons.forEach((button) => {
 
 // Hero image click to cycle projects
 if (heroImage) {
+  const savedHeroImage = localStorage.getItem(HERO_IMAGE_KEY);
+  if (savedHeroImage) heroImage.src = savedHeroImage;
+
   heroImage.addEventListener('click', () => {
     const orderedProjects = getOrderedProjects();
     if (orderedProjects.length > 1) {
@@ -1064,6 +1068,19 @@ if (heroImage) {
       renderProjects();
       updateHeroImage();
     }
+  });
+}
+
+// Hero image upload
+const heroImageInput = document.getElementById('hero-image-input');
+if (heroImageInput) {
+  heroImageInput.addEventListener('change', async () => {
+    const file = heroImageInput.files[0];
+    if (!file) return;
+    const dataUrl = await readImageAsDataURL(file);
+    heroImage.src = dataUrl;
+    localStorage.setItem(HERO_IMAGE_KEY, dataUrl);
+    heroImageInput.value = '';
   });
 }
 
