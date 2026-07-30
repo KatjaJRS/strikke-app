@@ -160,6 +160,34 @@ body {
   font-size: 1rem;
 }
 
+.form-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-heading-row h3 {
+  margin: 0;
+}
+
+.new-project-btn {
+  background: #fff0f5;
+  border: 2px solid #e35c86;
+  color: #e35c86;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.new-project-btn:hover {
+  background: #ffe0ec;
+}
+
 /* ── User bar ─────────────────────────────────────────────────────────────── */
 
 .user-bar-name {

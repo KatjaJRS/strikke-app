@@ -149,7 +149,10 @@
         <section id="current-project" class="section-view active">
           <div id="current-project-card" class="project-card-container"></div>
           <form id="project-form" class="add-project-form">
-            <h3 data-i18n="addProjectHeading">Add a project</h3>
+            <div class="form-heading-row">
+              <h3 id="form-heading" data-i18n="addProjectHeading">Add a project</h3>
+              <button type="button" id="new-project-btn" class="new-project-btn" title="Clear form for a new project">➕ Nyt projekt</button>
+            </div>
             <label>
               <span data-i18n="projectNameLabel">Project name</span>
               <input id="project-name" type="text" data-i18n-placeholder="projectNamePlaceholder" placeholder="e.g. Moonlight scarf" required />

@@ -101,6 +101,9 @@ let filterStatus = 'all';
 let filterRating = 'all';
 let filterDifficulty = 'all';
 
+// Edit/new mode: null = new project, string = editing existing project id
+let currentEditingProjectId = null;
+
 // Undo state
 let lastDeletedProject = null;
 let undoTimeoutId = null;
@@ -394,10 +397,8 @@ function switchSection(sectionId) {
 }
 
 function updateHeroImage() {
-  const orderedProjects = getOrderedProjects();
-  if (orderedProjects.length > 0 && orderedProjects[0].image) {
-    heroImage.src = orderedProjects[0].image;
-  }
+  // Hero image is managed independently - only changed by the 📷 upload button
+  // Do NOT auto-change it based on project images
 }
 
 function getOrderedProjects() {
@@ -456,6 +457,9 @@ function getAmountUsedString(yarns) {
 
 function populateFormWithProject(project) {
   if (!project) return;
+  currentEditingProjectId = project.id;
+  const formHeading = document.getElementById('form-heading');
+  if (formHeading) formHeading.textContent = translations[currentLanguage].addProjectHeading || 'Add a project';
   
   // Populate basic fields
   nameInput.value = project.name || '';
@@ -1308,6 +1312,32 @@ if (copyInviteButton) {
   });
 }
 
+function clearFormForNew() {
+  currentEditingProjectId = null;
+  nameInput.value = '';
+  patternInput.value = '';
+  notesInput.value = '';
+  patternLinkInput.value = '';
+  statusInput.value = 'Planning';
+  ratingValueInput.value = 0;
+  difficultyValueInput.value = 0;
+  starButtons.forEach(btn => btn.classList.remove('active'));
+  heartButtons.forEach(btn => btn.classList.remove('active'));
+  yarnRowsContainer.innerHTML = '';
+  addYarnRow();
+  needleInputs.forEach(n => n.value = '');
+  clearDraft();
+}
+
+// New project button
+const newProjectBtn = document.getElementById('new-project-btn');
+if (newProjectBtn) {
+  newProjectBtn.addEventListener('click', () => {
+    clearFormForNew();
+    nameInput.focus();
+  });
+}
+
 // Star rating buttons
 const starButtons = Array.from(ratingInput.querySelectorAll('.star-btn'));
 starButtons.forEach((button) => {
@@ -1385,32 +1415,33 @@ form.addEventListener('submit', async (event) => {
 
   const image = await readImageAsDataURL(imageInput.files[0]);
 
-  projects.unshift({
-    id: `project-${Date.now()}`,
-    name,
-    pattern,
-    status: statusInput.value,
-    notes,
-    patternLink,
-    needles,
-    rating,
-    difficulty,
-    yarns,
-    image,
-    lastViewedAt: Date.now(),
-  });
-
-  const saved = await saveProjects();
-  if (saved === false) {
-    alert('Fejl: Projektet kunne ikke gemmes i databasen. Prøv igen.');
-    return;
+  if (currentEditingProjectId) {
+    // Update existing project
+    projects = projects.map(p => p.id === currentEditingProjectId ? {
+      ...p, name, pattern, status: statusInput.value, notes, patternLink,
+      needles, rating, difficulty, yarns,
+      ...(image ? { image } : {}),
+    } : p);
+  } else {
+    // Add new project
+    projects.unshift({
+      id: `project-${Date.now()}`,
+      name, pattern, status: statusInput.value, notes, patternLink,
+      needles, rating, difficulty, yarns, image,
+      lastViewedAt: Date.now(),
+    });
   }
+
+  await saveProjects();
   renderProjects();
   updateHeroImage();
-  clearDraft();
-  form.reset();
-  yarnRowsContainer.innerHTML = '';
-  addYarnRow();
+  if (!currentEditingProjectId) {
+    // New project was just saved — clear for next entry
+    clearDraft();
+    clearFormForNew();
+  } else {
+    clearDraft();
+  }
   nameInput.focus();
 });
 
