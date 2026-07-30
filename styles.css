@@ -13,7 +13,7 @@ body {
   margin: 0;
   min-height: 100vh;
   background: linear-gradient(135deg, #ffe7ee 0%, #ffc8d7 100%);
-  padding: 24px;
+  padding: 60px 24px 24px;
 }
 
 /* ── Auth overlay ─────────────────────────────────────────────────────────── */
@@ -145,20 +145,6 @@ body {
 }
 
 /* ── User bar ─────────────────────────────────────────────────────────────── */
-.user-bar {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255, 245, 248, 0.95);
-  border: 1px solid #f4b5c7;
-  border-radius: 999px;
-  padding: 6px 14px;
-  z-index: 200;
-  box-shadow: 0 4px 12px rgba(197, 90, 116, 0.12);
-}
 
 .user-bar-name {
   font-size: 0.85rem;
@@ -484,10 +470,38 @@ body {
   }
 }
 
-.lang-switcher {
+/* ── Fixed header (always visible, never scrolls away) ─────────────────── */
+.fixed-header {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  pointer-events: none;
+}
+
+.fixed-header > * {
+  pointer-events: auto;
+}
+
+/* ── User bar (inside fixed-header) ──────────────────────────────────── */
+.user-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 245, 248, 0.95);
+  border: 1px solid #f4b5c7;
+  border-radius: 999px;
+  padding: 6px 14px;
+  box-shadow: 0 4px 12px rgba(197, 90, 116, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.lang-switcher {
   display: inline-flex;
   gap: 8px;
   padding: 6px;
@@ -495,7 +509,7 @@ body {
   background: rgba(255, 245, 248, 0.95);
   border: 1px solid #f4b5c7;
   box-shadow: 0 4px 16px rgba(197, 90, 116, 0.18);
-  z-index: 500;
+  backdrop-filter: blur(8px);
 }
 
 .lang-btn {

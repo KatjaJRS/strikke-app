@@ -1564,12 +1564,13 @@ function launchApp(user, profile) {
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app-shell-wrapper').classList.remove('hidden');
 
+  const userBarSlot = document.getElementById('user-bar-slot');
   let userBar = document.getElementById('user-bar');
   if (!userBar) {
     userBar = document.createElement('div');
     userBar.id = 'user-bar';
     userBar.className = 'user-bar';
-    document.body.prepend(userBar);
+    userBarSlot.appendChild(userBar);
   }
 
   function refreshUserBar() {

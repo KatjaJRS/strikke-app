@@ -8,6 +8,15 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- Fixed overlay bar — always on top regardless of scroll -->
+    <div id="fixed-header" class="fixed-header">
+      <div id="user-bar-slot"></div>
+      <div class="lang-switcher" role="group" aria-label="Language switcher">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="da">DA</button>
+      </div>
+    </div>
+
     <!-- Auth overlay -->
     <div id="auth-overlay" class="auth-overlay">
       <div class="auth-card">
@@ -110,12 +119,6 @@
           <button type="submit" class="auth-btn" data-i18n="saveChangesButton">Save changes</button>
         </form>
       </div>
-    </div>
-
-    <!-- Language switcher — fixed top-right, outside app-shell-wrapper -->
-    <div class="lang-switcher" role="group" aria-label="Language switcher">
-      <button type="button" class="lang-btn active" data-lang="en">EN</button>
-      <button type="button" class="lang-btn" data-lang="da">DA</button>
     </div>
 
     <div id="app-shell-wrapper" class="hidden">
