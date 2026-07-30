@@ -408,16 +408,17 @@ body {
 }
 
 .nav-btn {
-  padding: 8px 16px;
+  padding: 12px 24px;
   border: 2px solid #e35c86;
   border-radius: 8px;
   background: white;
   color: #e35c86;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: nowrap;
+  flex: 1;
+  min-width: 120px;
   position: relative;
 }
 
@@ -484,9 +485,17 @@ body {
 }
 
 .lang-switcher {
+  position: fixed;
+  top: 16px;
+  right: 16px;
   display: inline-flex;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 245, 248, 0.95);
+  border: 1px solid #f4b5c7;
+  box-shadow: 0 4px 16px rgba(197, 90, 116, 0.18);
+  z-index: 500;
 }
 
 .lang-btn {
