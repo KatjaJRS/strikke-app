@@ -174,7 +174,7 @@ const translations = {
     patternLinkLabel: 'Pattern link or file',
     patternLinkPlaceholder: 'https://... or file name',
     imageLabel: 'Project photo',
-    saveNoteButton: 'Save note',
+    saveNoteButton: 'Gem projekt',
     projectsHeading: 'Other projects',
     searchProjectsPlaceholder: 'Search by name, pattern, or notes',
     filterStatusLabel: 'Status',
@@ -282,7 +282,7 @@ const translations = {
     patternLinkLabel: 'Mønsterlink eller fil',
     patternLinkPlaceholder: 'https://... eller filnavn',
     imageLabel: 'Projektfoto',
-    saveNoteButton: 'Gem note',
+    saveNoteButton: 'Gem projekt',
     projectsHeading: 'Andre projekter',
     searchProjectsPlaceholder: 'Søg efter navn, mønster eller noter',
     filterStatusLabel: 'Status',
@@ -509,8 +509,12 @@ function renderCurrentProject() {
     return;
   }
   
-  // Populate the form with the current project
-  populateFormWithProject(currentProject);
+  // Only populate form if we are editing this project (not in new-project mode)
+  if (currentEditingProjectId === null) {
+    // New project mode — show card but don’t touch the form
+  } else {
+    populateFormWithProject(currentProject);
+  }
 
   const card = document.createElement('article');
   card.className = 'project-card featured';
@@ -1205,6 +1209,13 @@ function autoSaveCurrentProject() {
 // Restore draft on load
 restoreDraft();
 
+// Auto-save every 10 seconds
+setInterval(async () => {
+  if (currentUser && projects.length > 0) {
+    await saveProjects();
+  }
+}, 10000);
+
 // Language button event listeners
 langButtons.forEach((button) => {
   button.addEventListener('click', () => {
@@ -1435,13 +1446,10 @@ form.addEventListener('submit', async (event) => {
   await saveProjects();
   renderProjects();
   updateHeroImage();
-  if (!currentEditingProjectId) {
-    // New project was just saved — clear for next entry
-    clearDraft();
-    clearFormForNew();
-  } else {
-    clearDraft();
-  }
+  // After saving, always clear form and show Other projects
+  clearDraft();
+  clearFormForNew();
+  switchSection('previous-projects');
   nameInput.focus();
 });
 
