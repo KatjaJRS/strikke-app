@@ -113,9 +113,17 @@
     </div>
 
     <div id="app-shell-wrapper" class="hidden">
-    <div class="lang-switcher" role="group" aria-label="Language switcher">
-      <button type="button" class="lang-btn active" data-lang="en">EN</button>
-      <button type="button" class="lang-btn" data-lang="da">DA</button>
+    <div id="top-bar-nav" class="top-bar-nav">
+      <div id="top-bar-left"></div>
+      <div class="nav-pills">
+        <button type="button" class="nav-btn active" data-section="current-project" data-i18n="currentProjectHeading">Current project</button>
+        <button type="button" class="nav-btn" data-section="previous-projects" data-i18n="projectsHeading">Previous projects</button>
+        <button type="button" class="nav-btn" data-section="groups-chats" data-i18n="groupsHeading">Groups and Chats</button>
+      </div>
+      <div class="lang-switcher" role="group" aria-label="Language switcher">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="da">DA</button>
+      </div>
     </div>
 
     <main class="app-shell">
@@ -133,12 +141,6 @@
           Knit as if your life depended on it........ Plans, patterns, notes, etc.
         </p>
       </section>
-
-      <div class="navigation-bar sticky-nav">
-        <button type="button" class="nav-btn active" data-section="current-project" data-i18n="currentProjectHeading">Current project</button>
-        <button type="button" class="nav-btn" data-section="previous-projects" data-i18n="projectsHeading">Previous projects</button>
-        <button type="button" class="nav-btn" data-section="groups-chats" data-i18n="groupsHeading">Groups and Chats</button>
-      </div>
 
       <div class="section-views">
         <section id="current-project" class="section-view active">

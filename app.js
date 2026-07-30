@@ -533,7 +533,9 @@ function renderProjects() {
   renderCurrentProject();
   
   const orderedProjects = getOrderedProjects();
-  let previousProjects = orderedProjects.slice(1);
+  const currentId = orderedProjects[0]?.id;
+  // Show ALL projects in the list (current one is highlighted)
+  let previousProjects = [...orderedProjects];
   
   // Apply filters
   previousProjects = previousProjects.filter((project) => {
@@ -551,13 +553,15 @@ function renderProjects() {
   }
 
   previousProjects.forEach((project) => {
+    const isCurrent = project.id === currentId;
     const card = document.createElement('article');
-    card.className = 'project-card';
+    card.className = isCurrent ? 'project-card project-card-current' : 'project-card';
     const difficultyDisplay = project.difficulty && project.difficulty > 0 ? `<p class="difficulty"><strong>${translations[currentLanguage].difficultyDisplayLabel}:</strong> ${renderHearts(project.difficulty)}</p>` : '';
     const needlesDisplay = renderNeedles(project.needles || []);
     const yarnsDisplay = renderYarns(project.yarns || []);
     const amountUsed = getAmountUsedString(project.yarns || []);
     const translatedStatus = translateStatus(project.status);
+    const currentLabel = isCurrent ? `<span class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</span>` : '';
     
     card.innerHTML = `
       <div class="card-top">
@@ -565,6 +569,7 @@ function renderProjects() {
           <div class="header-with-rating">
             <h3>${escapeHTML(project.name)}</h3>
             ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
+            ${currentLabel}
           </div>
           ${difficultyDisplay}
           ${needlesDisplay}
@@ -1559,12 +1564,13 @@ function launchApp(user, profile) {
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app-shell-wrapper').classList.remove('hidden');
 
+  const topBarLeft = document.getElementById('top-bar-left');
   let userBar = document.getElementById('user-bar');
   if (!userBar) {
     userBar = document.createElement('div');
     userBar.id = 'user-bar';
     userBar.className = 'user-bar';
-    document.body.prepend(userBar);
+    topBarLeft.appendChild(userBar);
   }
 
   function refreshUserBar() {

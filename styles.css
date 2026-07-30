@@ -398,39 +398,26 @@ body {
 }
 
 .navigation-buttons,
-.navigation-bar {
+.navigation-bar,
+.nav-pills {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   justify-content: center;
   flex-wrap: wrap;
   margin: 0;
 }
 
-.sticky-nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(255, 231, 238, 0.97);
-  backdrop-filter: blur(8px);
-  padding: 10px 0;
-  margin: 0 -24px;
-  padding-left: 24px;
-  padding-right: 24px;
-  box-shadow: 0 2px 12px rgba(197, 90, 116, 0.12);
-}
-
 .nav-btn {
-  padding: 12px 24px;
+  padding: 8px 16px;
   border: 2px solid #e35c86;
   border-radius: 8px;
   background: white;
   color: #e35c86;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex: 1;
-  min-width: 120px;
+  white-space: nowrap;
   position: relative;
 }
 
@@ -497,17 +484,9 @@ body {
 }
 
 .lang-switcher {
-  position: fixed;
-  top: 16px;
-  right: 16px;
   display: inline-flex;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 999px;
-  background: rgba(255, 245, 248, 0.95);
-  border: 1px solid #f4b5c7;
-  box-shadow: 0 8px 24px rgba(197, 90, 116, 0.16);
-  z-index: 100;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .lang-btn {
@@ -633,6 +612,21 @@ label {
 
 .project-card {
   cursor: pointer;
+}
+
+.project-card-current {
+  border-color: #e35c86 !important;
+  box-shadow: 0 0 0 2px rgba(227, 92, 134, 0.25), 0 4px 12px rgba(197, 90, 116, 0.15) !important;
+}
+
+.current-badge {
+  font-size: 0.75rem;
+  background: #e35c86;
+  color: white;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .yarn-type,
