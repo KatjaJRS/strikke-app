@@ -31,38 +31,46 @@ function renderProjects() {
     const needlesDisplay = renderNeedles(project.needles || []);
     const yarnsDisplay = renderYarns(project.yarns || []);
     const translatedStatus = translateStatus(project.status);
-    const currentLabel = isCurrent ? `<span class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</span>` : '';
+    const currentLabel = isCurrent
+      ? `<div class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</div>`
+      : '';
 
     card.innerHTML = `
       <div class="card-header">
         <div class="header-with-rating">
-          <h3>${escapeHTML(project.name)}</h3>
-          ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
+          <div class="title-stars-row">
+            <h3>${escapeHTML(project.name)}</h3>
+            ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
+          </div>
           ${currentLabel}
         </div>
         <span class="status-badge">${escapeHTML(translatedStatus)}</span>
       </div>
       <div class="card-layout">
         <div class="card-col">
-          ${difficultyDisplay}
-          ${yarnsDisplay}
-          ${needlesDisplay}
+          <div class="card-col-main">
+            ${difficultyDisplay}
+            ${yarnsDisplay}
+            ${needlesDisplay}
+          </div>
+          <div class="card-actions-stack">
+            <div class="card-buttons">
+              <button class="edit-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].editButton}</button>
+              <button class="delete-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].deleteButton}</button>
+            </div>
+            <div class="round-counter" data-project-id="${escapeHTML(project.id)}">
+              <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(project.id)}">−</button>
+              <span class="round-display">${getRounds(project.id)}</span>
+              <span class="round-label">omgange</span>
+              <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(project.id)}">+</button>
+              <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(project.id)}" title="Nulstil">↺</button>
+            </div>
+          </div>
         </div>
         <div class="card-notes">
           ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
         </div>
         ${project.image ? `<img class="card-img-square" src="${project.image}" alt="${escapeHTML(project.name)}" />` : '<div class="card-img-placeholder"></div>'}
-      </div>
-      <div class="card-buttons">
-        <button class="edit-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].editButton}</button>
-        <button class="delete-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].deleteButton}</button>
-      </div>
-      <div class="round-counter" data-project-id="${escapeHTML(project.id)}">
-        <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(project.id)}">−</button>
-        <span class="round-display">${getRounds(project.id)}</span>
-        <span class="round-label">omgange</span>
-        <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(project.id)}">+</button>
-        <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(project.id)}" title="Nulstil">↺</button>
       </div>
     `;
 

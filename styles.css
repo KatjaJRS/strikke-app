@@ -678,13 +678,16 @@ label {
 }
 
 .current-badge {
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
   background: #e35c86;
   color: white;
   border-radius: 999px;
   padding: 2px 8px;
   font-weight: 700;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .yarn-type,
@@ -1301,6 +1304,13 @@ button:hover {
 
 .header-with-rating {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.title-stars-row {
+  display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
@@ -1440,13 +1450,28 @@ button:hover {
 
 .card-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   align-items: stretch;
 }
 
 .card-col {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-col-main {
+  min-width: 0;
+}
+
+.card-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
 }
 
 .card-notes {
@@ -1454,6 +1479,8 @@ button:hover {
   color: #5f493c;
   font-size: 0.9rem;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .card-notes p {
@@ -1487,16 +1514,17 @@ button:hover {
   display: flex;
   gap: 8px;
   justify-self: start;
+  flex-wrap: wrap;
 }
 
 .round-counter {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: #fff0f5;
   border: 1px solid #f4b5c7;
   border-radius: 12px;
-  padding: 8px 14px;
+  padding: 6px 10px;
   justify-self: start;
 }
 
@@ -1505,9 +1533,9 @@ button:hover {
   color: white;
   border: 0;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.2rem;
+  width: 28px;
+  height: 28px;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -1522,19 +1550,19 @@ button:hover {
 }
 
 .round-display {
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: #7a2742;
-  min-width: 36px;
+  min-width: 28px;
   text-align: center;
 }
 
 .round-label {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: #9a6070;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .edit-btn {

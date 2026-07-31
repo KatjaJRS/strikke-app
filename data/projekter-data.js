@@ -1,7 +1,12 @@
 // ── Projektdata — gem og hent fra Supabase ────────────────────────────────
 
-function createProjectId() {
-  return `project-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+function createProjectId(project, index) {
+  const base = String(project?.name || `project-${index}`)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '') || `project-${index}`;
+  return `legacy-${base}`;
 }
 
 function normalizeProjects() {
@@ -14,7 +19,7 @@ function normalizeProjects() {
     }
     return {
       ...project,
-      id: project.id || createProjectId(),
+      id: project.id || createProjectId(project, index),
       lastViewedAt: project.lastViewedAt || 0,
       needles,
       patternLink: project.patternLink || '',

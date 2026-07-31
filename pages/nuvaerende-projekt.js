@@ -87,20 +87,35 @@ function renderCurrentProject() {
   const needlesDisplay = renderNeedles(currentProject.needles || []);
   const yarnsDisplay = renderYarns(currentProject.yarns || []);
   const translatedStatus = translateStatus(currentProject.status);
+  const currentLabel = `<div class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</div>`;
 
   card.innerHTML = `
     <div class="card-header">
       <div class="header-with-rating">
-        <h3>${escapeHTML(currentProject.name)}</h3>
-        ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
+        <div class="title-stars-row">
+          <h3>${escapeHTML(currentProject.name)}</h3>
+          ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
+        </div>
+        ${currentLabel}
       </div>
       <span class="status-badge">${escapeHTML(translatedStatus)}</span>
     </div>
     <div class="card-layout">
       <div class="card-col">
-        ${difficultyDisplay}
-        ${yarnsDisplay}
-        ${needlesDisplay}
+        <div class="card-col-main">
+          ${difficultyDisplay}
+          ${yarnsDisplay}
+          ${needlesDisplay}
+        </div>
+        <div class="card-actions-stack">
+          <div class="round-counter" data-project-id="${escapeHTML(currentProject.id)}">
+            <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
+            <span class="round-display">${getRounds(currentProject.id)}</span>
+            <span class="round-label">omgange</span>
+            <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(currentProject.id)}">+</button>
+            <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(currentProject.id)}" title="Nulstil">↺</button>
+          </div>
+        </div>
       </div>
       <div class="card-notes">
         ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
@@ -110,6 +125,29 @@ function renderCurrentProject() {
   `;
   currentProjectCard.innerHTML = '';
   currentProjectCard.appendChild(card);
+
+  card.querySelector('.round-minus').addEventListener('click', (e) => {
+    e.stopPropagation();
+    projectRounds[currentProject.id] = Math.max(0, getRounds(currentProject.id) - 1);
+    saveRounds();
+    card.querySelector('.round-display').textContent = getRounds(currentProject.id);
+  });
+
+  card.querySelector('.round-plus').addEventListener('click', (e) => {
+    e.stopPropagation();
+    projectRounds[currentProject.id] = getRounds(currentProject.id) + 1;
+    saveRounds();
+    card.querySelector('.round-display').textContent = getRounds(currentProject.id);
+  });
+
+  card.querySelector('.round-reset').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (confirm('Nulstil omgangstælleren til 0?')) {
+      projectRounds[currentProject.id] = 0;
+      saveRounds();
+      card.querySelector('.round-display').textContent = 0;
+    }
+  });
 }
 
 // ── Ryd formular til nyt projekt ──────────────────────────────────────────
