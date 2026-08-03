@@ -249,26 +249,34 @@ body {
 }
 
 .highfive-hand-svg {
-  width: 58px;
-  height: 74px;
+  width: 52px;
+  height: 72px;
   transform-origin: center bottom;
+  filter: drop-shadow(0 1px 1px rgba(95, 59, 47, 0.18));
 }
 
 .highfive-finger,
 .highfive-palm,
 .highfive-thumb {
-  fill: #f2c29d;
-  stroke: #5f3b2f;
-  stroke-width: 2.6;
+  fill: #f7cfb0;
+  stroke: #8d6356;
+  stroke-width: 1.8;
   vector-effect: non-scaling-stroke;
 }
 
 .highfive-palm {
-  filter: drop-shadow(0 1px 0 rgba(95, 59, 47, 0.18));
+  filter: drop-shadow(0 1px 0 rgba(95, 59, 47, 0.12));
 }
 
 .highfive-finger {
-  filter: drop-shadow(0 0 0.2px rgba(95, 59, 47, 0.65));
+  filter: drop-shadow(0 0 0.2px rgba(95, 59, 47, 0.35));
+}
+
+.highfive-finger-line {
+  stroke: #b38372;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  opacity: 0.95;
 }
 
 .highfive-left {
