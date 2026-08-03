@@ -239,7 +239,7 @@ function autoSaveCurrentProject() {
         amount: y.amount.value.trim()
       })),
     };
-    const becameFinished = project.status !== 'Finished' && updatedProject.status === 'Finished';
+    const becameFinished = shouldCelebrateFinishTransition(project.status, updatedProject.status);
     projects = projects.map(p => p.id === currentEditingProjectId ? updatedProject : p);
     await saveProjects();
     if (becameFinished) showHighfiveCelebration();
@@ -317,7 +317,7 @@ form.addEventListener('submit', async (event) => {
   if (currentEditingProjectId) {
     // Opdater eksisterende projekt
     const previousProject = projects.find(p => p.id === currentEditingProjectId);
-    becameFinished = !!previousProject && previousProject.status !== 'Finished' && statusInput.value === 'Finished';
+    becameFinished = !!previousProject && shouldCelebrateFinishTransition(previousProject.status, statusInput.value);
     projects = projects.map(p => p.id === currentEditingProjectId ? {
       ...p, name, pattern, status: statusInput.value, notes, patternLink,
       needles, rating, difficulty, yarns,
@@ -327,7 +327,7 @@ form.addEventListener('submit', async (event) => {
     // Tjek om projektnavn allerede eksisterer
     const existingByName = projects.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
     if (existingByName) {
-      becameFinished = existingByName.status !== 'Finished' && statusInput.value === 'Finished';
+      becameFinished = shouldCelebrateFinishTransition(existingByName.status, statusInput.value);
       currentEditingProjectId = existingByName.id;
       projects = projects.map(p => p.id === existingByName.id ? {
         ...p, name, pattern, status: statusInput.value, notes, patternLink,
@@ -336,7 +336,7 @@ form.addEventListener('submit', async (event) => {
       } : p);
     } else {
       // Nyt projekt
-      becameFinished = statusInput.value === 'Finished';
+      becameFinished = false;
       projects.unshift({
         id: `project-${Date.now()}`,
         name, pattern, status: statusInput.value, notes, patternLink,

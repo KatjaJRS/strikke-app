@@ -75,6 +75,7 @@ function getAvatarHTML(name, picUrl) {
 
 let busyCount = 0;
 let busyShowTimer = null;
+let busyShownAt = 0;
 
 function showBusyOverlay(message = 'Strikker lige...') {
   const overlay = document.getElementById('busy-overlay');
@@ -86,7 +87,8 @@ function showBusyOverlay(message = 'Strikker lige...') {
     busyShowTimer = setTimeout(() => {
       overlay.classList.add('active');
       overlay.setAttribute('aria-hidden', 'false');
-    }, 140);
+      busyShownAt = Date.now();
+    }, 40);
   }
 }
 
@@ -99,8 +101,14 @@ function hideBusyOverlay() {
       clearTimeout(busyShowTimer);
       busyShowTimer = null;
     }
-    overlay.classList.remove('active');
-    overlay.setAttribute('aria-hidden', 'true');
+    const elapsed = Date.now() - busyShownAt;
+    const minVisibleMs = 320;
+    const wait = elapsed < minVisibleMs ? (minVisibleMs - elapsed) : 0;
+    setTimeout(() => {
+      if (busyCount > 0) return;
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
+    }, wait);
   }
 }
 
@@ -124,4 +132,9 @@ function showHighfiveCelebration() {
     toast.classList.remove('active');
     toast.setAttribute('aria-hidden', 'true');
   }, 1700);
+}
+
+function shouldCelebrateFinishTransition(previousStatus, nextStatus) {
+  const allowedPreviousStatuses = ['Planning', 'In progress'];
+  return allowedPreviousStatuses.includes(previousStatus) && nextStatus === 'Finished';
 }
