@@ -43,13 +43,13 @@ function renderProjects() {
             ${project.rating && project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : ''}
           </div>
           ${currentLabel}
+          ${difficultyDisplay}
         </div>
         <span class="status-badge">${escapeHTML(translatedStatus)}</span>
       </div>
       <div class="card-layout">
         <div class="card-col">
           <div class="card-col-main">
-            ${difficultyDisplay}
             ${yarnsDisplay}
             ${needlesDisplay}
           </div>

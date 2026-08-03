@@ -31,9 +31,11 @@ function renderStars(rating) {
 }
 
 function renderHearts(difficulty) {
-  const hearts = [];
-  for (let i = 1; i <= 5; i++) hearts.push(i <= difficulty ? '❤️' : '🤍');
-  return hearts.join('');
+  const icons = [];
+  for (let i = 1; i <= 5; i++) {
+    icons.push(`<span class="difficulty-icon${i <= difficulty ? '' : ' is-empty'}">🧶</span>`);
+  }
+  return `<span class="difficulty-icons" aria-label="Difficulty ${difficulty} of 5">${icons.join('')}</span>`;
 }
 
 function translateStatus(status) {

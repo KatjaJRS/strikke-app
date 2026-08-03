@@ -97,30 +97,28 @@ function renderCurrentProject() {
           ${currentProject.rating && currentProject.rating > 0 ? `<span class="stars">${renderStars(currentProject.rating)}</span>` : ''}
         </div>
         ${currentLabel}
+        ${difficultyDisplay}
       </div>
       <span class="status-badge">${escapeHTML(translatedStatus)}</span>
     </div>
     <div class="card-layout">
       <div class="card-col">
         <div class="card-col-main">
-          ${difficultyDisplay}
           ${yarnsDisplay}
           ${needlesDisplay}
-        </div>
-        <div class="card-actions-stack">
-          <div class="round-counter" data-project-id="${escapeHTML(currentProject.id)}">
-            <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
-            <span class="round-display">${getRounds(currentProject.id)}</span>
-            <span class="round-label">omgange</span>
-            <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(currentProject.id)}">+</button>
-            <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(currentProject.id)}" title="Nulstil">↺</button>
-          </div>
         </div>
       </div>
       <div class="card-notes">
         ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
       </div>
       ${currentProject.image ? `<img class="card-img-square" src="${currentProject.image}" alt="${escapeHTML(currentProject.name)}" />` : '<div class="card-img-placeholder"></div>'}
+    </div>
+    <div class="round-counter current-project-round-counter" data-project-id="${escapeHTML(currentProject.id)}">
+      <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
+      <span class="round-display">${getRounds(currentProject.id)}</span>
+      <span class="round-label">omgange</span>
+      <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(currentProject.id)}">+</button>
+      <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(currentProject.id)}" title="Nulstil">↺</button>
     </div>
   `;
   currentProjectCard.innerHTML = '';
