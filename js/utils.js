@@ -72,3 +72,56 @@ function getAvatarHTML(name, picUrl) {
   const hue = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
   return `<span class="avatar avatar-initials" style="background:hsl(${hue},55%,65%)">${escapeHTML(initials)}</span>`;
 }
+
+let busyCount = 0;
+let busyShowTimer = null;
+
+function showBusyOverlay(message = 'Strikker lige...') {
+  const overlay = document.getElementById('busy-overlay');
+  const text = document.getElementById('busy-text');
+  if (!overlay || !text) return;
+  text.textContent = message;
+  busyCount += 1;
+  if (busyCount === 1) {
+    busyShowTimer = setTimeout(() => {
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+    }, 140);
+  }
+}
+
+function hideBusyOverlay() {
+  const overlay = document.getElementById('busy-overlay');
+  if (!overlay) return;
+  busyCount = Math.max(0, busyCount - 1);
+  if (busyCount === 0) {
+    if (busyShowTimer) {
+      clearTimeout(busyShowTimer);
+      busyShowTimer = null;
+    }
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+}
+
+async function runWithBusy(task, message) {
+  showBusyOverlay(message);
+  try {
+    return await task();
+  } finally {
+    hideBusyOverlay();
+  }
+}
+
+let highfiveTimer = null;
+function showHighfiveCelebration() {
+  const toast = document.getElementById('highfive-toast');
+  if (!toast) return;
+  toast.classList.add('active');
+  toast.setAttribute('aria-hidden', 'false');
+  if (highfiveTimer) clearTimeout(highfiveTimer);
+  highfiveTimer = setTimeout(() => {
+    toast.classList.remove('active');
+    toast.setAttribute('aria-hidden', 'true');
+  }, 1700);
+}

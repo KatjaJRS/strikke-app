@@ -37,34 +37,36 @@ function normalizeProjects() {
 
 async function saveProjects() {
   if (!currentUser) return true;
-  try {
-    await sb.from('profiles').upsert({
-      id: currentUser.id,
-      name: myProfileName || currentUser.email || 'User',
-      profile_pic: myProfilePic || ''
-    });
+  return runWithBusy(async () => {
+    try {
+      await sb.from('profiles').upsert({
+        id: currentUser.id,
+        name: myProfileName || currentUser.email || 'User',
+        profile_pic: myProfilePic || ''
+      });
 
-    const { error } = await sb.from('projects').upsert(
-      projects.map(p => ({
-        id: p.id,
-        user_id: currentUser.id,
-        name: p.name,
-        pattern: p.pattern || '',
-        status: p.status || 'Planning',
-        notes: p.notes || '',
-        pattern_link: p.patternLink || '',
-        needles: p.needles || [],
-        yarns: p.yarns || [],
-        rating: p.rating || 0,
-        difficulty: p.difficulty || 0,
-        image: p.image || '',
-        last_viewed_at: p.lastViewedAt || 0
-      }))
-    );
-    if (error) console.warn('Projects upsert warning:', error.message);
-    return true;
-  } catch (e) {
-    console.error('Error saving projects:', e);
-    return false;
-  }
+      const { error } = await sb.from('projects').upsert(
+        projects.map(p => ({
+          id: p.id,
+          user_id: currentUser.id,
+          name: p.name,
+          pattern: p.pattern || '',
+          status: p.status || 'Planning',
+          notes: p.notes || '',
+          pattern_link: p.patternLink || '',
+          needles: p.needles || [],
+          yarns: p.yarns || [],
+          rating: p.rating || 0,
+          difficulty: p.difficulty || 0,
+          image: p.image || '',
+          last_viewed_at: p.lastViewedAt || 0
+        }))
+      );
+      if (error) console.warn('Projects upsert warning:', error.message);
+      return true;
+    } catch (e) {
+      console.error('Error saving projects:', e);
+      return false;
+    }
+  }, 'Gemmer projekter...');
 }

@@ -239,8 +239,10 @@ function autoSaveCurrentProject() {
         amount: y.amount.value.trim()
       })),
     };
+    const becameFinished = project.status !== 'Finished' && updatedProject.status === 'Finished';
     projects = projects.map(p => p.id === currentEditingProjectId ? updatedProject : p);
     await saveProjects();
+    if (becameFinished) showHighfiveCelebration();
   }, 2000);
 }
 
@@ -310,9 +312,12 @@ form.addEventListener('submit', async (event) => {
   if (!name || !pattern) return;
 
   const image = await readImageAsDataURL(imageInput.files[0]);
+  let becameFinished = false;
 
   if (currentEditingProjectId) {
     // Opdater eksisterende projekt
+    const previousProject = projects.find(p => p.id === currentEditingProjectId);
+    becameFinished = !!previousProject && previousProject.status !== 'Finished' && statusInput.value === 'Finished';
     projects = projects.map(p => p.id === currentEditingProjectId ? {
       ...p, name, pattern, status: statusInput.value, notes, patternLink,
       needles, rating, difficulty, yarns,
@@ -322,6 +327,7 @@ form.addEventListener('submit', async (event) => {
     // Tjek om projektnavn allerede eksisterer
     const existingByName = projects.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
     if (existingByName) {
+      becameFinished = existingByName.status !== 'Finished' && statusInput.value === 'Finished';
       currentEditingProjectId = existingByName.id;
       projects = projects.map(p => p.id === existingByName.id ? {
         ...p, name, pattern, status: statusInput.value, notes, patternLink,
@@ -330,6 +336,7 @@ form.addEventListener('submit', async (event) => {
       } : p);
     } else {
       // Nyt projekt
+      becameFinished = statusInput.value === 'Finished';
       projects.unshift({
         id: `project-${Date.now()}`,
         name, pattern, status: statusInput.value, notes, patternLink,
@@ -340,6 +347,7 @@ form.addEventListener('submit', async (event) => {
   }
 
   await saveProjects();
+  if (becameFinished) showHighfiveCelebration();
   renderProjects();
   updateHeroImage();
   clearDraft();

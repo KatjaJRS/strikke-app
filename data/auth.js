@@ -1,49 +1,51 @@
 // ── Login og rettigheder — Supabase authentication ────────────────────────
 
 async function loadAllData() {
-  // Projekter
-  const { data: pData } = await sb.from('projects').select('*').eq('user_id', currentUser.id);
-  const allLoaded = (pData || []).map(p => ({
-    id: p.id, name: p.name, pattern: p.pattern || '',
-    status: p.status || 'Planning', notes: p.notes || '',
-    patternLink: p.pattern_link || '', needles: p.needles || [],
-    yarns: p.yarns || [], rating: p.rating || 0, difficulty: p.difficulty || 0,
-    image: p.image || '', lastViewedAt: p.last_viewed_at || 0
-  }));
+  await runWithBusy(async () => {
+    // Projekter
+    const { data: pData } = await sb.from('projects').select('*').eq('user_id', currentUser.id);
+    const allLoaded = (pData || []).map(p => ({
+      id: p.id, name: p.name, pattern: p.pattern || '',
+      status: p.status || 'Planning', notes: p.notes || '',
+      patternLink: p.pattern_link || '', needles: p.needles || [],
+      yarns: p.yarns || [], rating: p.rating || 0, difficulty: p.difficulty || 0,
+      image: p.image || '', lastViewedAt: p.last_viewed_at || 0
+    }));
 
-  // Dedupliker i hukommelsen: behold nyeste per navn
-  const seen = new Map();
-  allLoaded.sort((a, b) => b.lastViewedAt - a.lastViewedAt);
-  for (const p of allLoaded) {
-    const key = p.name.trim().toLowerCase();
-    if (!seen.has(key)) seen.set(key, p);
-  }
-  projects = [...seen.values()];
-  normalizeProjects();
+    // Dedupliker i hukommelsen: behold nyeste per navn
+    const seen = new Map();
+    allLoaded.sort((a, b) => b.lastViewedAt - a.lastViewedAt);
+    for (const p of allLoaded) {
+      const key = p.name.trim().toLowerCase();
+      if (!seen.has(key)) seen.set(key, p);
+    }
+    projects = [...seen.values()];
+    normalizeProjects();
 
-  // Grupper + beskeder
-  const { data: gData } = await sb.from('groups').select('*, messages(*)');
-  groups = (gData || []).map(g => ({
-    id: g.id, name: g.name,
-    invitedPeople: g.invited_people || [],
-    messages: (g.messages || [])
-      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-      .map(m => ({
-        id: m.id, sender: m.sender_name || 'You',
-        text: m.text || '', image: m.image || '',
-        link: m.link || '', linkLabel: m.link_label || '',
-        createdAt: new Date(m.created_at).getTime()
-      }))
-  }));
-  if (groups.length > 0 && !groups.some(g => g.id === activeGroupId)) activeGroupId = groups[0].id;
-  else if (groups.length === 0) activeGroupId = null;
+    // Grupper + beskeder
+    const { data: gData } = await sb.from('groups').select('*, messages(*)');
+    groups = (gData || []).map(g => ({
+      id: g.id, name: g.name,
+      invitedPeople: g.invited_people || [],
+      messages: (g.messages || [])
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+        .map(m => ({
+          id: m.id, sender: m.sender_name || 'You',
+          text: m.text || '', image: m.image || '',
+          link: m.link || '', linkLabel: m.link_label || '',
+          createdAt: new Date(m.created_at).getTime()
+        }))
+    }));
+    if (groups.length > 0 && !groups.some(g => g.id === activeGroupId)) activeGroupId = groups[0].id;
+    else if (groups.length === 0) activeGroupId = null;
 
-  // Medlemsanmodninger
-  const { data: rData } = await sb.from('membership_requests').select('*');
-  membershipRequests = (rData || []).map(r => ({
-    id: r.id, name: r.name, email: r.email || '',
-    createdAt: new Date(r.created_at).getTime()
-  }));
+    // Medlemsanmodninger
+    const { data: rData } = await sb.from('membership_requests').select('*');
+    membershipRequests = (rData || []).map(r => ({
+      id: r.id, name: r.name, email: r.email || '',
+      createdAt: new Date(r.created_at).getTime()
+    }));
+  }, 'Henter dine projekter...');
 }
 
 function showAuthForm(formId) {

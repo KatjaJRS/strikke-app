@@ -16,6 +16,127 @@ body {
   padding: 24px;
 }
 
+.busy-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 245, 248, 0.78);
+  backdrop-filter: blur(2px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 12000;
+}
+
+.busy-overlay.active {
+  display: flex;
+}
+
+.busy-card {
+  background: #fff7fb;
+  border: 1px solid #f3b5c8;
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 10px 24px rgba(122, 39, 66, 0.16);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.busy-emoji-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.6rem;
+}
+
+.busy-hand.left {
+  animation: knitLeft 0.9s ease-in-out infinite alternate;
+}
+
+.busy-hand.right {
+  animation: knitRight 0.9s ease-in-out infinite alternate;
+}
+
+.busy-yarn {
+  animation: yarnHop 1s ease-in-out infinite;
+}
+
+#busy-text {
+  margin: 0;
+  font-weight: 700;
+  color: #a63d57;
+  font-size: 0.9rem;
+}
+
+.highfive-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%) translateY(18px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffe8f1;
+  border: 1px solid #f3b5c8;
+  border-radius: 999px;
+  padding: 8px 14px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 13000;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.highfive-toast.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.highfive-left,
+.highfive-right,
+.highfive-hit {
+  font-size: 1.2rem;
+}
+
+.highfive-left { animation: highfiveLeft 0.5s ease; }
+.highfive-right { animation: highfiveRight 0.5s ease; }
+.highfive-hit { animation: highfivePop 0.5s ease; }
+
+.highfive-label {
+  font-weight: 700;
+  color: #a63d57;
+  font-size: 0.85rem;
+}
+
+@keyframes knitLeft {
+  from { transform: rotate(-12deg) translateX(-2px); }
+  to { transform: rotate(8deg) translateX(2px); }
+}
+
+@keyframes knitRight {
+  from { transform: rotate(12deg) translateX(2px); }
+  to { transform: rotate(-8deg) translateX(-2px); }
+}
+
+@keyframes yarnHop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes highfiveLeft {
+  from { transform: translateX(-10px) rotate(-20deg); }
+  to { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes highfiveRight {
+  from { transform: translateX(10px) rotate(20deg); }
+  to { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes highfivePop {
+  from { transform: scale(0.7); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 /* ── Auth overlay ─────────────────────────────────────────────────────────── */
 .auth-overlay {
   position: fixed;

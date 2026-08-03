@@ -5,9 +5,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Life Away</title>
-    <link rel="stylesheet" href="styles.css?v=20260803-1" />
+    <link rel="stylesheet" href="styles.css?v=20260803-2" />
   </head>
   <body>
+    <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
+      <div class="busy-card">
+        <div class="busy-emoji-row" aria-hidden="true">
+          <span class="busy-hand left">🖐️</span>
+          <span class="busy-yarn">🧶</span>
+          <span class="busy-hand right">🤚</span>
+        </div>
+        <p id="busy-text">Strikker lige...</p>
+      </div>
+    </div>
+
+    <div id="highfive-toast" class="highfive-toast" aria-hidden="true">
+      <span class="highfive-left">🖐️</span>
+      <span class="highfive-hit">💥</span>
+      <span class="highfive-right">🤚</span>
+      <span class="highfive-label">Færdigt projekt!</span>
+    </div>
+
     <!-- Fixed overlay bar — always on top regardless of scroll -->
     <div id="fixed-header" class="fixed-header">
       <div id="user-bar-slot"></div>
@@ -369,21 +387,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260803-1"></script>
-    <script src="js/dom.js?v=20260803-1"></script>
-    <script src="js/utils.js?v=20260803-1"></script>
+    <script src="js/config.js?v=20260803-2"></script>
+    <script src="js/dom.js?v=20260803-2"></script>
+    <script src="js/utils.js?v=20260803-2"></script>
     <!-- Data: Supabase-kald og logik -->
-    <script src="data/projekter-data.js?v=20260803-1"></script>
-    <script src="data/grupper-data.js?v=20260803-1"></script>
-    <script src="data/profil.js?v=20260803-1"></script>
-    <script src="data/members.js?v=20260803-1"></script>
-    <script src="data/auth.js?v=20260803-1"></script>
+    <script src="data/projekter-data.js?v=20260803-2"></script>
+    <script src="data/grupper-data.js?v=20260803-2"></script>
+    <script src="data/profil.js?v=20260803-2"></script>
+    <script src="data/members.js?v=20260803-2"></script>
+    <script src="data/auth.js?v=20260803-2"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20260803-1"></script>
-    <script src="pages/andre-projekter.js?v=20260803-1"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20260803-1"></script>
-    <script src="pages/grupper.js?v=20260803-1"></script>
+    <script src="pages/forside.js?v=20260803-2"></script>
+    <script src="pages/andre-projekter.js?v=20260803-2"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20260803-2"></script>
+    <script src="pages/grupper.js?v=20260803-2"></script>
     <!-- Initialisering -->
-    <script src="app.js?v=20260803-1"></script>
+    <script src="app.js?v=20260803-2"></script>
   </body>
 </html>
