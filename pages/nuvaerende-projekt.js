@@ -241,7 +241,7 @@ function autoSaveCurrentProject() {
     };
     const becameFinished = shouldCelebrateFinishTransition(project.status, updatedProject.status);
     projects = projects.map(p => p.id === currentEditingProjectId ? updatedProject : p);
-    await saveProjects();
+    await saveProjects({ showBusy: false });
     if (becameFinished) showHighfiveCelebration();
   }, 2000);
 }
@@ -251,7 +251,7 @@ restoreDraft();
 
 // Auto-gem til Supabase hvert 10. sekund
 setInterval(async () => {
-  if (currentUser && projects.length > 0) await saveProjects();
+  if (currentUser && projects.length > 0) await saveProjects({ showBusy: false });
 }, 10000);
 
 // ── Kobl auto-gem til formfelter ──────────────────────────────────────────

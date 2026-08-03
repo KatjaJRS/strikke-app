@@ -45,16 +45,29 @@ body {
 .busy-emoji-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   font-size: 2rem;
 }
 
 .busy-hand.left {
-  animation: knitLeft 0.9s ease-in-out infinite alternate;
+  animation: knitLeft 0.65s ease-in-out infinite alternate;
 }
 
 .busy-hand.right {
-  animation: knitRight 0.9s ease-in-out infinite alternate;
+  animation: knitRight 0.65s ease-in-out infinite alternate;
+}
+
+.busy-needle {
+  font-size: 1.3rem;
+  opacity: 0.95;
+}
+
+.busy-needle.left {
+  animation: needleLeft 0.65s ease-in-out infinite alternate;
+}
+
+.busy-needle.right {
+  animation: needleRight 0.65s ease-in-out infinite alternate;
 }
 
 .busy-yarn {
@@ -109,13 +122,23 @@ body {
 }
 
 @keyframes knitLeft {
-  from { transform: rotate(-12deg) translateX(-2px); }
-  to { transform: rotate(8deg) translateX(2px); }
+  from { transform: rotate(-20deg) translateX(-7px) translateY(1px); }
+  to { transform: rotate(-2deg) translateX(1px) translateY(-1px); }
 }
 
 @keyframes knitRight {
-  from { transform: rotate(12deg) translateX(2px); }
-  to { transform: rotate(-8deg) translateX(-2px); }
+  from { transform: rotate(20deg) translateX(7px) translateY(1px); }
+  to { transform: rotate(2deg) translateX(-1px) translateY(-1px); }
+}
+
+@keyframes needleLeft {
+  from { transform: rotate(-30deg) translateX(-5px); }
+  to { transform: rotate(-8deg) translateX(2px); }
+}
+
+@keyframes needleRight {
+  from { transform: rotate(30deg) translateX(5px); }
+  to { transform: rotate(8deg) translateX(-2px); }
 }
 
 @keyframes yarnHop {

@@ -35,9 +35,10 @@ function normalizeProjects() {
   });
 }
 
-async function saveProjects() {
+async function saveProjects(options = {}) {
+  const { showBusy = true, busyMessage = 'Gemmer projekter...' } = options;
   if (!currentUser) return true;
-  return runWithBusy(async () => {
+  const persistTask = async () => {
     try {
       await sb.from('profiles').upsert({
         id: currentUser.id,
@@ -68,5 +69,8 @@ async function saveProjects() {
       console.error('Error saving projects:', e);
       return false;
     }
-  }, 'Gemmer projekter...');
+  };
+
+  if (!showBusy) return persistTask();
+  return runWithBusy(persistTask, busyMessage);
 }

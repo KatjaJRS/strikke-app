@@ -80,11 +80,14 @@ function renderProjects() {
         ...p,
         lastViewedAt: p.id === project.id ? Date.now() : p.lastViewedAt
       }));
-      populateFormWithProject(project);
-      saveProjects();
+      const selectedProject = projects.find((p) => p.id === project.id) || project;
+      populateFormWithProject(selectedProject);
+      saveProjects({ showBusy: false });
+      renderCurrentProject();
       renderProjects();
       updateHeroImage();
       switchSection('current-project');
+      nameInput.focus();
     }
 
     card.addEventListener('click', openProjectForEditing);
