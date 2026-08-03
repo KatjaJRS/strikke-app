@@ -163,7 +163,7 @@ const translations = {
   },
   da: {
     heroEyebrow: 'Fru Sminges hyggelige håndværksplanlægger',
-    heroTitle: 'Jeg strikker min dag væk',
+    heroTitle: 'Knitting My Day Away',
     heroSubtitle: 'Strik som om dit liv afhænger af det........ Planer, mønstre, noter, osv.',
     changeButton: 'Skift',
     currentProjectHeading: 'Nuværende projekt',
