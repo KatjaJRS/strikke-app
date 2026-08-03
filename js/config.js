@@ -56,7 +56,7 @@ if (broadcastChannel) {
 const translations = {
   en: {
     heroEyebrow: 'Fru Sminge\'s Cozy Crafts Planner',
-    heroTitle: 'Jeg strikker min dag væk',
+    heroTitle: 'Knitting My Day Away',
     heroSubtitle: 'Knit as if your life depended on it........ Plans, patterns, notes, etc.',
     changeButton: 'Change',
     currentProjectHeading: 'Current project',

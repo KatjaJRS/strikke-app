@@ -46,7 +46,7 @@ joinRequestForm.addEventListener('submit', async (event) => {
   renderGroups();
 
   const subject = encodeURIComponent(`New membership request: ${name}`);
-  const body = encodeURIComponent(`Hi,\n\nA new person wants to join Knitting My Life Away:\n\nName: ${name}\nEmail: ${email || '(not provided)'}\n\nPlease open the app to accept or reject this request.\n\nKnitting My Life Away`);
+  const body = encodeURIComponent(`Hi,\n\nA new person wants to join Knitting My Day Away:\n\nName: ${name}\nEmail: ${email || '(not provided)'}\n\nPlease open the app to accept or reject this request.\n\nKnitting My Day Away`);
   window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
 
   joinRequestForm.reset();
