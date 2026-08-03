@@ -94,7 +94,7 @@ if (heroImage) {
         ...p,
         lastViewedAt: p.id === orderedProjects[1].id ? Date.now() : p.lastViewedAt
       }));
-      saveProjects();
+      saveProjects({ showBusy: false });
       renderProjects();
       updateHeroImage();
     }

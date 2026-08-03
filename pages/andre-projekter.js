@@ -127,7 +127,7 @@ function renderProjects() {
         lastDeletedProject = project;
         if (undoTimeoutId) clearTimeout(undoTimeoutId);
         projects = projects.filter((p) => p.id !== project.id);
-        saveProjects();
+        saveProjects({ showBusy: false });
         renderProjects();
         updateHeroImage();
         showUndoNotification();
@@ -183,7 +183,7 @@ function hideUndoNotification() {
 function undoDeleteProject() {
   if (lastDeletedProject) {
     projects.push(lastDeletedProject);
-    saveProjects();
+    saveProjects({ showBusy: false });
     renderProjects();
     updateHeroImage();
     lastDeletedProject = null;
