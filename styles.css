@@ -248,54 +248,43 @@ body {
   padding-bottom: 14px;
 }
 
-.highfive-hand-svg {
-  width: 52px;
-  height: 72px;
-  transform-origin: center bottom;
-  filter: drop-shadow(0 1px 1px rgba(95, 59, 47, 0.18));
-}
-
-.highfive-finger,
-.highfive-palm,
-.highfive-thumb {
-  fill: #f7cfb0;
-  stroke: #8d6356;
-  stroke-width: 1.8;
-  vector-effect: non-scaling-stroke;
-}
-
-.highfive-palm {
-  filter: drop-shadow(0 1px 0 rgba(95, 59, 47, 0.12));
-}
-
-.highfive-finger {
-  filter: drop-shadow(0 0 0.2px rgba(95, 59, 47, 0.35));
-}
-
-.highfive-finger-line {
-  stroke: #b38372;
-  stroke-width: 1.3;
-  stroke-linecap: round;
-  opacity: 0.95;
-}
-
-.highfive-left {
-  animation: highfiveLeft 0.62s cubic-bezier(.22,.61,.36,1);
-}
-
-.highfive-right {
-  transform: scaleX(-1);
-  animation: highfiveRight 0.62s cubic-bezier(.22,.61,.36,1);
-}
-
-.highfive-burst {
+.firework-center {
   position: absolute;
-  top: 34px;
+  top: 46px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   color: #3f4d7c;
-  animation: highfivePop 0.62s ease;
+  animation: fireworkCenter 0.7s ease;
+}
+
+.firework {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0) 34%, rgba(255,255,255,0) 36%, #ff7ea7 38%, rgba(255,255,255,0) 40%),
+              conic-gradient(from 0deg, #ff7ea7 0deg 20deg, transparent 20deg 40deg, #74b6ff 40deg 60deg, transparent 60deg 80deg, #7fd5c0 80deg 100deg, transparent 100deg 120deg, #f6d278 120deg 140deg, transparent 140deg 160deg, #ff7ea7 160deg 180deg, transparent 180deg 200deg, #74b6ff 200deg 220deg, transparent 220deg 240deg, #7fd5c0 240deg 260deg, transparent 260deg 280deg, #f6d278 280deg 300deg, transparent 300deg 320deg, #ff7ea7 320deg 340deg, transparent 340deg 360deg);
+  opacity: 0;
+}
+
+.fw-a {
+  left: 16px;
+  top: 30px;
+  animation: fireworkBurst 0.78s ease forwards;
+}
+
+.fw-b {
+  right: 16px;
+  top: 30px;
+  animation: fireworkBurst 0.78s ease 0.06s forwards;
+}
+
+.fw-c {
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  animation: fireworkBurst 0.78s ease 0.12s forwards;
 }
 
 .confetti-dot {
@@ -366,20 +355,16 @@ body {
   50% { transform: scale(1.25); opacity: 1; }
 }
 
-@keyframes highfiveLeft {
-  from { transform: translateX(-30px) rotate(-34deg) translateY(10px) scale(0.92); }
-  to { transform: translateX(0) rotate(-8deg) translateY(0) scale(1); }
-}
-
-@keyframes highfiveRight {
-  from { transform: scaleX(-1) translateX(-30px) rotate(-34deg) translateY(10px) scale(0.92); }
-  to { transform: scaleX(-1) translateX(0) rotate(-8deg) translateY(0) scale(1); }
-}
-
-@keyframes highfivePop {
+@keyframes fireworkCenter {
   0% { transform: scale(0.5); opacity: 0; }
   55% { transform: scale(1.15); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fireworkBurst {
+  0% { transform: scale(0.5); opacity: 0; }
+  30% { opacity: 0.95; }
+  100% { transform: scale(1.05); opacity: 0.85; }
 }
 
 @keyframes confettiPulse {
