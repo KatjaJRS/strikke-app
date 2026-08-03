@@ -53,6 +53,27 @@ body {
   box-shadow: 0 10px 24px rgba(122, 39, 66, 0.16);
 }
 
+/* Force simple spinner look even if older cached HTML includes hand elements */
+.busy-illustration .busy-hand,
+.busy-illustration .busy-cuff,
+.busy-illustration .busy-needle,
+.busy-illustration .busy-yarn-ball,
+.busy-illustration .busy-yarn-thread,
+.busy-illustration .busy-knit-hand,
+.busy-illustration .busy-knit-needle,
+.busy-illustration .busy-knit-thread,
+.busy-illustration .busy-spark {
+  display: none !important;
+}
+
+.busy-illustration::before {
+  content: '🧶';
+  font-size: 2.3rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 0 rgba(122, 39, 66, 0.2));
+  animation: busyYarnSpin 0.95s linear infinite;
+}
+
 .busy-yarn-spinner {
   font-size: 2.3rem;
   line-height: 1;
@@ -110,6 +131,13 @@ body {
   justify-content: center;
   gap: 14px;
   padding-bottom: 14px;
+}
+
+/* Force fireworks-only celebration across cached variants */
+.highfive-illustration .highfive-hand,
+.highfive-illustration .highfive-hand-svg,
+.highfive-illustration .highfive-burst {
+  display: none !important;
 }
 
 .firework-center {

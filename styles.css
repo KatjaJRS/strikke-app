@@ -52,6 +52,30 @@ body {
   overflow: hidden;
 }
 
+.busy-illustration .busy-hand,
+.busy-illustration .busy-cuff,
+.busy-illustration .busy-needle,
+.busy-illustration .busy-yarn-ball,
+.busy-illustration .busy-yarn-thread,
+.busy-illustration .busy-knit-hand,
+.busy-illustration .busy-knit-needle,
+.busy-illustration .busy-knit-thread,
+.busy-illustration .busy-spark {
+  display: none !important;
+}
+
+.busy-illustration::before {
+  content: '🧶';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.3rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 0 rgba(122, 39, 66, 0.2));
+  animation: busyYarnSpin 0.95s linear infinite;
+}
+
 .busy-hand {
   position: absolute;
   bottom: 22px;
@@ -248,6 +272,12 @@ body {
   padding-bottom: 14px;
 }
 
+.highfive-illustration .highfive-hand,
+.highfive-illustration .highfive-hand-svg,
+.highfive-illustration .highfive-burst {
+  display: none !important;
+}
+
 .firework-center {
   position: absolute;
   top: 46px;
@@ -338,6 +368,11 @@ body {
 @keyframes busyNeedleRight {
   from { transform: rotate(29deg) translateX(2px); }
   to { transform: rotate(12deg) translateX(-2px); }
+}
+
+@keyframes busyYarnSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 @keyframes busyYarnPulse {
