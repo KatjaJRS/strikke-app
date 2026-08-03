@@ -85,40 +85,84 @@ body {
 .highfive-toast {
   position: fixed;
   left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%) translateY(18px);
-  display: flex;
-  align-items: center;
+  bottom: 18px;
+  transform: translateX(-50%) translateY(20px) scale(0.95);
+  display: grid;
+  justify-items: center;
   gap: 8px;
-  background: #ffe8f1;
-  border: 1px solid #f3b5c8;
-  border-radius: 999px;
-  padding: 8px 14px;
+  background: transparent;
+  border: 0;
+  border-radius: 16px;
+  padding: 6px 10px;
   opacity: 0;
   pointer-events: none;
   z-index: 13000;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
 .highfive-toast.active {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
-.highfive-left,
-.highfive-right,
-.highfive-hit {
-  font-size: 1.4rem;
+.highfive-illustration {
+  position: relative;
+  width: 170px;
+  height: 125px;
+  background: #ffe892;
+  border-radius: 52% 48% 44% 56% / 42% 38% 62% 58%;
+  box-shadow: 0 14px 26px rgba(122, 39, 66, 0.18);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  padding-bottom: 14px;
 }
 
-.highfive-left { animation: highfiveLeft 0.6s cubic-bezier(.22,.61,.36,1); }
-.highfive-right { animation: highfiveRight 0.6s cubic-bezier(.22,.61,.36,1); }
-.highfive-hit { animation: highfivePop 0.6s ease; }
+.highfive-hand {
+  font-size: 2.55rem;
+  transform-origin: bottom center;
+}
+
+.highfive-left {
+  animation: highfiveLeft 0.62s cubic-bezier(.22,.61,.36,1);
+}
+
+.highfive-right {
+  animation: highfiveRight 0.62s cubic-bezier(.22,.61,.36,1);
+}
+
+.highfive-burst {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.3rem;
+  color: #3f4d7c;
+  animation: highfivePop 0.62s ease;
+}
+
+.confetti-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  animation: confettiPulse 0.7s ease;
+}
+
+.dot-a { top: 14px; left: 24px; background: #74b6ff; }
+.dot-b { top: 20px; right: 24px; background: #f58ea8; }
+.dot-c { top: 48px; left: 10px; background: #f7d37e; }
+.dot-d { top: 44px; right: 10px; background: #81d6c3; }
 
 .highfive-label {
   font-weight: 700;
   color: #a63d57;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  background: #fff6fa;
+  border: 1px solid #f3b5c8;
+  border-radius: 999px;
+  padding: 6px 12px;
 }
 
 @keyframes knitLeft {
@@ -147,19 +191,25 @@ body {
 }
 
 @keyframes highfiveLeft {
-  from { transform: translateX(-24px) rotate(-28deg) scale(0.9); }
-  to { transform: translateX(0) rotate(0deg) scale(1); }
+  from { transform: translateX(-30px) rotate(-32deg) translateY(8px) scale(0.9); }
+  to { transform: translateX(0) rotate(-8deg) translateY(0) scale(1); }
 }
 
 @keyframes highfiveRight {
-  from { transform: translateX(24px) rotate(28deg) scale(0.9); }
-  to { transform: translateX(0) rotate(0deg) scale(1); }
+  from { transform: translateX(30px) rotate(32deg) translateY(8px) scale(0.9); }
+  to { transform: translateX(0) rotate(8deg) translateY(0) scale(1); }
 }
 
 @keyframes highfivePop {
   0% { transform: scale(0.5); opacity: 0; }
   55% { transform: scale(1.15); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes confettiPulse {
+  0% { transform: scale(0.2); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
 }
 
 /* ── Auth overlay ─────────────────────────────────────────────────────────── */
