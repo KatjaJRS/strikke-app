@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Life Away</title>
-    <link rel="stylesheet" href="styles.css?v=20260803-9" />
+    <link rel="stylesheet" href="styles.css?v=20260803-10" />
   </head>
   <body>
     <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
@@ -33,21 +33,23 @@
         <span class="confetti-dot dot-b"></span>
         <span class="confetti-dot dot-c"></span>
         <span class="confetti-dot dot-d"></span>
-        <span class="highfive-hand highfive-left">
-          <span class="finger finger-1"></span>
-          <span class="finger finger-2"></span>
-          <span class="finger finger-3"></span>
-          <span class="finger finger-4"></span>
-          <span class="thumb"></span>
-        </span>
+        <svg class="highfive-hand-svg highfive-left" viewBox="0 0 80 96" role="presentation" aria-hidden="true">
+          <rect class="highfive-finger" x="13" y="8" width="10" height="34" rx="5" />
+          <rect class="highfive-finger" x="25" y="4" width="10" height="38" rx="5" />
+          <rect class="highfive-finger" x="37" y="6" width="10" height="36" rx="5" />
+          <rect class="highfive-finger" x="49" y="11" width="10" height="31" rx="5" />
+          <rect class="highfive-palm" x="12" y="36" width="48" height="44" rx="18" />
+          <ellipse class="highfive-thumb" cx="11" cy="58" rx="8" ry="13" transform="rotate(-28 11 58)" />
+        </svg>
         <span class="highfive-burst">✦</span>
-        <span class="highfive-hand highfive-right">
-          <span class="finger finger-1"></span>
-          <span class="finger finger-2"></span>
-          <span class="finger finger-3"></span>
-          <span class="finger finger-4"></span>
-          <span class="thumb"></span>
-        </span>
+        <svg class="highfive-hand-svg highfive-right" viewBox="0 0 80 96" role="presentation" aria-hidden="true">
+          <rect class="highfive-finger" x="13" y="8" width="10" height="34" rx="5" />
+          <rect class="highfive-finger" x="25" y="4" width="10" height="38" rx="5" />
+          <rect class="highfive-finger" x="37" y="6" width="10" height="36" rx="5" />
+          <rect class="highfive-finger" x="49" y="11" width="10" height="31" rx="5" />
+          <rect class="highfive-palm" x="12" y="36" width="48" height="44" rx="18" />
+          <ellipse class="highfive-thumb" cx="11" cy="58" rx="8" ry="13" transform="rotate(-28 11 58)" />
+        </svg>
       </div>
       <span class="highfive-label">Færdigt projekt!</span>
     </div>
@@ -413,21 +415,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260803-9"></script>
-    <script src="js/dom.js?v=20260803-9"></script>
-    <script src="js/utils.js?v=20260803-9"></script>
+    <script src="js/config.js?v=20260803-10"></script>
+    <script src="js/dom.js?v=20260803-10"></script>
+    <script src="js/utils.js?v=20260803-10"></script>
     <!-- Data: Supabase-kald og logik -->
-    <script src="data/projekter-data.js?v=20260803-9"></script>
-    <script src="data/grupper-data.js?v=20260803-9"></script>
-    <script src="data/profil.js?v=20260803-9"></script>
-    <script src="data/members.js?v=20260803-9"></script>
-    <script src="data/auth.js?v=20260803-9"></script>
+    <script src="data/projekter-data.js?v=20260803-10"></script>
+    <script src="data/grupper-data.js?v=20260803-10"></script>
+    <script src="data/profil.js?v=20260803-10"></script>
+    <script src="data/members.js?v=20260803-10"></script>
+    <script src="data/auth.js?v=20260803-10"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20260803-9"></script>
-    <script src="pages/andre-projekter.js?v=20260803-9"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20260803-9"></script>
-    <script src="pages/grupper.js?v=20260803-9"></script>
+    <script src="pages/forside.js?v=20260803-10"></script>
+    <script src="pages/andre-projekter.js?v=20260803-10"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20260803-10"></script>
+    <script src="pages/grupper.js?v=20260803-10"></script>
     <!-- Initialisering -->
-    <script src="app.js?v=20260803-9"></script>
+    <script src="app.js?v=20260803-10"></script>
   </body>
 </html>
