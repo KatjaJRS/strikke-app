@@ -217,8 +217,8 @@ body {
 }
 
 .highfive-hand-svg {
-  width: 54px;
-  height: 70px;
+  width: 58px;
+  height: 74px;
   transform-origin: center bottom;
 }
 
@@ -227,11 +227,16 @@ body {
 .highfive-thumb {
   fill: #f2c29d;
   stroke: #5f3b2f;
-  stroke-width: 2.2;
+  stroke-width: 2.6;
+  vector-effect: non-scaling-stroke;
 }
 
 .highfive-palm {
   filter: drop-shadow(0 1px 0 rgba(95, 59, 47, 0.18));
+}
+
+.highfive-finger {
+  filter: drop-shadow(0 0 0.2px rgba(95, 59, 47, 0.65));
 }
 
 .highfive-left {
