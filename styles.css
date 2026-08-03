@@ -58,21 +58,53 @@ body {
   width: 50px;
   height: 56px;
   border-radius: 60% 60% 45% 45%;
+  background: #f2c29d;
   border: 2px solid #5f3b2f;
+}
+
+.busy-hand::before {
+  content: '';
+  position: absolute;
+  top: -17px;
+  left: 3px;
+  width: 8px;
+  height: 20px;
+  border-radius: 7px 7px 4px 4px;
+  background: #f2c29d;
+  border: 2px solid #5f3b2f;
+  border-bottom: 0;
+  box-shadow: 11px 0 0 #f2c29d, 11px 0 0 0 #5f3b2f, 22px 0 0 #f2c29d, 22px 0 0 0 #5f3b2f, 33px 0 0 #f2c29d, 33px 0 0 0 #5f3b2f;
+}
+
+.busy-hand::after {
+  content: '';
+  position: absolute;
+  left: -11px;
+  bottom: 11px;
+  width: 12px;
+  height: 18px;
+  border-radius: 10px;
+  background: #f2c29d;
+  border: 2px solid #5f3b2f;
+  transform: rotate(-30deg);
 }
 
 .busy-hand-left {
   left: 38px;
-  background: #f7c79f;
   transform-origin: 85% 90%;
   animation: busyHandLeft 0.72s ease-in-out infinite alternate;
 }
 
 .busy-hand-right {
   right: 38px;
-  background: #9c604b;
   transform-origin: 15% 90%;
   animation: busyHandRight 0.72s ease-in-out infinite alternate;
+}
+
+.busy-hand-right::after {
+  left: auto;
+  right: -11px;
+  transform: rotate(30deg);
 }
 
 .busy-cuff {
