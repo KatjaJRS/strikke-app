@@ -217,8 +217,42 @@ body {
 }
 
 .highfive-hand {
-  font-size: 2.55rem;
-  transform-origin: bottom center;
+  --skin: #f0bd95;
+  position: relative;
+  width: 40px;
+  height: 42px;
+  border-radius: 44% 44% 38% 38%;
+  background: var(--skin);
+  border: 2px solid #5f3b2f;
+  box-shadow: inset 0 -3px 0 rgba(95, 59, 47, 0.16);
+  transform-origin: center bottom;
+}
+
+.highfive-hand .finger {
+  position: absolute;
+  bottom: 32px;
+  width: 7px;
+  border-radius: 8px 8px 4px 4px;
+  background: var(--skin);
+  border: 2px solid #5f3b2f;
+  border-bottom: 0;
+}
+
+.highfive-hand .finger-1 { left: 2px; height: 22px; }
+.highfive-hand .finger-2 { left: 10px; height: 26px; }
+.highfive-hand .finger-3 { left: 18px; height: 27px; }
+.highfive-hand .finger-4 { left: 26px; height: 23px; }
+
+.highfive-hand .thumb {
+  position: absolute;
+  left: -11px;
+  bottom: 10px;
+  width: 12px;
+  height: 17px;
+  border-radius: 10px;
+  background: var(--skin);
+  border: 2px solid #5f3b2f;
+  transform: rotate(-32deg);
 }
 
 .highfive-left {
@@ -226,6 +260,7 @@ body {
 }
 
 .highfive-right {
+  transform: scaleX(-1);
   animation: highfiveRight 0.62s cubic-bezier(.22,.61,.36,1);
 }
 
@@ -308,13 +343,13 @@ body {
 }
 
 @keyframes highfiveLeft {
-  from { transform: translateX(-30px) rotate(-32deg) translateY(8px) scale(0.9); }
+  from { transform: translateX(-30px) rotate(-34deg) translateY(10px) scale(0.92); }
   to { transform: translateX(0) rotate(-8deg) translateY(0) scale(1); }
 }
 
 @keyframes highfiveRight {
-  from { transform: translateX(30px) rotate(32deg) translateY(8px) scale(0.9); }
-  to { transform: translateX(0) rotate(8deg) translateY(0) scale(1); }
+  from { transform: scaleX(-1) translateX(-30px) rotate(-34deg) translateY(10px) scale(0.92); }
+  to { transform: scaleX(-1) translateX(0) rotate(-8deg) translateY(0) scale(1); }
 }
 
 @keyframes highfivePop {
