@@ -1,0 +1,420 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Knitting My Life Away</title>
+    <link rel="stylesheet" href="styles-v16.css?v=20260803-16" />
+  </head>
+  <body>
+    <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
+      <div class="busy-card">
+        <div class="busy-illustration" aria-hidden="true">
+          <span class="busy-spark spark-a"></span>
+          <span class="busy-spark spark-b"></span>
+          <span class="busy-spark spark-c"></span>
+          <span class="busy-knit-hand busy-knit-hand-left">🫱</span>
+          <span class="busy-knit-hand busy-knit-hand-right">🫲</span>
+          <span class="busy-knit-needle busy-knit-needle-left">🪡</span>
+          <span class="busy-knit-needle busy-knit-needle-right">🪡</span>
+          <span class="busy-knit-yarn">🧶</span>
+          <span class="busy-knit-thread"></span>
+        </div>
+        <p id="busy-text">Strikker lige...</p>
+      </div>
+    </div>
+
+    <div id="highfive-toast" class="highfive-toast" aria-hidden="true">
+      <div class="highfive-illustration" aria-hidden="true">
+        <span class="confetti-dot dot-a"></span>
+        <span class="confetti-dot dot-b"></span>
+        <span class="confetti-dot dot-c"></span>
+        <span class="confetti-dot dot-d"></span>
+        <span class="firework fw-a"></span>
+        <span class="firework fw-b"></span>
+        <span class="firework fw-c"></span>
+        <span class="firework-center">✦</span>
+      </div>
+      <span class="highfive-label">Færdigt projekt!</span>
+    </div>
+
+    <!-- Fixed overlay bar — always on top regardless of scroll -->
+    <div id="fixed-header" class="fixed-header">
+      <div id="user-bar-slot"></div>
+      <div class="lang-switcher" role="group" aria-label="Language switcher">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="da">DA</button>
+      </div>
+    </div>
+
+    <!-- Auth overlay -->
+    <div id="auth-overlay" class="auth-overlay">
+      <div class="auth-card">
+        <div class="auth-logo">🧶</div>
+        <h1 class="auth-title" data-i18n="heroTitle">Jeg strikker min dag væk</h1>
+
+        <!-- Login form -->
+        <form id="login-form" class="auth-form active-form">
+          <p class="auth-welcome"><em>Velkommen til Fru Sminges strikkeapp. :-) Af hensyn til royalties, er det ikke muligt at dele links med hele opskrifter med de andre medlemmer, men du kan se dem selv og så kan du dele dine egne billeder med de andre. Lad os hygge!</em></p>
+          <h2 data-i18n="loginHeading">Sign in</h2>
+          <label>
+            <span data-i18n="authEmailLabel">Email</span>
+            <input id="login-email" type="email" required autocomplete="email" />
+          </label>
+          <label>
+            <span data-i18n="authPasswordLabel">Password</span>
+            <input id="login-password" type="password" required autocomplete="current-password" />
+          </label>
+          <div id="login-error" class="auth-error hidden"></div>
+          <button type="submit" class="auth-btn" data-i18n="loginButton">Sign in</button>
+          <div class="auth-links">
+            <button type="button" class="auth-link" id="show-register" data-i18n="goToRegister">New here? Create account</button>
+            <button type="button" class="auth-link" id="show-forgot" data-i18n="goToForgot">Forgot password?</button>
+          </div>
+        </form>
+
+        <!-- Register form -->
+        <form id="register-form" class="auth-form">
+          <h2 data-i18n="registerHeading">Create account</h2>
+          <label>
+            <span data-i18n="authNameLabel">Your name</span>
+            <input id="register-name" type="text" required autocomplete="name" />
+          </label>
+          <label>
+            <span data-i18n="authEmailLabel">Email</span>
+            <input id="register-email" type="email" required autocomplete="email" />
+          </label>
+          <label>
+            <span data-i18n="authPasswordLabel">Password</span>
+            <input id="register-password" type="password" required autocomplete="new-password" minlength="6" />
+          </label>
+          <div id="register-error" class="auth-error hidden"></div>
+          <button type="submit" class="auth-btn" data-i18n="registerButton">Create account</button>
+          <div class="auth-links">
+            <button type="button" class="auth-link" id="show-login" data-i18n="goToLogin">Already have an account? Sign in</button>
+          </div>
+        </form>
+
+        <!-- Forgot password form -->
+        <form id="forgot-form" class="auth-form">
+          <h2 data-i18n="forgotHeading">Reset password</h2>
+          <p class="auth-hint" data-i18n="forgotHint">Enter your email and we'll send a reset request to the admin.</p>
+          <label>
+            <span data-i18n="authEmailLabel">Email</span>
+            <input id="forgot-email" type="email" required />
+          </label>
+          <div id="forgot-error" class="auth-error hidden"></div>
+          <button type="submit" class="auth-btn" data-i18n="forgotButton">Send reset request</button>
+          <div class="auth-links">
+            <button type="button" class="auth-link" id="show-login-from-forgot" data-i18n="goToLogin">Back to sign in</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Profile modal -->
+    <div id="profile-modal" class="profile-modal hidden">
+      <div class="profile-modal-card">
+        <button type="button" id="profile-modal-close" class="profile-modal-close">✕</button>
+        <div class="profile-modal-avatar-wrap">
+          <div id="profile-modal-avatar" class="avatar avatar-initials profile-modal-avatar">Y</div>
+          <label class="profile-modal-pic-label">
+            <span data-i18n="profilePicLabel">Profile picture</span>
+            <input id="profile-modal-pic-input" type="file" accept="image/*" class="hidden-file-input" />
+            <button type="button" id="profile-modal-pic-btn" class="auth-btn" style="margin-top:6px" data-i18n="profilePicButton">Upload photo</button>
+          </label>
+        </div>
+        <form id="profile-edit-form" class="profile-edit-form">
+          <h2 data-i18n="profileHeading">My profile</h2>
+          <label>
+            <span data-i18n="authNameLabel">Your name</span>
+            <input id="profile-edit-name" type="text" required />
+          </label>
+          <label>
+            <span data-i18n="authEmailLabel">Email</span>
+            <input id="profile-edit-email" type="email" required />
+          </label>
+          <fieldset class="profile-password-section">
+            <legend data-i18n="changePasswordLabel">Change password</legend>
+            <label>
+              <span data-i18n="currentPasswordLabel">Current password</span>
+              <input id="profile-current-password" type="password" autocomplete="current-password" />
+            </label>
+            <label>
+              <span data-i18n="newPasswordLabel">New password</span>
+              <input id="profile-new-password" type="password" autocomplete="new-password" minlength="6" />
+            </label>
+          </fieldset>
+          <div id="profile-edit-error" class="auth-error hidden"></div>
+          <div id="profile-edit-success" class="profile-success hidden" data-i18n="profileSaved">Changes saved!</div>
+          <button type="submit" class="auth-btn" data-i18n="saveChangesButton">Save changes</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="app-shell-wrapper" class="hidden">
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero-media">
+          <img id="hero-image" class="hero-image" alt="Featured knitting project" src="assets/shawl-hero.svg" />
+          <label class="hero-upload-btn" title="Change front image">
+            📷
+            <input id="hero-image-input" type="file" accept="image/*" class="hidden-file-input" />
+          </label>
+        </div>
+        <p class="eyebrow" data-i18n="heroEyebrow">Fru Sminges kølige håndværksplanlægger</p>
+        <h1 data-i18n="heroTitle">Knitting My Life Away</h1>
+        <p class="subtitle" data-i18n="heroSubtitle">
+          Knit as if your life depended on it........ Plans, patterns, notes, etc.
+        </p>
+      </section>
+
+      <div class="navigation-buttons">
+        <button type="button" class="nav-btn active" data-section="current-project" data-i18n="currentProjectHeading">Current project</button>
+        <button type="button" class="nav-btn" data-section="previous-projects" data-i18n="projectsHeading">Previous projects</button>
+        <button type="button" class="nav-btn" data-section="groups-chats" data-i18n="groupsHeading">Groups and Chats</button>
+      </div>
+
+      <div class="section-views">
+        <section id="current-project" class="section-view active">
+          <div id="current-project-card" class="project-card-container"></div>
+          <form id="project-form" class="add-project-form">
+            <div class="form-heading-row">
+              <h3 id="form-heading" data-i18n="addProjectHeading">Add a project</h3>
+              <button type="button" id="new-project-btn" class="new-project-btn" title="Clear form for a new project">➕ Nyt projekt</button>
+            </div>
+            <label>
+              <span data-i18n="projectNameLabel">Project name</span>
+              <input id="project-name" type="text" data-i18n-placeholder="projectNamePlaceholder" placeholder="e.g. Moonlight scarf" required />
+            </label>
+            <label>
+              <span data-i18n="patternLabel">Pattern</span>
+              <input id="pattern-name" type="text" data-i18n-placeholder="patternPlaceholder" placeholder="e.g. Garter rib" required />
+            </label>
+            <div class="yarns-section">
+              <h4 data-i18n="yarnsLabel">Yarns used</h4>
+              <div id="yarn-rows-container">
+                <div class="yarn-entry">
+                  <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
+                  <input type="text" class="yarn-color" placeholder="Colour" />
+                  <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount used" />
+                  <button type="button" class="yarn-remove-btn" title="Remove row">✕</button>
+                </div>
+              </div>
+              <button type="button" id="add-yarn-btn" class="add-row-btn">+ Tilføj garn</button>
+            </div>
+            <div class="needles-section">
+              <h4 data-i18n="needleLabel">Knitting needles</h4>
+              <div class="needle-entry">
+                <input id="needle-1-type" type="text" class="needle-type" placeholder="Needle type" />
+              </div>
+              <div class="needle-entry">
+                <input id="needle-2-type" type="text" class="needle-type" placeholder="Needle type" />
+              </div>
+              <div class="needle-entry">
+                <input id="needle-3-type" type="text" class="needle-type" placeholder="Needle type" />
+              </div>
+            </div>
+            <label>
+              <span data-i18n="statusLabel">Progress</span>
+              <select id="project-status">
+                <option value="Planning" data-i18n="statusPlanning">Planning</option>
+                <option value="In progress" data-i18n="statusInProgress">In progress</option>
+                <option value="Finished" data-i18n="statusFinished">Finished</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="ratingLabel">Pattern rating</span>
+              <div id="project-rating" class="star-rating" role="radiogroup" aria-label="Pattern rating">
+                <button type="button" class="star-btn" data-value="1" aria-label="1 star">⭐</button>
+                <button type="button" class="star-btn" data-value="2" aria-label="2 stars">⭐</button>
+                <button type="button" class="star-btn" data-value="3" aria-label="3 stars">⭐</button>
+                <button type="button" class="star-btn" data-value="4" aria-label="4 stars">⭐</button>
+                <button type="button" class="star-btn" data-value="5" aria-label="5 stars">⭐</button>
+              </div>
+              <input type="hidden" id="project-rating-value" value="0" />
+            </label>
+            <label>
+              <span data-i18n="difficultyLabel">Difficulty</span>
+              <div id="project-difficulty" class="heart-rating" role="radiogroup" aria-label="Difficulty">
+                <button type="button" class="heart-btn" data-value="1" aria-label="Difficulty 1">🧶</button>
+                <button type="button" class="heart-btn" data-value="2" aria-label="Difficulty 2">🧶</button>
+                <button type="button" class="heart-btn" data-value="3" aria-label="Difficulty 3">🧶</button>
+                <button type="button" class="heart-btn" data-value="4" aria-label="Difficulty 4">🧶</button>
+                <button type="button" class="heart-btn" data-value="5" aria-label="Difficulty 5">🧶</button>
+              </div>
+              <input type="hidden" id="project-difficulty-value" value="0" />
+            </label>
+            <label>
+              <span data-i18n="notesLabel">Notes</span>
+              <textarea id="project-notes" rows="3" data-i18n-placeholder="notesPlaceholder" placeholder="Add yarn details, gauge, or reminders..."></textarea>
+            </label>
+            <label>
+              <span data-i18n="patternLinkLabel">Pattern link or file</span>
+              <input id="pattern-link" type="text" data-i18n-placeholder="patternLinkPlaceholder" placeholder="https://... or file name" />
+            </label>
+            <label>
+              <span data-i18n="imageLabel">Project photo</span>
+              <input id="project-image" type="file" accept="image/*" />
+            </label>
+            <button type="submit" data-i18n="saveNoteButton">Gem projekt</button>
+          </form>
+        </section>
+
+        <section id="previous-projects" class="section-view">
+          <div class="search-row">
+            <input id="project-search" type="text" class="search-input" data-i18n-placeholder="searchProjectsPlaceholder" placeholder="Search by name, pattern, or notes" />
+          </div>
+          <div class="filter-controls">
+            <label>
+              <span data-i18n="filterStatusLabel">Status</span>
+              <select id="project-status-filter">
+                <option value="all" data-i18n="statusFilterAll">All statuses</option>
+                <option value="Planning" data-i18n="statusPlanning">Planning</option>
+                <option value="In progress" data-i18n="statusInProgress">In progress</option>
+                <option value="Finished" data-i18n="statusFinished">Finished</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="ratingFilterLabel">Pattern rating</span>
+              <div id="rating-filter" class="filter-stars" role="radiogroup" aria-label="Filter by pattern rating">
+                <button type="button" class="filter-star-btn" data-rating="all" aria-label="All ratings" data-i18n="ratingFilterAll">All</button>
+                <button type="button" class="filter-star-btn" data-rating="1" aria-label="1 star">⭐</button>
+                <button type="button" class="filter-star-btn" data-rating="2" aria-label="2 stars">⭐⭐</button>
+                <button type="button" class="filter-star-btn" data-rating="3" aria-label="3 stars">⭐⭐⭐</button>
+                <button type="button" class="filter-star-btn" data-rating="4" aria-label="4 stars">⭐⭐⭐⭐</button>
+                <button type="button" class="filter-star-btn" data-rating="5" aria-label="5 stars">⭐⭐⭐⭐⭐</button>
+              </div>
+            </label>
+            <label>
+              <span data-i18n="difficultyFilterLabel">Difficulty</span>
+              <div id="difficulty-filter" class="filter-hearts" role="radiogroup" aria-label="Filter by difficulty">
+                <button type="button" class="filter-heart-btn" data-difficulty="all" aria-label="All difficulties" data-i18n="difficultyFilterAll">All</button>
+                <button type="button" class="filter-heart-btn" data-difficulty="1" aria-label="Difficulty 1">1x 🧶</button>
+                <button type="button" class="filter-heart-btn" data-difficulty="2" aria-label="Difficulty 2">2x 🧶</button>
+                <button type="button" class="filter-heart-btn" data-difficulty="3" aria-label="Difficulty 3">3x 🧶</button>
+                <button type="button" class="filter-heart-btn" data-difficulty="4" aria-label="Difficulty 4">4x 🧶</button>
+                <button type="button" class="filter-heart-btn" data-difficulty="5" aria-label="Difficulty 5">5x 🧶</button>
+              </div>
+            </label>
+          </div>
+          <div id="project-list" class="project-list-column"></div>
+        </section>
+
+        <section id="groups-chats" class="section-view">
+          <div class="search-row">
+            <input id="project-search-groups" type="text" class="search-input" data-i18n-placeholder="searchProjectsPlaceholder" placeholder="Search by name, pattern, or notes" />
+          </div>
+          <div class="group-layout">
+            <div class="group-main">
+              <div class="profile-setup">
+                <div id="profile-avatar-preview" class="avatar avatar-initials" style="background:hsl(330,55%,65%)">Y</div>
+                <div class="profile-setup-fields">
+                  <label>
+                    <span data-i18n="profileNameLabel">Your display name</span>
+                    <input id="profile-name-input" type="text" placeholder="e.g. Anna" />
+                  </label>
+                  <label class="profile-pic-label">
+                    <span data-i18n="profilePicLabel">Profile picture</span>
+                    <input id="profile-pic-input" type="file" accept="image/*" class="hidden-file-input" />
+                    <button type="button" id="profile-pic-btn" data-i18n="profilePicButton">Upload photo</button>
+                  </label>
+                </div>
+              </div>
+
+              <form id="group-form" class="group-form">
+                <label>
+                  <span data-i18n="groupNameLabel">Group name</span>
+                  <input id="group-name" type="text" data-i18n-placeholder="groupNamePlaceholder" placeholder="e.g. Weekend knit circle" required />
+                </label>
+                <label>
+                  <span data-i18n="groupInvitesLabel">Invite people</span>
+                  <input id="group-invites" type="text" data-i18n-placeholder="groupInvitesPlaceholder" placeholder="Maja, Lars, Emma" />
+                </label>
+                <button type="submit" data-i18n="createGroupButton">Create group</button>
+              </form>
+
+              <div class="join-request-box">
+                <h4 data-i18n="requestJoinHeading">Request to join</h4>
+                <form id="join-request-form" class="group-form">
+                  <label>
+                    <span data-i18n="requestNameLabel">Your name</span>
+                    <input id="request-name-input" type="text" data-i18n-placeholder="requestNamePlaceholder" placeholder="e.g. Maja" required />
+                  </label>
+                  <label>
+                    <span data-i18n="requestEmailLabel">Your email</span>
+                    <input id="request-email-input" type="email" data-i18n-placeholder="requestEmailPlaceholder" placeholder="maja@example.com" />
+                  </label>
+                  <button type="submit" data-i18n="requestJoinButton">Send request</button>
+                </form>
+              </div>
+
+              <div class="group-chat-panel">
+                <div class="group-chat-header">
+                  <h3 id="active-group-name">Pattern circle</h3>
+                </div>
+                <div class="group-members-card">
+                  <h4 data-i18n="invitedPeopleHeading">Happy knitters in the group</h4>
+                  <ul id="group-members" class="group-members"></ul>
+                </div>
+                <div id="chat-messages" class="chat-messages"></div>
+                <form id="chat-form" class="chat-form">
+                  <div class="chat-input-row">
+                    <input id="chat-message" type="text" data-i18n-placeholder="chatPlaceholder" placeholder="Share a pattern idea..." />
+                    <label class="chat-attach-btn" title="Attach image">
+                      📷
+                      <input id="chat-image-input" type="file" accept="image/*" class="hidden-file-input" />
+                    </label>
+                    <button type="button" id="chat-link-btn" class="chat-attach-btn" title="Add link">🔗</button>
+                    <button type="submit" data-i18n="sendButton">Send</button>
+                  </div>
+                  <div id="chat-link-row" class="chat-link-row hidden">
+                    <input id="chat-link-input" type="url" placeholder="https://..." />
+                    <input id="chat-link-label-input" type="text" placeholder="Link text (optional)" />
+                  </div>
+                  <div id="chat-image-preview-row" class="chat-image-preview-row hidden">
+                    <img id="chat-image-preview" src="" alt="preview" />
+                    <button type="button" id="chat-image-clear-btn">✕</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <aside class="group-sidebar">
+              <h4 data-i18n="myGroupsHeading">My groups</h4>
+              <div id="group-list" class="group-list"></div>
+
+              <h4 data-i18n="pendingRequestsHeading" class="sidebar-section-heading">Membership requests</h4>
+              <ul id="pending-requests-list" class="pending-requests-list"></ul>
+
+              <h4 data-i18n="allMembersHeading" class="sidebar-section-heading">All members</h4>
+              <ul id="all-members-list" class="group-members all-members-list"></ul>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    </div> <!-- end app-shell-wrapper -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Konfiguration og fælles data -->
+    <script src="js/config.js?v=20260803-16"></script>
+    <script src="js/dom.js?v=20260803-16"></script>
+    <script src="js/utils.js?v=20260803-16"></script>
+    <!-- Data: Supabase-kald og logik -->
+    <script src="data/projekter-data.js?v=20260803-16"></script>
+    <script src="data/grupper-data.js?v=20260803-16"></script>
+    <script src="data/profil.js?v=20260803-16"></script>
+    <script src="data/members.js?v=20260803-16"></script>
+    <script src="data/auth.js?v=20260803-16"></script>
+    <!-- Sidelayout og UI -->
+    <script src="pages/forside.js?v=20260803-16"></script>
+    <script src="pages/andre-projekter.js?v=20260803-16"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20260803-16"></script>
+    <script src="pages/grupper.js?v=20260803-16"></script>
+    <!-- Initialisering -->
+    <script src="app.js?v=20260803-16"></script>
+  </body>
+</html>
