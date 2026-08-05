@@ -2,7 +2,8 @@
 function enforceDayAwayText() {
 	// Guard against stale cached text from older deployments.
 	const replaceLife = (value) => String(value || '').replace(/Life Away/gi, 'Day Away');
-	const replaceProjects = (value) => String(value || '').replace(/Previous projects|Andre projekter/gi, 'Other projects');
+	const targetProjectsHeading = translations[currentLanguage]?.projectsHeading || 'Other projects';
+	const replaceProjects = (value) => String(value || '').replace(/Previous projects|Andre projekter|Other projects/gi, targetProjectsHeading);
 
 	document.title = replaceLife(document.title);
 

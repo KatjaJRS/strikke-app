@@ -181,7 +181,6 @@ const translations = {
     statusLabel: 'Status',
     statusPlanning: 'Planlægger',
     statusInProgress: 'I gang',
-    projectsHeading: 'Other projects',
     ratingLabel: 'Mønsterbedømmelse',
     ratingOption0: 'Ingen bedømmelse',
     ratingOption1: '1 stjerne',
