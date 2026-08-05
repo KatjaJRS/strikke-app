@@ -569,6 +569,15 @@ body {
   border-color: #e99ab1;
 }
 
+.danger-link {
+  color: #b33b56;
+  font-weight: 700;
+}
+
+.danger-link:hover {
+  color: #932840;
+}
+
 .profile-password-section {
   border: 1px dashed #f3b5c8;
   border-radius: 10px;

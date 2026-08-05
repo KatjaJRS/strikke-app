@@ -64,6 +64,41 @@ function showAuthError(id, msg) {
   el.classList.remove('hidden');
 }
 
+async function deleteMyMembershipData(profile) {
+  if (!currentUser) return;
+  const confirmed = confirm(translations[currentLanguage].deleteMembershipDataConfirm);
+  if (!confirmed) return;
+
+  const email = String(currentUser.email || '').trim().toLowerCase();
+  const profileName = String(profile?.name || myProfileName || '').trim();
+
+  await sb.from('projects').delete().eq('user_id', currentUser.id);
+  await sb.from('membership_requests').delete().eq('email', email);
+  await sb.from('profiles').delete().eq('id', currentUser.id);
+
+  if (profileName) {
+    await sb.from('messages').delete().eq('sender_name', profileName);
+  }
+
+  const { data: groupsData } = await sb.from('groups').select('id, invited_people');
+  for (const group of groupsData || []) {
+    const invitedPeople = Array.isArray(group.invited_people) ? group.invited_people : [];
+    const filteredPeople = invitedPeople.filter((person) => person !== profileName);
+    if (filteredPeople.length !== invitedPeople.length) {
+      await sb.from('groups').update({ invited_people: filteredPeople }).eq('id', group.id);
+    }
+  }
+
+  localStorage.removeItem(PROFILE_NAME_KEY);
+  localStorage.removeItem(PROFILE_PIC_KEY);
+  localStorage.removeItem(DRAFT_KEY);
+  localStorage.removeItem(HERO_IMAGE_KEY);
+  localStorage.removeItem(HERO_PAN_KEY);
+  localStorage.removeItem(ROUNDS_KEY);
+  await sb.auth.signOut();
+  location.reload();
+}
+
 function launchApp(user, profile) {
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app-shell-wrapper').classList.remove('hidden');
@@ -151,6 +186,14 @@ function launchApp(user, profile) {
     renderGroups();
     if (typeof updateProfilePreview === 'function') updateProfilePreview();
   });
+
+  const deleteMembershipDataBtn = document.getElementById('delete-membership-data-btn');
+  if (deleteMembershipDataBtn && !deleteMembershipDataBtn.dataset.bound) {
+    deleteMembershipDataBtn.dataset.bound = 'true';
+    deleteMembershipDataBtn.addEventListener('click', async () => {
+      await deleteMyMembershipData(profile);
+    });
+  }
 
   document.getElementById('profile-edit-form').addEventListener('submit', async (e) => {
     e.preventDefault();
