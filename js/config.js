@@ -95,6 +95,7 @@ const translations = {
     patternLinkPlaceholder: 'https://... or file name',
     imageLabel: 'Project photo',
     saveNoteButton: 'Save project',
+    projectsHeading: 'Other projects',
     searchProjectsPlaceholder: 'Search by name, pattern, or notes',
     filterStatusLabel: 'Status',
     statusFilterAll: 'All statuses',
@@ -164,7 +165,7 @@ const translations = {
   },
   da: {
     heroEyebrow: 'Fru Sminges hyggelige håndværksplanlægger',
-    heroTitle: 'Knitting My Day Away',
+    heroTitle: 'Strikker min dag væk',
     heroSubtitle: 'Strik som om dit liv afhænger af det........ Planer, mønstre, noter, osv.',
     changeButton: 'Skift',
     currentProjectHeading: 'Nuværende projekt',

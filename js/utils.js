@@ -39,12 +39,13 @@ function renderHearts(difficulty) {
 }
 
 function translateStatus(status) {
+  const normalizedStatus = normalizeProjectStatus(status);
   const statusMap = {
     'Planning': translations[currentLanguage].statusPlanning,
     'In progress': translations[currentLanguage].statusInProgress,
     'Finished': translations[currentLanguage].statusFinished
   };
-  return statusMap[status] || status;
+  return statusMap[normalizedStatus] || normalizedStatus;
 }
 
 function renderYarns(yarns) {
@@ -59,6 +60,18 @@ function renderNeedles(needles) {
   if (!Array.isArray(needles)) needles = needles ? [needles] : [];
   const needlesList = needles.filter(n => n && n.trim()).map(n => escapeHTML(n)).join(' ');
   return needlesList ? `<p><strong>${translations[currentLanguage].needlesDisplayLabel}:</strong> ${needlesList}</p>` : '';
+}
+
+function normalizeProjectStatus(status) {
+  const statusMap = {
+    Planning: 'Planning',
+    'In progress': 'In progress',
+    Finished: 'Finished',
+    Planlægger: 'Planning',
+    'I gang': 'In progress',
+    Færdig: 'Finished',
+  };
+  return statusMap[status] || status || 'Planning';
 }
 
 function getAmountUsedString(yarns) {
@@ -136,5 +149,7 @@ function showHighfiveCelebration() {
 
 function shouldCelebrateFinishTransition(previousStatus, nextStatus) {
   const allowedPreviousStatuses = ['Planning', 'In progress'];
-  return allowedPreviousStatuses.includes(previousStatus) && nextStatus === 'Finished';
+  const normalizedPreviousStatus = normalizeProjectStatus(previousStatus);
+  const normalizedNextStatus = normalizeProjectStatus(nextStatus);
+  return allowedPreviousStatuses.includes(normalizedPreviousStatus) && normalizedNextStatus === 'Finished';
 }

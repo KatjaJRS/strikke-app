@@ -66,14 +66,6 @@ body {
   display: none !important;
 }
 
-.busy-illustration::before {
-  content: '🧶';
-  font-size: 2.3rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 0 rgba(122, 39, 66, 0.2));
-  animation: busyYarnSpin 0.95s linear infinite;
-}
-
 .busy-yarn-spinner {
   font-size: 2.3rem;
   line-height: 1;
