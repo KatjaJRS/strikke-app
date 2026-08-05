@@ -12,7 +12,8 @@ const PROFILE_PIC_KEY = 'knitting-profile-picture';
 const PROFILE_NAME_KEY = 'knitting-profile-name';
 const HERO_IMAGE_KEY = 'knitting-hero-image';
 const ROUNDS_KEY = 'knitting-rounds';
-const ADMIN_EMAIL = 'roldsgaard@gmail.com';
+const ADMIN_EMAIL = 'roldsgaardkatja@gmail.com';
+const ADMIN_EMAILS = ['roldsgaardkatja@gmail.com', 'roldsgaard@gmail.com'];
 const DRAFT_KEY = 'knitting-form-draft';
 const HERO_PAN_KEY = 'knitting-hero-pan';
 
@@ -30,6 +31,10 @@ let currentEditingProjectId = null;
 const APP_BASE_URL = 'https://katjajrs.github.io/strikke-app/';
 let lastDeletedProject = null;
 let undoTimeoutId = null;
+
+function isAdminUser(email = currentUser?.email) {
+  return ADMIN_EMAILS.includes(String(email || '').trim().toLowerCase());
+}
 
 let projects = [];
 let groups = [];

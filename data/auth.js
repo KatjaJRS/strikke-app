@@ -39,12 +39,16 @@ async function loadAllData() {
     if (groups.length > 0 && !groups.some(g => g.id === activeGroupId)) activeGroupId = groups[0].id;
     else if (groups.length === 0) activeGroupId = null;
 
-    // Medlemsanmodninger
-    const { data: rData } = await sb.from('membership_requests').select('*');
-    membershipRequests = (rData || []).map(r => ({
-      id: r.id, name: r.name, email: r.email || '',
-      createdAt: new Date(r.created_at).getTime()
-    }));
+    // Medlemsanmodninger er kun synlige for admin.
+    if (isAdminUser()) {
+      const { data: rData } = await sb.from('membership_requests').select('*');
+      membershipRequests = (rData || []).map(r => ({
+        id: r.id, name: r.name, email: r.email || '',
+        createdAt: new Date(r.created_at).getTime()
+      }));
+    } else {
+      membershipRequests = [];
+    }
   }, 'Henter dine projekter...');
 }
 
@@ -243,6 +247,16 @@ async function initAuth() {
     if (error) { showAuthError('register-error', error.message); return; }
     currentUser = data.user;
     await sb.from('profiles').upsert({ id: currentUser.id, name, profile_pic: '' });
+
+    if (!isAdminUser(email)) {
+      await sb.from('membership_requests').upsert({
+        id: `req-${currentUser.id}`,
+        name,
+        email,
+        created_at: new Date().toISOString()
+      });
+    }
+
     myProfileName = name;
     localStorage.setItem(PROFILE_NAME_KEY, name);
     await loadAllData();

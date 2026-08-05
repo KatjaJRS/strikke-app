@@ -3,6 +3,11 @@
 function renderGroups() {
   groupList.innerHTML = '';
 
+  const adminRequestsSection = document.getElementById('admin-membership-requests-section');
+  if (adminRequestsSection) {
+    adminRequestsSection.classList.toggle('hidden', !isAdminUser());
+  }
+
   groups.forEach((group) => {
     const button = document.createElement('button');
     button.type = 'button';
@@ -14,7 +19,7 @@ function renderGroups() {
 
   // Vis ventende anmodninger
   const pendingList = document.getElementById('pending-requests-list');
-  if (pendingList) {
+  if (pendingList && isAdminUser()) {
     const visibleRequests = membershipRequests.filter((req) => !reviewedMembershipRequestIds.has(req.id));
     if (visibleRequests.length === 0) {
       pendingList.innerHTML = `<li class="no-pending">${translations[currentLanguage].noPendingRequests}</li>`;
@@ -42,6 +47,8 @@ function renderGroups() {
         btn.addEventListener('click', () => rejectMember(btn.dataset.id));
       });
     }
+  } else if (pendingList) {
+    pendingList.innerHTML = '';
   }
 
   // Vis alle unikke medlemmer

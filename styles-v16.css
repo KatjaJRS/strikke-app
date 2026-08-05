@@ -1154,6 +1154,8 @@ button:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .sidebar-section-heading {
