@@ -27,6 +27,7 @@ let filterRating = 'all';
 let filterDifficulty = 'all';
 
 let currentEditingProjectId = null;
+const APP_BASE_URL = 'https://katjajrs.github.io/strikke-app/';
 let lastDeletedProject = null;
 let undoTimeoutId = null;
 
@@ -180,7 +181,7 @@ const translations = {
     statusLabel: 'Status',
     statusPlanning: 'Planlægger',
     statusInProgress: 'I gang',
-    statusFinished: 'Færdig',
+    projectsHeading: 'Other projects',
     ratingLabel: 'Mønsterbedømmelse',
     ratingOption0: 'Ingen bedømmelse',
     ratingOption1: '1 stjerne',

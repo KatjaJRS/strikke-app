@@ -252,7 +252,7 @@ async function initAuth() {
   document.getElementById('forgot-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('forgot-email').value.trim().toLowerCase();
-    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${APP_BASE_URL}?reset=1` });
     if (error) { showAuthError('forgot-error', error.message); return; }
     alert(translations[currentLanguage].forgotSuccessMsg);
     showAuthForm('login-form');
