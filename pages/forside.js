@@ -22,6 +22,8 @@ function applyLanguage(lang) {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
 
+  if (typeof syncPasswordToggleButtons === 'function') syncPasswordToggleButtons();
+
   renderProjects();
   renderGroups();
 }

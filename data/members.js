@@ -1,5 +1,12 @@
 // ── Medlemsdata — anmodninger om optagelse ────────────────────────────────
 
+const REVIEWED_MEMBERSHIP_REQUESTS_KEY = 'knitting-reviewed-membership-requests';
+let reviewedMembershipRequestIds = new Set(JSON.parse(localStorage.getItem(REVIEWED_MEMBERSHIP_REQUESTS_KEY) || '[]'));
+
+function saveReviewedMembershipRequests() {
+  localStorage.setItem(REVIEWED_MEMBERSHIP_REQUESTS_KEY, JSON.stringify([...reviewedMembershipRequestIds]));
+}
+
 async function saveMembershipRequests() {}
 
 async function acceptMember(id) {
@@ -11,14 +18,14 @@ async function acceptMember(id) {
     groups = groups.map((gr, i) => i === 0 ? { ...gr, invitedPeople: newInvited } : gr);
     await sb.from('groups').update({ invited_people: newInvited }).eq('id', g.id);
   }
-  await sb.from('membership_requests').delete().eq('id', id);
-  membershipRequests = membershipRequests.filter(r => r.id !== id);
+  reviewedMembershipRequestIds.add(id);
+  saveReviewedMembershipRequests();
   renderGroups();
 }
 
 async function rejectMember(id) {
-  await sb.from('membership_requests').delete().eq('id', id);
-  membershipRequests = membershipRequests.filter(r => r.id !== id);
+  reviewedMembershipRequestIds.add(id);
+  saveReviewedMembershipRequests();
   renderGroups();
 }
 

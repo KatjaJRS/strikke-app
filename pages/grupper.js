@@ -15,10 +15,11 @@ function renderGroups() {
   // Vis ventende anmodninger
   const pendingList = document.getElementById('pending-requests-list');
   if (pendingList) {
-    if (membershipRequests.length === 0) {
+    const visibleRequests = membershipRequests.filter((req) => !reviewedMembershipRequestIds.has(req.id));
+    if (visibleRequests.length === 0) {
       pendingList.innerHTML = `<li class="no-pending">${translations[currentLanguage].noPendingRequests}</li>`;
     } else {
-      pendingList.innerHTML = membershipRequests.map((req) => `
+      pendingList.innerHTML = visibleRequests.map((req) => `
         <li class="pending-request-item">
           <div class="pending-info">
             ${getAvatarHTML(req.name, '')}

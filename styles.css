@@ -695,6 +695,24 @@ body {
   border-color: #e35c86;
 }
 
+.password-toggle {
+  justify-self: start;
+  background: #fff0f5;
+  color: #a63d57;
+  border: 1px solid #f3b5c8;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.password-toggle:hover {
+  background: #ffdce7;
+  border-color: #e99ab1;
+}
+
 .profile-password-section {
   border: 1px dashed #f3b5c8;
   border-radius: 10px;
@@ -1293,10 +1311,11 @@ button:hover {
 }
 
 .join-request-box {
-  background: #fff7fa;
-  border: 1px dashed #e35c86;
-  border-radius: 14px;
-  padding: 14px;
+  background: linear-gradient(180deg, #fff8fc 0%, #fff4f8 100%);
+  border: 1px solid #f3b5c8;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(197, 90, 116, 0.08);
 }
 
 .join-request-box h4 {
@@ -1319,18 +1338,19 @@ button:hover {
 }
 
 .pending-request-item {
-  background: #fff0f5;
+  background: #fff;
   border: 1px solid #f3b5c8;
-  border-radius: 10px;
-  padding: 8px 10px;
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  box-shadow: 0 6px 16px rgba(197, 90, 116, 0.08);
   display: grid;
-  gap: 6px;
+  gap: 10px;
 }
 
 .pending-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .pending-info .avatar {
@@ -1344,11 +1364,13 @@ button:hover {
   display: block;
   font-size: 0.75rem;
   color: #9a6070;
+  margin-top: 2px;
 }
 
 .pending-actions {
   display: flex;
   gap: 6px;
+  justify-content: flex-end;
 }
 
 .accept-btn {
