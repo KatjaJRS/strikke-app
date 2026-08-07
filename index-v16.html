@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Day Away</title>
-    <link rel="stylesheet" href="styles-v16.css?v=20260807-9" />
+    <link rel="stylesheet" href="styles-v16.css?v=20260807-10" />
   </head>
   <body>
     <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
@@ -364,10 +364,12 @@
                   <div class="chat-input-row">
                     <input id="chat-message" type="text" data-i18n-placeholder="chatPlaceholder" placeholder="Share a pattern idea..." />
                     <label class="chat-attach-btn" title="Attach image">
-                      📷
+                      <span class="attach-icon" aria-hidden="true">📷</span>
                       <input id="chat-image-input" type="file" accept="image/*" class="hidden-file-input" />
                     </label>
-                    <button type="button" id="chat-link-btn" class="chat-attach-btn" title="Add link">🔗</button>
+                    <button type="button" id="chat-link-btn" class="chat-attach-btn" title="Add link">
+                      <span class="attach-icon" aria-hidden="true">🔗</span>
+                    </button>
                     <button type="submit" data-i18n="sendButton">Send</button>
                   </div>
                   <div id="chat-link-row" class="chat-link-row hidden">
@@ -399,25 +401,36 @@
       </div>
     </main>
 
+    <div id="chat-edit-modal" class="chat-edit-modal hidden" role="dialog" aria-modal="true" aria-labelledby="chat-edit-title">
+      <div class="chat-edit-card">
+        <h3 id="chat-edit-title" data-i18n="chatEditTitle">Edit message</h3>
+        <textarea id="chat-edit-text" rows="4"></textarea>
+        <div class="chat-edit-actions">
+          <button type="button" id="chat-edit-cancel" class="ghost-btn" data-i18n="chatEditCancel">Cancel</button>
+          <button type="button" id="chat-edit-save" class="auth-btn" data-i18n="chatEditSave">Save</button>
+        </div>
+      </div>
+    </div>
+
     </div> <!-- end app-shell-wrapper -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260807-9"></script>
-    <script src="js/dom.js?v=20260807-9"></script>
-    <script src="js/utils.js?v=20260807-9"></script>
+    <script src="js/config.js?v=20260807-10"></script>
+    <script src="js/dom.js?v=20260807-10"></script>
+    <script src="js/utils.js?v=20260807-10"></script>
     <!-- Data: Supabase-kald og logik -->
-    <script src="data/projekter-data.js?v=20260807-9"></script>
-    <script src="data/grupper-data.js?v=20260807-9"></script>
-    <script src="data/profil.js?v=20260807-9"></script>
-    <script src="data/members.js?v=20260807-9"></script>
-    <script src="data/auth.js?v=20260807-9"></script>
+    <script src="data/projekter-data.js?v=20260807-10"></script>
+    <script src="data/grupper-data.js?v=20260807-10"></script>
+    <script src="data/profil.js?v=20260807-10"></script>
+    <script src="data/members.js?v=20260807-10"></script>
+    <script src="data/auth.js?v=20260807-10"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20260807-9"></script>
-    <script src="pages/andre-projekter.js?v=20260807-9"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20260807-9"></script>
-    <script src="pages/grupper.js?v=20260807-9"></script>
+    <script src="pages/forside.js?v=20260807-10"></script>
+    <script src="pages/andre-projekter.js?v=20260807-10"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20260807-10"></script>
+    <script src="pages/grupper.js?v=20260807-10"></script>
     <!-- Initialisering -->
-    <script src="app.js?v=20260807-9"></script>
+    <script src="app.js?v=20260807-10"></script>
   </body>
 </html>

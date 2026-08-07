@@ -1330,8 +1330,10 @@ button:hover {
 .chat-attach-btn {
   background: #fff0f5;
   border: 1px solid #f3b5c8;
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   cursor: pointer;
   font-size: 1.1rem;
   line-height: 1;
@@ -1339,6 +1341,17 @@ button:hover {
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.attach-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+  transform: translateY(-0.5px);
 }
 
 .chat-attach-btn:hover {
@@ -1599,6 +1612,59 @@ button:hover {
 
 .chat-action-btn:hover {
   background: #ffe9f2;
+}
+
+.chat-edit-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(89, 66, 52, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10020;
+  padding: 20px;
+}
+
+.chat-edit-modal.hidden {
+  display: none;
+}
+
+.chat-edit-card {
+  width: min(520px, 100%);
+  background: #fff7fb;
+  border: 1px solid #f3b5c8;
+  border-radius: 16px;
+  box-shadow: 0 14px 30px rgba(122, 39, 66, 0.2);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.chat-edit-card h3 {
+  margin: 0;
+  color: #7a2742;
+}
+
+#chat-edit-text {
+  width: 100%;
+  min-height: 110px;
+  border: 1px solid #f3b5c8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  resize: vertical;
+  font: inherit;
+  color: #5f493c;
+}
+
+#chat-edit-text:focus {
+  outline: 2px solid #e35c86;
+  outline-offset: 1px;
+}
+
+.chat-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .chat-empty {

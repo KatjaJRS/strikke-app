@@ -4,6 +4,27 @@ function isOwnMessage(message) {
   return !message?.sender || message.sender === 'You' || message.sender === myProfileName;
 }
 
+const chatEditModal = document.getElementById('chat-edit-modal');
+const chatEditText = document.getElementById('chat-edit-text');
+const chatEditSaveBtn = document.getElementById('chat-edit-save');
+const chatEditCancelBtn = document.getElementById('chat-edit-cancel');
+let editingMessageContext = null;
+
+function closeChatEditModal() {
+  if (!chatEditModal) return;
+  chatEditModal.classList.add('hidden');
+  editingMessageContext = null;
+}
+
+function openChatEditModal(groupId, message) {
+  if (!chatEditModal || !chatEditText || !message?.id) return;
+  editingMessageContext = { groupId, messageId: message.id };
+  chatEditText.value = message.text || '';
+  chatEditModal.classList.remove('hidden');
+  chatEditText.focus();
+  chatEditText.setSelectionRange(chatEditText.value.length, chatEditText.value.length);
+}
+
 async function editOwnMessage(messageId) {
   const activeGroup = getActiveGroup();
   if (!activeGroup) return;
@@ -11,30 +32,7 @@ async function editOwnMessage(messageId) {
   const message = activeGroup.messages.find((item) => item.id === messageId);
   if (!message || !isOwnMessage(message)) return;
 
-  const edited = prompt(translations[currentLanguage].chatEditPrompt, message.text || '');
-  if (edited === null) return;
-
-  const nextText = edited.trim();
-  if (!nextText && !message.image && !message.link) {
-    alert(translations[currentLanguage].chatEditEmpty);
-    return;
-  }
-
-  groups = groups.map((group) => {
-    if (group.id !== activeGroup.id) return group;
-    const messages = group.messages.map((item) =>
-      item.id === messageId ? { ...item, text: nextText } : item
-    );
-    return { ...group, messages };
-  });
-  renderGroups();
-
-  const ok = await updateMessageById(messageId, { text: nextText });
-  if (!ok) {
-    alert(translations[currentLanguage].chatUpdateFailed);
-  }
-  await refreshCommunityData();
-  renderGroups();
+  openChatEditModal(activeGroup.id, message);
 }
 
 async function deleteOwnMessage(messageId) {
@@ -59,6 +57,67 @@ async function deleteOwnMessage(messageId) {
   }
   await refreshCommunityData();
   renderGroups();
+}
+
+async function saveEditedMessageFromModal() {
+  if (!editingMessageContext || !chatEditText) return;
+  const { groupId, messageId } = editingMessageContext;
+  const activeGroup = groups.find((group) => group.id === groupId);
+  if (!activeGroup) {
+    closeChatEditModal();
+    return;
+  }
+
+  const message = activeGroup.messages.find((item) => item.id === messageId);
+  if (!message || !isOwnMessage(message)) {
+    closeChatEditModal();
+    return;
+  }
+
+  const nextText = chatEditText.value.trim();
+  if (!nextText && !message.image && !message.link) {
+    alert(translations[currentLanguage].chatEditEmpty);
+    return;
+  }
+
+  groups = groups.map((group) => {
+    if (group.id !== groupId) return group;
+    const messages = group.messages.map((item) =>
+      item.id === messageId ? { ...item, text: nextText } : item
+    );
+    return { ...group, messages };
+  });
+  closeChatEditModal();
+  renderGroups();
+
+  const ok = await updateMessageById(messageId, { text: nextText });
+  if (!ok) {
+    alert(translations[currentLanguage].chatUpdateFailed);
+  }
+  await refreshCommunityData();
+  renderGroups();
+}
+
+if (chatEditSaveBtn && !chatEditSaveBtn.dataset.bound) {
+  chatEditSaveBtn.dataset.bound = 'true';
+  chatEditSaveBtn.addEventListener('click', saveEditedMessageFromModal);
+}
+
+if (chatEditCancelBtn && !chatEditCancelBtn.dataset.bound) {
+  chatEditCancelBtn.dataset.bound = 'true';
+  chatEditCancelBtn.addEventListener('click', closeChatEditModal);
+}
+
+if (chatEditModal && !chatEditModal.dataset.bound) {
+  chatEditModal.dataset.bound = 'true';
+  chatEditModal.addEventListener('click', (event) => {
+    if (event.target === chatEditModal) closeChatEditModal();
+  });
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !chatEditModal.classList.contains('hidden')) {
+      closeChatEditModal();
+    }
+  });
 }
 
 function renderGroups() {
