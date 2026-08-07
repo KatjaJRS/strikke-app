@@ -5,21 +5,26 @@ function updateHeroImage() {
 }
 
 function applyLanguage(lang) {
-  currentLanguage = lang;
-  localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+  currentLanguage = normalizeLanguage(lang);
+  localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
+  document.documentElement.lang = currentLanguage;
+
+  if (currentUser?.email) {
+    saveLanguageForEmail(currentUser.email, currentLanguage);
+  }
 
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n');
-    el.textContent = translations[lang][key] || el.textContent;
+    el.textContent = translations[currentLanguage][key] || el.textContent;
   });
 
   document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
     const key = el.getAttribute('data-i18n-placeholder');
-    el.placeholder = translations[lang][key] || el.placeholder;
+    el.placeholder = translations[currentLanguage][key] || el.placeholder;
   });
 
   langButtons.forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.lang === lang);
+    btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
   });
 
   if (typeof syncPasswordToggleButtons === 'function') syncPasswordToggleButtons();

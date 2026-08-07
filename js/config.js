@@ -8,6 +8,7 @@ let currentUser = null;
 const GROUPS_READ_KEY = 'knitting-groups-last-read';
 const GROUP_QUERY_PARAM = 'group';
 const LANGUAGE_STORAGE_KEY = 'knitting-language';
+const LANGUAGE_BY_EMAIL_KEY = 'knitting-language-by-email';
 const PROFILE_PIC_KEY = 'knitting-profile-picture';
 const PROFILE_NAME_KEY = 'knitting-profile-name';
 const HERO_IMAGE_KEY = 'knitting-hero-image';
@@ -45,6 +46,34 @@ let activeGroupId = null;
 let currentLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en';
 let myProfilePic = localStorage.getItem(PROFILE_PIC_KEY) || '';
 let myProfileName = localStorage.getItem(PROFILE_NAME_KEY) || 'You';
+
+function normalizeLanguage(language) {
+  return language === 'da' ? 'da' : 'en';
+}
+
+function getSavedLanguageMap() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(LANGUAGE_BY_EMAIL_KEY) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function getSavedLanguageForEmail(email) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!normalizedEmail) return '';
+  const languageMap = getSavedLanguageMap();
+  return normalizeLanguage(languageMap[normalizedEmail]);
+}
+
+function saveLanguageForEmail(email, language) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!normalizedEmail) return;
+  const languageMap = getSavedLanguageMap();
+  languageMap[normalizedEmail] = normalizeLanguage(language);
+  localStorage.setItem(LANGUAGE_BY_EMAIL_KEY, JSON.stringify(languageMap));
+}
 
 // ── BroadcastChannel ─────────────────────────────────────────────────────
 const broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('knitting-groups-chat') : null;

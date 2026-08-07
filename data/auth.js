@@ -38,6 +38,21 @@ function showAuthError(id, msg) {
   el.classList.remove('hidden');
 }
 
+async function upsertProfileWithLanguage(profileData) {
+  const withLanguage = { ...profileData, preferred_language: normalizeLanguage(currentLanguage) };
+  const { error } = await sb.from('profiles').upsert(withLanguage);
+
+  if (!error) return;
+
+  const missingLanguageColumn = /preferred_language|column/i.test(String(error.message || ''));
+  if (!missingLanguageColumn) throw error;
+
+  const fallback = { ...profileData };
+  delete fallback.preferred_language;
+  const { error: fallbackError } = await sb.from('profiles').upsert(fallback);
+  if (fallbackError) throw fallbackError;
+}
+
 async function deleteMyMembershipData(profile) {
   if (!currentUser) return;
   const firstConfirm = confirm(translations[currentLanguage].deleteMembershipDataConfirm);
@@ -220,6 +235,12 @@ async function initAuth() {
   if (session) {
     currentUser = session.user;
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    const preferredLanguage = normalizeLanguage(
+      profile?.preferred_language || getSavedLanguageForEmail(currentUser.email) || currentLanguage
+    );
+    applyLanguage(preferredLanguage);
+    saveLanguageForEmail(currentUser.email, preferredLanguage);
+
     if (profile) {
       myProfileName = profile.name || currentUser.email;
       myProfilePic = profile.profile_pic || '';
@@ -238,6 +259,14 @@ async function initAuth() {
   document.getElementById('show-forgot').addEventListener('click', () => showAuthForm('forgot-form'));
   document.getElementById('show-login-from-forgot').addEventListener('click', () => showAuthForm('login-form'));
 
+  const loginEmailInput = document.getElementById('login-email');
+  loginEmailInput.addEventListener('input', () => {
+    const savedLanguage = getSavedLanguageForEmail(loginEmailInput.value);
+    if (savedLanguage && savedLanguage !== currentLanguage) {
+      applyLanguage(savedLanguage);
+    }
+  });
+
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim().toLowerCase();
@@ -246,6 +275,12 @@ async function initAuth() {
     if (error) { showAuthError('login-error', translations[currentLanguage].loginErrorWrong); return; }
     currentUser = data.user;
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    const preferredLanguage = normalizeLanguage(
+      profile?.preferred_language || getSavedLanguageForEmail(email) || currentLanguage
+    );
+    applyLanguage(preferredLanguage);
+    saveLanguageForEmail(email, preferredLanguage);
+
     if (profile) {
       myProfileName = profile.name || email;
       myProfilePic = profile.profile_pic || '';
@@ -265,7 +300,8 @@ async function initAuth() {
     const { data, error } = await sb.auth.signUp({ email, password });
     if (error) { showAuthError('register-error', error.message); return; }
     currentUser = data.user;
-    await sb.from('profiles').upsert({ id: currentUser.id, name, profile_pic: '' });
+    await upsertProfileWithLanguage({ id: currentUser.id, name, profile_pic: '' });
+    saveLanguageForEmail(email, currentLanguage);
 
     if (!isAdminUser(email)) {
       await sb.from('membership_requests').upsert({
