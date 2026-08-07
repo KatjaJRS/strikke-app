@@ -64,8 +64,34 @@ function renderGroups() {
       a.localeCompare(b, undefined, { sensitivity: 'base' })
     );
     allMembersList.innerHTML = allMembers.length
-      ? allMembers.map(person => `<li>${getAvatarHTML(person, '')} ${escapeHTML(person)}</li>`).join('')
+      ? allMembers.map(person => `
+        <li>
+          <button type="button" class="member-picker-btn" data-member-name="${escapeHTML(person)}">
+            ${getAvatarHTML(person, '')}
+            <span>${escapeHTML(person)}</span>
+          </button>
+        </li>
+      `).join('')
       : '';
+
+    allMembersList.querySelectorAll('.member-picker-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        const memberName = button.dataset.memberName || '';
+        if (!memberName || !groupInvitesInput) return;
+
+        const existingInvites = groupInvitesInput.value
+          .split(',')
+          .map((name) => name.trim())
+          .filter(Boolean);
+        const exists = existingInvites.some(
+          (name) => name.toLowerCase() === memberName.toLowerCase()
+        );
+        if (!exists) existingInvites.push(memberName);
+
+        groupInvitesInput.value = existingInvites.join(', ');
+        groupInvitesInput.focus();
+      });
+    });
   }
 
   const activeGroup = getActiveGroup();

@@ -836,6 +836,32 @@ body {
   color: white;
 }
 
+.member-picker-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #f4b5c7;
+  border-radius: 10px;
+  background: #fff7fb;
+  color: #7a2742;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.member-picker-btn:hover {
+  background: #ffe9f2;
+  border-color: #e8a1b8;
+  transform: translateY(-1px);
+}
+
+.member-picker-btn:focus-visible {
+  outline: 2px solid #e35c86;
+  outline-offset: 1px;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   text-transform: uppercase;
