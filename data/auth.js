@@ -40,8 +40,10 @@ function showAuthError(id, msg) {
 
 async function deleteMyMembershipData(profile) {
   if (!currentUser) return;
-  const confirmed = confirm(translations[currentLanguage].deleteMembershipDataConfirm);
-  if (!confirmed) return;
+  const firstConfirm = confirm(translations[currentLanguage].deleteMembershipDataConfirm);
+  if (!firstConfirm) return;
+  const secondConfirm = confirm(translations[currentLanguage].deleteMembershipDataConfirm);
+  if (!secondConfirm) return;
 
   const email = String(currentUser.email || '').trim().toLowerCase();
   const profileName = String(profile?.name || myProfileName || '').trim();

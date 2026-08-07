@@ -1,6 +1,7 @@
 // ── Medlemsdata — anmodninger om optagelse ────────────────────────────────
 
 const REVIEWED_MEMBERSHIP_REQUESTS_KEY = 'knitting-reviewed-membership-requests';
+const COMMUNITY_GROUP_ID = 'group-community';
 let reviewedMembershipRequestIds = new Set(JSON.parse(localStorage.getItem(REVIEWED_MEMBERSHIP_REQUESTS_KEY) || '[]'));
 
 function saveReviewedMembershipRequests() {
@@ -15,28 +16,28 @@ async function acceptMember(id) {
   const approvedName = String(req.name || '').trim();
   if (!approvedName) return;
 
-  if (groups.length === 0) {
-    const defaultGroup = {
-      id: 'group-community',
+  let communityGroup = groups.find((group) => group.id === COMMUNITY_GROUP_ID);
+  if (!communityGroup) {
+    communityGroup = {
+      id: COMMUNITY_GROUP_ID,
       name: 'Fællesskab',
-      invitedPeople: [approvedName],
+      invitedPeople: [],
       messages: []
     };
-    await sb.from('groups').upsert({
-      id: defaultGroup.id,
-      name: defaultGroup.name,
-      invited_people: defaultGroup.invitedPeople
-    });
-    groups = [defaultGroup];
-  } else {
-    groups = groups.map((group) => {
-      const invitedPeople = [...new Set([...(group.invitedPeople || []), approvedName])];
-      return { ...group, invitedPeople };
-    });
+    groups = [...groups, communityGroup];
+  }
 
-    for (const group of groups) {
-      await sb.from('groups').update({ invited_people: group.invitedPeople }).eq('id', group.id);
-    }
+  groups = groups.map((group) => {
+    const invitedPeople = [...new Set([...(group.invitedPeople || []), approvedName])];
+    return { ...group, invitedPeople };
+  });
+
+  for (const group of groups) {
+    await sb.from('groups').upsert({
+      id: group.id,
+      name: group.name,
+      invited_people: group.invitedPeople || []
+    });
   }
 
   reviewedMembershipRequestIds.add(id);
