@@ -48,6 +48,50 @@ function markGroupsAsRead() {
   updateGroupsBadge();
 }
 
+async function refreshCommunityData() {
+  if (!currentUser) return;
+  try {
+    const { data: gData } = await sb.from('groups').select('*, messages(*)');
+    groups = (gData || []).map(g => ({
+      id: g.id,
+      name: g.name,
+      invitedPeople: g.invited_people || [],
+      messages: (g.messages || [])
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+        .map(m => ({
+          id: m.id,
+          sender: m.sender_name || 'You',
+          text: m.text || '',
+          image: m.image || '',
+          link: m.link || '',
+          linkLabel: m.link_label || '',
+          createdAt: new Date(m.created_at).getTime()
+        }))
+    }));
+
+    if (isAdminUser()) {
+      const { data: rData } = await sb.from('membership_requests').select('*');
+      membershipRequests = (rData || []).map(r => ({
+        id: r.id,
+        name: r.name,
+        email: r.email || '',
+        createdAt: new Date(r.created_at).getTime()
+      }));
+    } else {
+      membershipRequests = [];
+    }
+
+    const { data: profileData } = await sb.from('profiles').select('name');
+    memberDirectory = (profileData || [])
+      .map((p) => String(p.name || '').trim())
+      .filter(Boolean);
+
+    normalizeGroups();
+  } catch (e) {
+    console.error('Error refreshing community data:', e);
+  }
+}
+
 async function saveGroups() {
   try {
     await sb.from('groups').upsert(

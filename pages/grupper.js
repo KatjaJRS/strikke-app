@@ -54,7 +54,7 @@ function renderGroups() {
   // Vis alle unikke medlemmer
   const allMembersList = document.getElementById('all-members-list');
   if (allMembersList) {
-    const allMembers = [...new Set(groups.flatMap(g => g.invitedPeople))].sort((a, b) =>
+    const allMembers = [...new Set(memberDirectory)].sort((a, b) =>
       a.localeCompare(b, undefined, { sensitivity: 'base' })
     );
     allMembersList.innerHTML = allMembers.length
@@ -64,19 +64,19 @@ function renderGroups() {
 
   const activeGroup = getActiveGroup();
   if (!activeGroup) {
-    activeGroupName.textContent = 'No group yet';
+    activeGroupName.textContent = translations[currentLanguage].noGroupYet;
     groupMembersList.innerHTML = '';
-    chatMessages.innerHTML = '<p class="chat-empty">Create a group to start chatting.</p>';
+    chatMessages.innerHTML = `<p class="chat-empty">${translations[currentLanguage].createGroupToStartChat}</p>`;
     return;
   }
 
   activeGroupName.textContent = activeGroup.name;
   groupMembersList.innerHTML = activeGroup.invitedPeople.length
     ? activeGroup.invitedPeople.map((person) => `<li>${getAvatarHTML(person, '')} ${escapeHTML(person)}</li>`).join('')
-    : '<li>No invites yet</li>';
+    : `<li>${translations[currentLanguage].noInvitesYet}</li>`;
 
   if (activeGroup.messages.length === 0) {
-    chatMessages.innerHTML = '<p class="chat-empty">No messages yet. Start the conversation.</p>';
+    chatMessages.innerHTML = `<p class="chat-empty">${translations[currentLanguage].noMessagesYet}</p>`;
   } else {
     chatMessages.innerHTML = activeGroup.messages.map((message) => {
       const timestamp = new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -206,11 +206,20 @@ if (copyInviteButton) {
     url.searchParams.set(GROUP_QUERY_PARAM, currentGroup.id);
     try {
       await navigator.clipboard.writeText(url.toString());
-      copyInviteButton.textContent = 'Link copied';
-      setTimeout(() => { copyInviteButton.textContent = 'Copy invite link'; }, 1600);
+      copyInviteButton.textContent = translations[currentLanguage].linkCopied;
+      setTimeout(() => { copyInviteButton.textContent = translations[currentLanguage].copyInviteLink; }, 1600);
     } catch (error) {
-      copyInviteButton.textContent = 'Copy failed';
-      setTimeout(() => { copyInviteButton.textContent = 'Copy invite link'; }, 1600);
+      copyInviteButton.textContent = translations[currentLanguage].copyFailed;
+      setTimeout(() => { copyInviteButton.textContent = translations[currentLanguage].copyInviteLink; }, 1600);
     }
   });
 }
+
+// Hold community data in sync across devices while Groups and Chats is open.
+setInterval(async () => {
+  const groupsSection = document.getElementById('groups-chats');
+  if (!currentUser || !groupsSection || !groupsSection.classList.contains('active')) return;
+  await refreshCommunityData();
+  renderGroups();
+  updateGroupsBadge();
+}, 12000);

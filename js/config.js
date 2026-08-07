@@ -39,6 +39,7 @@ function isAdminUser(email = currentUser?.email) {
 let projects = [];
 let groups = [];
 let membershipRequests = [];
+let memberDirectory = [];
 let groupsLastRead = Number(localStorage.getItem(GROUPS_READ_KEY) || '0');
 let activeGroupId = null;
 let currentLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en';
@@ -132,6 +133,13 @@ const translations = {
     pendingReject: 'Reject',
     requestSentMsg: 'Your request has been sent to the admin!',
     noPendingRequests: 'No pending requests',
+    noGroupYet: 'No group yet',
+    createGroupToStartChat: 'Create a group to start chatting.',
+    noInvitesYet: 'No invites yet',
+    noMessagesYet: 'No messages yet. Start the conversation.',
+    linkCopied: 'Link copied',
+    copyInviteLink: 'Copy invite link',
+    copyFailed: 'Copy failed',
     profileNameLabel: 'Your display name',
     profilePicLabel: 'Profile picture',
     profilePicButton: 'Upload photo',
@@ -191,6 +199,7 @@ const translations = {
     statusLabel: 'Status',
     statusPlanning: 'Planlægger',
     statusInProgress: 'I gang',
+    statusFinished: 'Færdig',
     ratingLabel: 'Mønsterbedømmelse',
     ratingOption0: 'Ingen bedømmelse',
     ratingOption1: '1 stjerne',
@@ -243,6 +252,13 @@ const translations = {
     pendingReject: 'Afvis',
     requestSentMsg: 'Din anmodning er sendt til administratoren!',
     noPendingRequests: 'Ingen ventende anmodninger',
+    noGroupYet: 'Ingen gruppe endnu',
+    createGroupToStartChat: 'Opret en gruppe for at starte chatten.',
+    noInvitesYet: 'Ingen inviterede endnu',
+    noMessagesYet: 'Ingen beskeder endnu. Start samtalen.',
+    linkCopied: 'Link kopieret',
+    copyInviteLink: 'Kopiér invitationslink',
+    copyFailed: 'Kopiering mislykkedes',
     profileNameLabel: 'Dit visningsnavn',
     profilePicLabel: 'Profilbillede',
     profilePicButton: 'Upload billede',
