@@ -71,12 +71,21 @@ async function refreshCommunityData() {
 
     if (isAdminUser()) {
       const { data: rData } = await sb.from('membership_requests').select('*');
+      const approvedNames = new Set(
+        groups
+          .flatMap((group) => group.invitedPeople || [])
+          .map((name) => String(name || '').trim().toLowerCase())
+          .filter(Boolean)
+      );
       membershipRequests = (rData || []).map(r => ({
         id: r.id,
         name: r.name,
         email: r.email || '',
         createdAt: new Date(r.created_at).getTime()
-      }));
+      })).filter((request) => {
+        const normalizedName = String(request.name || '').trim().toLowerCase();
+        return normalizedName && !approvedNames.has(normalizedName);
+      });
     } else {
       membershipRequests = [];
     }

@@ -40,6 +40,10 @@ async function acceptMember(id) {
     });
   }
 
+  // Mark request as handled globally so admins do not need to re-approve.
+  await sb.from('membership_requests').delete().eq('id', id);
+  membershipRequests = membershipRequests.filter((request) => request.id !== id);
+
   reviewedMembershipRequestIds.add(id);
   saveReviewedMembershipRequests();
   await refreshCommunityData();
@@ -47,6 +51,8 @@ async function acceptMember(id) {
 }
 
 async function rejectMember(id) {
+  await sb.from('membership_requests').delete().eq('id', id);
+  membershipRequests = membershipRequests.filter((request) => request.id !== id);
   reviewedMembershipRequestIds.add(id);
   saveReviewedMembershipRequests();
   await refreshCommunityData();
