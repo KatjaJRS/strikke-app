@@ -125,6 +125,28 @@ async function saveNewMessage(groupId, message) {
   } catch (e) { console.error('Error saving message:', e); }
 }
 
+async function updateMessageById(messageId, payload) {
+  try {
+    const { error } = await sb.from('messages').update(payload).eq('id', messageId);
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error('Error updating message:', e);
+    return false;
+  }
+}
+
+async function deleteMessageById(messageId) {
+  try {
+    const { error } = await sb.from('messages').delete().eq('id', messageId);
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error('Error deleting message:', e);
+    return false;
+  }
+}
+
 function setActiveGroup(groupId) {
   activeGroupId = groupId;
   const params = new URLSearchParams(window.location.search);

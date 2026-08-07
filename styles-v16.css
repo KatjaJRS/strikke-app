@@ -1580,6 +1580,27 @@ button:hover {
   line-height: 1.5;
 }
 
+.chat-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chat-action-btn {
+  border: 1px solid #f0b1c4;
+  border-radius: 999px;
+  background: #fff7fb;
+  color: #a63d57;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.chat-action-btn:hover {
+  background: #ffe9f2;
+}
+
 .chat-empty {
   color: #a35d70;
   padding: 10px 0;

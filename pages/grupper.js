@@ -1,5 +1,66 @@
 // ── Grupper og chats ──────────────────────────────────────────────────────
 
+function isOwnMessage(message) {
+  return !message?.sender || message.sender === 'You' || message.sender === myProfileName;
+}
+
+async function editOwnMessage(messageId) {
+  const activeGroup = getActiveGroup();
+  if (!activeGroup) return;
+
+  const message = activeGroup.messages.find((item) => item.id === messageId);
+  if (!message || !isOwnMessage(message)) return;
+
+  const edited = prompt(translations[currentLanguage].chatEditPrompt, message.text || '');
+  if (edited === null) return;
+
+  const nextText = edited.trim();
+  if (!nextText && !message.image && !message.link) {
+    alert(translations[currentLanguage].chatEditEmpty);
+    return;
+  }
+
+  groups = groups.map((group) => {
+    if (group.id !== activeGroup.id) return group;
+    const messages = group.messages.map((item) =>
+      item.id === messageId ? { ...item, text: nextText } : item
+    );
+    return { ...group, messages };
+  });
+  renderGroups();
+
+  const ok = await updateMessageById(messageId, { text: nextText });
+  if (!ok) {
+    alert(translations[currentLanguage].chatUpdateFailed);
+  }
+  await refreshCommunityData();
+  renderGroups();
+}
+
+async function deleteOwnMessage(messageId) {
+  const activeGroup = getActiveGroup();
+  if (!activeGroup) return;
+
+  const message = activeGroup.messages.find((item) => item.id === messageId);
+  if (!message || !isOwnMessage(message)) return;
+
+  if (!confirm(translations[currentLanguage].chatDeleteConfirm)) return;
+
+  groups = groups.map((group) => {
+    if (group.id !== activeGroup.id) return group;
+    const messages = group.messages.filter((item) => item.id !== messageId);
+    return { ...group, messages };
+  });
+  renderGroups();
+
+  const ok = await deleteMessageById(messageId);
+  if (!ok) {
+    alert(translations[currentLanguage].chatDeleteFailed);
+  }
+  await refreshCommunityData();
+  renderGroups();
+}
+
 function renderGroups() {
   groupList.innerHTML = '';
 
@@ -124,6 +185,15 @@ function renderGroups() {
       }
       if (message.text) contentHTML += `<p>${escapeHTML(message.text)}</p>`;
 
+      const actionButtons = isMe && message.id
+        ? `
+          <div class="chat-actions">
+            <button type="button" class="chat-action-btn chat-edit-btn" data-message-id="${escapeHTML(message.id)}">${translations[currentLanguage].chatEditButton}</button>
+            <button type="button" class="chat-action-btn chat-delete-btn" data-message-id="${escapeHTML(message.id)}">${translations[currentLanguage].chatDeleteButton}</button>
+          </div>
+        `
+        : '';
+
       return `
         <article class="chat-bubble${isMe ? ' chat-bubble-me' : ''}">
           <div class="chat-bubble-inner">
@@ -134,11 +204,19 @@ function renderGroups() {
                 <span>${escapeHTML(timestamp)}</span>
               </div>
               ${contentHTML}
+              ${actionButtons}
             </div>
           </div>
         </article>
       `;
     }).join('');
+
+    chatMessages.querySelectorAll('.chat-edit-btn').forEach((button) => {
+      button.addEventListener('click', () => editOwnMessage(button.dataset.messageId));
+    });
+    chatMessages.querySelectorAll('.chat-delete-btn').forEach((button) => {
+      button.addEventListener('click', () => deleteOwnMessage(button.dataset.messageId));
+    });
   }
 }
 
