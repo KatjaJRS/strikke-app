@@ -54,9 +54,13 @@ function renderGroups() {
   // Vis alle unikke medlemmer
   const allMembersList = document.getElementById('all-members-list');
   if (allMembersList) {
-    const allMembersFromGroups = groups.flatMap((group) => group.invitedPeople || []);
-    const allMembersFromProfiles = memberDirectory || [];
-    const allMembers = [...new Set([...allMembersFromGroups, ...allMembersFromProfiles].map((name) => String(name || '').trim()).filter(Boolean))].sort((a, b) =>
+    // Kun admin-godkendte medlemmer skal vises her.
+    const allMembers = [...new Set(
+      groups
+        .flatMap((group) => group.invitedPeople || [])
+        .map((name) => String(name || '').trim())
+        .filter(Boolean)
+    )].sort((a, b) =>
       a.localeCompare(b, undefined, { sensitivity: 'base' })
     );
     allMembersList.innerHTML = allMembers.length
