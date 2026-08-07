@@ -241,7 +241,7 @@ const translations = {
     invitedPeopleHeading: 'Glade strikkere i gruppen',
     myGroupsHeading: 'Mine grupper',
     allMembersHeading: 'Alle medlemmer',
-    pendingRequestsHeading: 'Medlemsanmodninger',
+    pendingRequestsHeading: 'Anmodninger fra medlemmer',
     requestJoinHeading: 'Anmod om at blive medlem',
     requestNameLabel: 'Dit navn',
     requestNamePlaceholder: 'fx. Maja',

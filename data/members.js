@@ -12,20 +12,43 @@ async function saveMembershipRequests() {}
 async function acceptMember(id) {
   const req = membershipRequests.find(r => r.id === id);
   if (!req) return;
-  if (groups.length > 0) {
-    const g = groups[0];
-    const newInvited = [...new Set([...g.invitedPeople, req.name])];
-    groups = groups.map((gr, i) => i === 0 ? { ...gr, invitedPeople: newInvited } : gr);
-    await sb.from('groups').update({ invited_people: newInvited }).eq('id', g.id);
+  const approvedName = String(req.name || '').trim();
+  if (!approvedName) return;
+
+  if (groups.length === 0) {
+    const defaultGroup = {
+      id: 'group-community',
+      name: 'Fællesskab',
+      invitedPeople: [approvedName],
+      messages: []
+    };
+    await sb.from('groups').upsert({
+      id: defaultGroup.id,
+      name: defaultGroup.name,
+      invited_people: defaultGroup.invitedPeople
+    });
+    groups = [defaultGroup];
+  } else {
+    groups = groups.map((group) => {
+      const invitedPeople = [...new Set([...(group.invitedPeople || []), approvedName])];
+      return { ...group, invitedPeople };
+    });
+
+    for (const group of groups) {
+      await sb.from('groups').update({ invited_people: group.invitedPeople }).eq('id', group.id);
+    }
   }
+
   reviewedMembershipRequestIds.add(id);
   saveReviewedMembershipRequests();
+  await refreshCommunityData();
   renderGroups();
 }
 
 async function rejectMember(id) {
   reviewedMembershipRequestIds.add(id);
   saveReviewedMembershipRequests();
+  await refreshCommunityData();
   renderGroups();
 }
 
