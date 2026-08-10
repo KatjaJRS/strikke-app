@@ -174,21 +174,13 @@ function renderGroups() {
   // Vis alle unikke medlemmer
   const allMembersList = document.getElementById('all-members-list');
   if (allMembersList) {
-    // Kun admin-godkendte medlemmer skal vises her.
-    const allMembers = [...new Set(
-      groups
-        .flatMap((group) => group.invitedPeople || [])
-        .map((name) => String(name || '').trim())
-        .filter(Boolean)
-    )].sort((a, b) =>
-      a.localeCompare(b, undefined, { sensitivity: 'base' })
-    );
+    const allMembers = Array.isArray(memberProfiles) ? memberProfiles : [];
     allMembersList.innerHTML = allMembers.length
-      ? allMembers.map(person => `
+      ? allMembers.map((person) => `
         <li>
-          <button type="button" class="member-picker-btn" data-member-name="${escapeHTML(person)}">
-            ${getAvatarHTML(person, '')}
-            <span>${escapeHTML(person)}</span>
+          <button type="button" class="member-picker-btn" data-member-name="${escapeHTML(person.name)}">
+            ${getAvatarHTML(person.name, person.profile_pic || '')}
+            <span>${escapeHTML(person.name)}</span>
           </button>
         </li>
       `).join('')

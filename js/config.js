@@ -41,6 +41,7 @@ let projects = [];
 let groups = [];
 let membershipRequests = [];
 let memberDirectory = [];
+let memberProfiles = [];
 let groupsLastRead = Number(localStorage.getItem(GROUPS_READ_KEY) || '0');
 let activeGroupId = null;
 let currentLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en';

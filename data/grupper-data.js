@@ -91,9 +91,16 @@ async function refreshCommunityData() {
     }
 
     const { data: profileData } = await sb.from('profiles').select('id, name, profile_pic');
-    memberDirectory = (profileData || [])
-      .map((p) => String(p.name || '').trim())
-      .filter(Boolean);
+    memberProfiles = (profileData || [])
+      .map((p) => ({
+        id: p.id,
+        name: String(p.name || '').trim(),
+        profile_pic: p.profile_pic || ''
+      }))
+      .filter((profile) => profile.name)
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+    memberDirectory = memberProfiles.map((profile) => profile.name);
 
     const currentProfile = (profileData || []).find((p) => p.id === currentUser.id);
     if (currentProfile) {
