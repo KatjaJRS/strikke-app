@@ -5,6 +5,15 @@ const profilePicInput = document.getElementById('profile-pic-input');
 const profilePicBtn = document.getElementById('profile-pic-btn');
 const profileAvatarPreview = document.getElementById('profile-avatar-preview');
 
+async function saveCurrentProfileToDatabase() {
+  if (!currentUser) return;
+  await sb.from('profiles').upsert({
+    id: currentUser.id,
+    name: myProfileName || '',
+    profile_pic: myProfilePic || ''
+  });
+}
+
 function updateProfilePreview() {
   if (myProfilePic) {
     profileAvatarPreview.innerHTML = '';
@@ -29,7 +38,10 @@ if (profileNameInput) {
   profileNameInput.addEventListener('input', () => {
     myProfileName = profileNameInput.value.trim() || 'You';
     localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+    saveCurrentProfileToDatabase();
     updateProfilePreview();
+    if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+    if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
     renderGroups();
   });
 }
@@ -45,7 +57,10 @@ if (profilePicInput) {
     const dataUrl = await readImageAsDataURL(file);
     myProfilePic = dataUrl;
     localStorage.setItem(PROFILE_PIC_KEY, dataUrl);
+    await saveCurrentProfileToDatabase();
     updateProfilePreview();
+    if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+    if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
     renderGroups();
   });
 }

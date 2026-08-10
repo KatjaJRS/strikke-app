@@ -90,10 +90,21 @@ async function refreshCommunityData() {
       membershipRequests = [];
     }
 
-    const { data: profileData } = await sb.from('profiles').select('name');
+    const { data: profileData } = await sb.from('profiles').select('id, name, profile_pic');
     memberDirectory = (profileData || [])
       .map((p) => String(p.name || '').trim())
       .filter(Boolean);
+
+    const currentProfile = (profileData || []).find((p) => p.id === currentUser.id);
+    if (currentProfile) {
+      myProfileName = currentProfile.name || myProfileName;
+      myProfilePic = currentProfile.profile_pic || myProfilePic;
+      localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+      localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+      if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+      if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
+      if (typeof updateProfilePreview === 'function') updateProfilePreview();
+    }
 
     normalizeGroups();
   } catch (e) {

@@ -104,10 +104,10 @@ function launchApp(user, profile) {
   }
 
   function refreshUserBar() {
-    const displayName = profile?.name || user.email;
+    const displayName = myProfileName || profile?.name || user.email;
     const initials = displayName.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
     const hue = [...displayName].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
-    const pic = myProfilePic;
+    const pic = myProfilePic || profile?.profile_pic || '';
     const avatarHTML = pic
       ? `<img src="${pic}" class="avatar user-bar-avatar" alt="${escapeHTML(displayName)}" />`
       : `<span class="avatar avatar-initials user-bar-avatar" style="background:hsl(${hue},55%,65%)">${escapeHTML(initials)}</span>`;
@@ -126,11 +126,12 @@ function launchApp(user, profile) {
   }
 
   refreshUserBar();
+  window.refreshCurrentUserDisplay = refreshUserBar;
 
   function openProfileModal() {
     const modal = document.getElementById('profile-modal');
     modal.classList.remove('hidden');
-    document.getElementById('profile-edit-name').value = profile?.name || '';
+    document.getElementById('profile-edit-name').value = myProfileName !== 'You' ? myProfileName : (profile?.name || '');
     document.getElementById('profile-edit-email').value = user.email || '';
     document.getElementById('profile-current-password').value = '';
     document.getElementById('profile-new-password').value = '';
@@ -141,9 +142,10 @@ function launchApp(user, profile) {
 
   function updateModalAvatar() {
     const av = document.getElementById('profile-modal-avatar');
-    if (myProfilePic) {
+    const currentPic = myProfilePic || profile?.profile_pic || '';
+    if (currentPic) {
       av.innerHTML = '';
-      av.style.backgroundImage = `url(${myProfilePic})`;
+      av.style.backgroundImage = `url(${currentPic})`;
       av.style.backgroundSize = 'cover';
       av.style.backgroundPosition = 'center';
       av.className = 'avatar profile-modal-avatar';
@@ -158,6 +160,8 @@ function launchApp(user, profile) {
     }
   }
 
+  window.refreshCurrentProfileModalAvatar = updateModalAvatar;
+
   document.getElementById('profile-modal-close').addEventListener('click', () =>
     document.getElementById('profile-modal').classList.add('hidden'));
   document.getElementById('profile-modal').addEventListener('click', (e) => {
@@ -171,7 +175,7 @@ function launchApp(user, profile) {
     if (!file) return;
     myProfilePic = await readImageAsDataURL(file);
     localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
-    await sb.from('profiles').upsert({ id: currentUser.id, name: profile?.name || '', profile_pic: myProfilePic });
+    await sb.from('profiles').upsert({ id: currentUser.id, name: myProfileName || profile?.name || '', profile_pic: myProfilePic });
     updateModalAvatar();
     refreshUserBar();
     renderGroups();
@@ -206,7 +210,7 @@ function launchApp(user, profile) {
         await sb.auth.updateUser({ password: newPw });
       }
       if (newEmail !== user.email) await sb.auth.updateUser({ email: newEmail });
-      await sb.from('profiles').upsert({ id: currentUser.id, name: newName, profile_pic: myProfilePic || '' });
+      await sb.from('profiles').upsert({ id: currentUser.id, name: newName, profile_pic: myProfilePic || profile?.profile_pic || '' });
       if (profile) profile.name = newName;
       else profile = { name: newName, profile_pic: myProfilePic || '' };
       myProfileName = newName;
@@ -235,6 +239,10 @@ async function initAuth() {
   if (session) {
     currentUser = session.user;
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    myProfileName = profile?.name || currentUser.email || 'You';
+    myProfilePic = profile?.profile_pic || '';
+    localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
     const preferredLanguage = normalizeLanguage(
       profile?.preferred_language || getSavedLanguageForEmail(currentUser.email) || currentLanguage
     );
@@ -299,7 +307,21 @@ async function initAuth() {
     if (password.length < 6) { showAuthError('register-error', translations[currentLanguage].registerErrorShort); return; }
     const { data, error } = await sb.auth.signUp({ email, password });
     if (error) { showAuthError('register-error', error.message); return; }
+    if (!data?.user) {
+      showAuthError('register-error', translations[currentLanguage].registerNeedEmailConfirm);
+      return;
+    }
+
     currentUser = data.user;
+    if (!data.session) {
+      const autoLogin = await sb.auth.signInWithPassword({ email, password });
+      if (autoLogin.error || !autoLogin.data?.user) {
+        showAuthError('register-error', translations[currentLanguage].registerNeedEmailConfirm);
+        return;
+      }
+      currentUser = autoLogin.data.user;
+    }
+
     await upsertProfileWithLanguage({ id: currentUser.id, name, profile_pic: '' });
     saveLanguageForEmail(email, currentLanguage);
 

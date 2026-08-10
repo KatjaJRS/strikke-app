@@ -386,9 +386,11 @@ if (copyInviteButton) {
 
 // Hold community data in sync across devices while Groups and Chats is open.
 setInterval(async () => {
-  const groupsSection = document.getElementById('groups-chats');
-  if (!currentUser || !groupsSection || !groupsSection.classList.contains('active')) return;
+  if (!currentUser) return;
   await refreshCommunityData();
-  renderGroups();
-  updateGroupsBadge();
+  const groupsSection = document.getElementById('groups-chats');
+  if (groupsSection && groupsSection.classList.contains('active')) {
+    renderGroups();
+    updateGroupsBadge();
+  }
 }, 12000);
