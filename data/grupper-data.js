@@ -50,48 +50,65 @@ function markGroupsAsRead() {
 
 async function refreshCommunityData() {
   if (!currentUser) return;
+  let profileData = [];
+
   try {
-    const { data: gData } = await sb.from('groups').select('*, messages(*)');
-    groups = (gData || []).map(g => ({
-      id: g.id,
-      name: g.name,
-      invitedPeople: g.invited_people || [],
-      messages: (g.messages || [])
-        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-        .map(m => ({
-          id: m.id,
-          sender: m.sender_name || 'You',
-          text: m.text || '',
-          image: m.image || '',
-          link: m.link || '',
-          linkLabel: m.link_label || '',
-          createdAt: new Date(m.created_at).getTime()
-        }))
-    }));
+    const { data: gData, error: groupsError } = await sb.from('groups').select('*, messages(*)');
+    if (groupsError) {
+      console.error('Error loading groups:', groupsError);
+    } else {
+      groups = (gData || []).map(g => ({
+        id: g.id,
+        name: g.name,
+        invitedPeople: g.invited_people || [],
+        messages: (g.messages || [])
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+          .map(m => ({
+            id: m.id,
+            sender: m.sender_name || 'You',
+            text: m.text || '',
+            image: m.image || '',
+            link: m.link || '',
+            linkLabel: m.link_label || '',
+            createdAt: new Date(m.created_at).getTime()
+          }))
+      }));
+    }
 
     if (isAdminUser()) {
-      const { data: rData } = await sb.from('membership_requests').select('*');
-      const approvedNames = new Set(
-        groups
-          .flatMap((group) => group.invitedPeople || [])
-          .map((name) => String(name || '').trim().toLowerCase())
-          .filter(Boolean)
-      );
-      membershipRequests = (rData || []).map(r => ({
-        id: r.id,
-        name: r.name,
-        email: r.email || '',
-        createdAt: new Date(r.created_at).getTime()
-      })).filter((request) => {
-        const normalizedName = String(request.name || '').trim().toLowerCase();
-        return normalizedName && !approvedNames.has(normalizedName);
-      });
+      const { data: rData, error: requestsError } = await sb.from('membership_requests').select('*');
+      if (requestsError) {
+        console.error('Error loading membership requests:', requestsError);
+        membershipRequests = [];
+      } else {
+        const approvedNames = new Set(
+          groups
+            .flatMap((group) => group.invitedPeople || [])
+            .map((name) => String(name || '').trim().toLowerCase())
+            .filter(Boolean)
+        );
+        membershipRequests = (rData || []).map(r => ({
+          id: r.id,
+          name: r.name,
+          email: r.email || '',
+          createdAt: new Date(r.created_at).getTime()
+        })).filter((request) => {
+          const normalizedName = String(request.name || '').trim().toLowerCase();
+          return normalizedName && !approvedNames.has(normalizedName);
+        });
+      }
     } else {
       membershipRequests = [];
     }
 
-    const { data: profileData } = await sb.from('profiles').select('id, name, profile_pic');
-    memberProfiles = (profileData || [])
+    const { data: rawProfiles, error: profilesError } = await sb.from('profiles').select('id, name, profile_pic');
+    if (profilesError) {
+      console.error('Error loading profiles:', profilesError);
+    } else {
+      profileData = rawProfiles || [];
+    }
+
+    memberProfiles = profileData
       .map((p) => ({
         id: p.id,
         name: String(p.name || '').trim(),
@@ -102,7 +119,7 @@ async function refreshCommunityData() {
 
     memberDirectory = memberProfiles.map((profile) => profile.name);
 
-    const currentProfile = (profileData || []).find((p) => p.id === currentUser.id);
+    const currentProfile = profileData.find((p) => p.id === currentUser.id);
     if (currentProfile) {
       myProfileName = currentProfile.name || myProfileName;
       myProfilePic = currentProfile.profile_pic || myProfilePic;
