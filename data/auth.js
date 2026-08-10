@@ -97,7 +97,7 @@ async function signInAndLaunch(email, password, loginErrorId) {
     }
 
     currentUser = data.user;
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
     const preferredLanguage = normalizeLanguage(
       profile?.preferred_language || getSavedLanguageForEmail(email) || currentLanguage
     );
@@ -111,8 +111,16 @@ async function signInAndLaunch(email, password, loginErrorId) {
       localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
     }
 
-    await loadAllData();
-    launchApp(currentUser, profile);
+    launchApp(currentUser, profile || { name: myProfileName || email, profile_pic: myProfilePic || '' });
+
+    try {
+      await loadAllData();
+      renderProjects();
+      renderGroups();
+      updateGroupsBadge();
+    } catch (loadError) {
+      console.error('Background load failed after login:', loadError);
+    }
     return true;
   }, translations[currentLanguage].loginHeading);
 }
@@ -265,7 +273,7 @@ async function initAuth() {
 
   if (session) {
     currentUser = session.user;
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
     myProfileName = profile?.name || currentUser.email || 'You';
     myProfilePic = profile?.profile_pic || '';
     localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
@@ -282,8 +290,10 @@ async function initAuth() {
       localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
       localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
     }
-    await loadAllData();
     launchApp(currentUser, profile);
+    loadAllData().catch((loadError) => {
+      console.error('Background load failed on session restore:', loadError);
+    });
     return;
   }
 
@@ -346,9 +356,9 @@ async function initAuth() {
 
     myProfileName = name;
     localStorage.setItem(PROFILE_NAME_KEY, name);
+    launchApp(currentUser, { name, profile_pic: '' });
     await runWithBusy(async () => {
       await loadAllData();
-      launchApp(currentUser, { name, profile_pic: '' });
     }, translations[currentLanguage].registerHeading);
   });
 
