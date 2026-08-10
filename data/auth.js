@@ -1,29 +1,27 @@
 // ── Login og rettigheder — Supabase authentication ────────────────────────
 
 async function loadAllData() {
-  await runWithBusy(async () => {
-    // Projekter
-    const { data: pData } = await sb.from('projects').select('*').eq('user_id', currentUser.id);
-    const allLoaded = (pData || []).map(p => ({
-      id: p.id, name: p.name, pattern: p.pattern || '',
-      status: p.status || 'Planning', notes: p.notes || '',
-      patternLink: p.pattern_link || '', needles: p.needles || [],
-      yarns: p.yarns || [], rating: p.rating || 0, difficulty: p.difficulty || 0,
-      image: p.image || '', lastViewedAt: p.last_viewed_at || 0
-    }));
+  // Projekter
+  const { data: pData } = await sb.from('projects').select('*').eq('user_id', currentUser.id);
+  const allLoaded = (pData || []).map(p => ({
+    id: p.id, name: p.name, pattern: p.pattern || '',
+    status: p.status || 'Planning', notes: p.notes || '',
+    patternLink: p.pattern_link || '', needles: p.needles || [],
+    yarns: p.yarns || [], rating: p.rating || 0, difficulty: p.difficulty || 0,
+    image: p.image || '', lastViewedAt: p.last_viewed_at || 0
+  }));
 
-    // Dedupliker i hukommelsen: behold nyeste per navn
-    const seen = new Map();
-    allLoaded.sort((a, b) => b.lastViewedAt - a.lastViewedAt);
-    for (const p of allLoaded) {
-      const key = p.name.trim().toLowerCase();
-      if (!seen.has(key)) seen.set(key, p);
-    }
-    projects = [...seen.values()];
-    normalizeProjects();
+  // Dedupliker i hukommelsen: behold nyeste per navn
+  const seen = new Map();
+  allLoaded.sort((a, b) => b.lastViewedAt - a.lastViewedAt);
+  for (const p of allLoaded) {
+    const key = p.name.trim().toLowerCase();
+    if (!seen.has(key)) seen.set(key, p);
+  }
+  projects = [...seen.values()];
+  normalizeProjects();
 
-    await refreshCommunityData();
-  }, 'Henter dine projekter...');
+  await refreshCommunityData();
 }
 
 function showAuthForm(formId) {
@@ -88,6 +86,35 @@ async function deleteMyMembershipData(profile) {
   localStorage.removeItem(ROUNDS_KEY);
   await sb.auth.signOut();
   location.reload();
+}
+
+async function signInAndLaunch(email, password, loginErrorId) {
+  return runWithBusy(async () => {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      showAuthError(loginErrorId, translations[currentLanguage].loginErrorWrong);
+      return false;
+    }
+
+    currentUser = data.user;
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    const preferredLanguage = normalizeLanguage(
+      profile?.preferred_language || getSavedLanguageForEmail(email) || currentLanguage
+    );
+    applyLanguage(preferredLanguage);
+    saveLanguageForEmail(email, preferredLanguage);
+
+    if (profile) {
+      myProfileName = profile.name || email;
+      myProfilePic = profile.profile_pic || '';
+      localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+      localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+    }
+
+    await loadAllData();
+    launchApp(currentUser, profile);
+    return true;
+  }, translations[currentLanguage].loginHeading);
 }
 
 function launchApp(user, profile) {
@@ -279,24 +306,7 @@ async function initAuth() {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const password = document.getElementById('login-password').value;
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) { showAuthError('login-error', translations[currentLanguage].loginErrorWrong); return; }
-    currentUser = data.user;
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
-    const preferredLanguage = normalizeLanguage(
-      profile?.preferred_language || getSavedLanguageForEmail(email) || currentLanguage
-    );
-    applyLanguage(preferredLanguage);
-    saveLanguageForEmail(email, preferredLanguage);
-
-    if (profile) {
-      myProfileName = profile.name || email;
-      myProfilePic = profile.profile_pic || '';
-      localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
-      localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
-    }
-    await loadAllData();
-    launchApp(currentUser, profile);
+    await signInAndLaunch(email, password, 'login-error');
   });
 
   document.getElementById('register-form').addEventListener('submit', async (e) => {
@@ -336,8 +346,10 @@ async function initAuth() {
 
     myProfileName = name;
     localStorage.setItem(PROFILE_NAME_KEY, name);
-    await loadAllData();
-    launchApp(currentUser, { name, profile_pic: '' });
+    await runWithBusy(async () => {
+      await loadAllData();
+      launchApp(currentUser, { name, profile_pic: '' });
+    }, translations[currentLanguage].registerHeading);
   });
 
   document.getElementById('forgot-form').addEventListener('submit', async (e) => {
