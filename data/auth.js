@@ -36,6 +36,18 @@ function showAuthError(id, msg) {
   el.classList.remove('hidden');
 }
 
+function isLikelyNetworkAuthError(error) {
+  const message = String(error?.message || error || '').toLowerCase();
+  return (
+    message.includes('fetch') ||
+    message.includes('network') ||
+    message.includes('timeout') ||
+    message.includes('cors') ||
+    message.includes('gateway') ||
+    message.includes('failed to load resource')
+  );
+}
+
 async function upsertProfileWithLanguage(profileData) {
   const withLanguage = { ...profileData, preferred_language: normalizeLanguage(currentLanguage) };
   const { error } = await sb.from('profiles').upsert(withLanguage);
@@ -90,9 +102,21 @@ async function deleteMyMembershipData(profile) {
 
 async function signInAndLaunch(email, password, loginErrorId) {
   return runWithBusy(async () => {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    let authResult;
+    try {
+      authResult = await sb.auth.signInWithPassword({ email, password });
+    } catch (authError) {
+      showAuthError(loginErrorId, translations[currentLanguage].loginErrorNetwork);
+      console.error('Login request failed:', authError);
+      return false;
+    }
+
+    const { data, error } = authResult;
     if (error) {
-      showAuthError(loginErrorId, translations[currentLanguage].loginErrorWrong);
+      const authMessage = isLikelyNetworkAuthError(error)
+        ? translations[currentLanguage].loginErrorNetwork
+        : translations[currentLanguage].loginErrorWrong;
+      showAuthError(loginErrorId, authMessage);
       return false;
     }
 
@@ -269,7 +293,14 @@ function launchApp(user, profile) {
 }
 
 async function initAuth() {
-  const { data: { session } } = await sb.auth.getSession();
+  let session = null;
+  try {
+    const result = await sb.auth.getSession();
+    session = result?.data?.session || null;
+  } catch (sessionError) {
+    console.error('Failed to restore session:', sessionError);
+    session = null;
+  }
 
   if (session) {
     currentUser = session.user;
