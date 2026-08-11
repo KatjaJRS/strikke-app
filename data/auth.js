@@ -43,6 +43,15 @@ function resetLocalProfileState() {
   localStorage.removeItem(PROFILE_PIC_KEY);
 }
 
+async function forceFreshLoginState() {
+  try {
+    await sb.auth.signOut();
+  } catch (error) {
+    console.error('Forced pre-login sign-out failed:', error);
+  }
+  resetLocalProfileState();
+}
+
 function isLikelyNetworkAuthError(error) {
   const message = String(error?.message || error || '').toLowerCase();
   return (
@@ -109,6 +118,8 @@ async function deleteMyMembershipData(profile) {
 
 async function signInAndLaunch(email, password, loginErrorId) {
   return runWithBusy(async () => {
+    await forceFreshLoginState();
+
     let authResult;
     try {
       authResult = await sb.auth.signInWithPassword({ email, password });
