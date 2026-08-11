@@ -242,6 +242,9 @@ function launchApp(user, profile) {
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app-shell-wrapper').classList.remove('hidden');
 
+  if (typeof ensureProfileRealtimeSync === 'function') ensureProfileRealtimeSync();
+  if (typeof ensureProfileSyncHeartbeat === 'function') ensureProfileSyncHeartbeat();
+
   const userBarSlot = document.getElementById('user-bar-slot');
   let userBar = document.getElementById('user-bar');
   if (!userBar) {

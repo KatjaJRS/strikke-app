@@ -48,9 +48,98 @@ function markGroupsAsRead() {
   updateGroupsBadge();
 }
 
+let profileRealtimeChannel = null;
+let profileSyncHeartbeatId = null;
+
+async function refreshProfilesDirectoryOnly() {
+  if (!currentUser) return false;
+
+  let profileData = [];
+  try {
+    const { data: rawProfiles, error: profilesError } = await sb.from('profiles').select('id, name, profile_pic');
+    if (profilesError) {
+      console.error('Error loading profiles:', profilesError);
+      return false;
+    }
+    profileData = rawProfiles || [];
+  } catch (error) {
+    console.error('Error loading profiles:', error);
+    return false;
+  }
+
+  const membersByName = new Map();
+  const upsertMember = (name, profilePic = '', id = '') => {
+    const normalizedName = String(name || '').trim();
+    if (!normalizedName) return;
+    const key = normalizedName.toLowerCase();
+    if (!membersByName.has(key)) {
+      membersByName.set(key, { id: id || '', name: normalizedName, profile_pic: profilePic || '' });
+      return;
+    }
+
+    const existing = membersByName.get(key);
+    if (!existing.id && id) existing.id = id;
+    if (!existing.profile_pic && profilePic) existing.profile_pic = profilePic;
+  };
+
+  profileData.forEach((profile) => {
+    upsertMember(profile.name, profile.profile_pic || '', profile.id || '');
+  });
+
+  upsertMember(myProfileName || currentUser?.email || '');
+
+  memberProfiles = [...membersByName.values()]
+    .filter((profile) => profile.name)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+  memberDirectory = memberProfiles.map((profile) => profile.name);
+
+  const currentProfile = profileData.find((profile) => profile.id === currentUser.id);
+  if (currentProfile) {
+    myProfileName = currentProfile.name || myProfileName;
+    myProfilePic = currentProfile.profile_pic || myProfilePic;
+    localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+    if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+    if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
+    if (typeof updateProfilePreview === 'function') updateProfilePreview();
+  }
+
+  return true;
+}
+
+function ensureProfileRealtimeSync() {
+  if (profileRealtimeChannel || !sb?.channel) return;
+
+  profileRealtimeChannel = sb
+    .channel('profiles-live-sync')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'profiles' },
+      async () => {
+        const ok = await refreshProfilesDirectoryOnly();
+        if (!ok) return;
+        if (typeof renderGroups === 'function') renderGroups();
+      }
+    )
+    .subscribe();
+}
+
+function ensureProfileSyncHeartbeat() {
+  if (profileSyncHeartbeatId) return;
+
+  profileSyncHeartbeatId = setInterval(async () => {
+    if (!currentUser) return;
+    const ok = await refreshProfilesDirectoryOnly();
+    if (!ok) return;
+    if (typeof renderGroups === 'function') renderGroups();
+  }, 15000);
+}
+
 async function refreshCommunityData() {
   if (!currentUser) return;
   let profileData = [];
+  let profilesLoaded = false;
   let groupsData = [];
   let messagesData = [];
 
@@ -140,6 +229,7 @@ async function refreshCommunityData() {
       console.error('Error loading profiles:', profilesError);
     } else {
       profileData = rawProfiles || [];
+      profilesLoaded = true;
     }
   } catch (error) {
     console.error('Error loading profiles:', error);
@@ -168,13 +258,16 @@ async function refreshCommunityData() {
     upsertMember(profile.name, profile.profile_pic || '', profile.id || '');
   });
 
-  groupsData.forEach((group) => {
-    (group.invited_people || []).forEach((name) => upsertMember(name));
-  });
+  // Only fall back to group/message names if profiles cannot be loaded at all.
+  if (!profilesLoaded) {
+    groupsData.forEach((group) => {
+      (group.invited_people || []).forEach((name) => upsertMember(name));
+    });
 
-  messagesData.forEach((message) => {
-    upsertMember(message.sender_name || '');
-  });
+    messagesData.forEach((message) => {
+      upsertMember(message.sender_name || '');
+    });
+  }
 
   upsertMember(myProfileName || currentUser?.email || '');
 
