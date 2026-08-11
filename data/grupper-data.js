@@ -51,31 +51,60 @@ function markGroupsAsRead() {
 async function refreshCommunityData() {
   if (!currentUser) return;
   let profileData = [];
+  let groupsData = [];
+  let messagesData = [];
 
   try {
-    const { data: gData, error: groupsError } = await sb.from('groups').select('*, messages(*)');
-    if (groupsError) {
-      console.error('Error loading groups:', groupsError);
+    const { data, error } = await sb.from('groups').select('id, name, invited_people');
+    if (error) {
+      console.error('Error loading groups:', error);
     } else {
-      groups = (gData || []).map(g => ({
-        id: g.id,
-        name: g.name,
-        invitedPeople: g.invited_people || [],
-        messages: (g.messages || [])
-          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-          .map(m => ({
-            id: m.id,
-            sender: m.sender_name || 'You',
-            text: m.text || '',
-            image: m.image || '',
-            link: m.link || '',
-            linkLabel: m.link_label || '',
-            createdAt: new Date(m.created_at).getTime()
-          }))
-      }));
+      groupsData = data || [];
     }
+  } catch (error) {
+    console.error('Error loading groups:', error);
+  }
 
-    if (isAdminUser()) {
+  try {
+    const { data, error } = await sb
+      .from('messages')
+      .select('id, group_id, sender_name, text, image, link, link_label, created_at')
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('Error loading messages:', error);
+    } else {
+      messagesData = data || [];
+    }
+  } catch (error) {
+    console.error('Error loading messages:', error);
+  }
+
+  const messagesByGroup = new Map();
+  messagesData.forEach((message) => {
+    const key = message.group_id;
+    if (!messagesByGroup.has(key)) messagesByGroup.set(key, []);
+    messagesByGroup.get(key).push({
+      id: message.id,
+      sender: message.sender_name || 'You',
+      text: message.text || '',
+      image: message.image || '',
+      link: message.link || '',
+      linkLabel: message.link_label || '',
+      createdAt: new Date(message.created_at).getTime()
+    });
+  });
+
+  if (groupsData.length > 0) {
+    groups = groupsData.map((group) => ({
+      id: group.id,
+      name: group.name,
+      invitedPeople: group.invited_people || [],
+      messages: messagesByGroup.get(group.id) || []
+    }));
+  }
+
+  if (isAdminUser()) {
+    try {
       const { data: rData, error: requestsError } = await sb.from('membership_requests').select('*');
       if (requestsError) {
         console.error('Error loading membership requests:', requestsError);
@@ -97,43 +126,48 @@ async function refreshCommunityData() {
           return normalizedName && !approvedNames.has(normalizedName);
         });
       }
-    } else {
+    } catch (error) {
+      console.error('Error loading membership requests:', error);
       membershipRequests = [];
     }
+  } else {
+    membershipRequests = [];
+  }
 
+  try {
     const { data: rawProfiles, error: profilesError } = await sb.from('profiles').select('id, name, profile_pic');
     if (profilesError) {
       console.error('Error loading profiles:', profilesError);
     } else {
       profileData = rawProfiles || [];
     }
-
-    memberProfiles = profileData
-      .map((p) => ({
-        id: p.id,
-        name: String(p.name || '').trim(),
-        profile_pic: p.profile_pic || ''
-      }))
-      .filter((profile) => profile.name)
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-
-    memberDirectory = memberProfiles.map((profile) => profile.name);
-
-    const currentProfile = profileData.find((p) => p.id === currentUser.id);
-    if (currentProfile) {
-      myProfileName = currentProfile.name || myProfileName;
-      myProfilePic = currentProfile.profile_pic || myProfilePic;
-      localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
-      localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
-      if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
-      if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
-      if (typeof updateProfilePreview === 'function') updateProfilePreview();
-    }
-
-    normalizeGroups();
-  } catch (e) {
-    console.error('Error refreshing community data:', e);
+  } catch (error) {
+    console.error('Error loading profiles:', error);
   }
+
+  memberProfiles = profileData
+    .map((profile) => ({
+      id: profile.id,
+      name: String(profile.name || '').trim(),
+      profile_pic: profile.profile_pic || ''
+    }))
+    .filter((profile) => profile.name)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+  memberDirectory = memberProfiles.map((profile) => profile.name);
+
+  const currentProfile = profileData.find((profile) => profile.id === currentUser.id);
+  if (currentProfile) {
+    myProfileName = currentProfile.name || myProfileName;
+    myProfilePic = currentProfile.profile_pic || myProfilePic;
+    localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+    if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+    if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
+    if (typeof updateProfilePreview === 'function') updateProfilePreview();
+  }
+
+  normalizeGroups();
 }
 
 async function saveGroups() {

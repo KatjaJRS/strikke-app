@@ -121,7 +121,13 @@ async function signInAndLaunch(email, password, loginErrorId) {
     }
 
     currentUser = data.user;
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+    let profile = null;
+    try {
+      const profileResult = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+      profile = profileResult.data || null;
+    } catch (profileError) {
+      console.error('Profile read failed during login:', profileError);
+    }
     const preferredLanguage = normalizeLanguage(
       profile?.preferred_language || getSavedLanguageForEmail(email) || currentLanguage
     );
@@ -147,6 +153,89 @@ async function signInAndLaunch(email, password, loginErrorId) {
     }
     return true;
   }, translations[currentLanguage].loginHeading);
+}
+
+async function registerAndLaunch(name, email, password, registerErrorId) {
+  return runWithBusy(async () => {
+    let signUpResult;
+    try {
+      signUpResult = await sb.auth.signUp({ email, password });
+    } catch (signUpError) {
+      showAuthError(registerErrorId, translations[currentLanguage].registerErrorNetwork);
+      console.error('Sign up request failed:', signUpError);
+      return false;
+    }
+
+    const { data, error } = signUpResult;
+    if (error) {
+      const signUpMessage = isLikelyNetworkAuthError(error)
+        ? translations[currentLanguage].registerErrorNetwork
+        : (error.message || translations[currentLanguage].registerErrorExists);
+      showAuthError(registerErrorId, signUpMessage);
+      return false;
+    }
+
+    if (!data?.user) {
+      showAuthError(registerErrorId, translations[currentLanguage].registerNeedEmailConfirm);
+      return false;
+    }
+
+    currentUser = data.user;
+
+    if (!data.session) {
+      let autoLogin;
+      try {
+        autoLogin = await sb.auth.signInWithPassword({ email, password });
+      } catch (autoLoginError) {
+        showAuthError(registerErrorId, translations[currentLanguage].registerErrorNetwork);
+        console.error('Auto-login failed after sign up:', autoLoginError);
+        return false;
+      }
+
+      if (autoLogin.error || !autoLogin.data?.user) {
+        showAuthError(registerErrorId, translations[currentLanguage].registerNeedEmailConfirm);
+        return false;
+      }
+      currentUser = autoLogin.data.user;
+    }
+
+    try {
+      await upsertProfileWithLanguage({ id: currentUser.id, name, profile_pic: '' });
+    } catch (profileUpsertError) {
+      console.error('Profile upsert failed during register:', profileUpsertError);
+    }
+
+    saveLanguageForEmail(email, currentLanguage);
+
+    if (!isAdminUser(email)) {
+      try {
+        await sb.from('membership_requests').upsert({
+          id: `req-${currentUser.id}`,
+          name,
+          email,
+          created_at: new Date().toISOString()
+        });
+      } catch (requestError) {
+        console.error('Membership request upsert failed during register:', requestError);
+      }
+    }
+
+    myProfileName = name;
+    myProfilePic = '';
+    localStorage.setItem(PROFILE_NAME_KEY, name);
+    localStorage.setItem(PROFILE_PIC_KEY, '');
+
+    launchApp(currentUser, { name, profile_pic: '' });
+    try {
+      await loadAllData();
+      renderProjects();
+      renderGroups();
+      updateGroupsBadge();
+    } catch (loadError) {
+      console.error('Background load failed after register:', loadError);
+    }
+    return true;
+  }, translations[currentLanguage].registerHeading);
 }
 
 function launchApp(user, profile) {
@@ -356,41 +445,7 @@ async function initAuth() {
     const email = document.getElementById('register-email').value.trim().toLowerCase();
     const password = document.getElementById('register-password').value;
     if (password.length < 6) { showAuthError('register-error', translations[currentLanguage].registerErrorShort); return; }
-    const { data, error } = await sb.auth.signUp({ email, password });
-    if (error) { showAuthError('register-error', error.message); return; }
-    if (!data?.user) {
-      showAuthError('register-error', translations[currentLanguage].registerNeedEmailConfirm);
-      return;
-    }
-
-    currentUser = data.user;
-    if (!data.session) {
-      const autoLogin = await sb.auth.signInWithPassword({ email, password });
-      if (autoLogin.error || !autoLogin.data?.user) {
-        showAuthError('register-error', translations[currentLanguage].registerNeedEmailConfirm);
-        return;
-      }
-      currentUser = autoLogin.data.user;
-    }
-
-    await upsertProfileWithLanguage({ id: currentUser.id, name, profile_pic: '' });
-    saveLanguageForEmail(email, currentLanguage);
-
-    if (!isAdminUser(email)) {
-      await sb.from('membership_requests').upsert({
-        id: `req-${currentUser.id}`,
-        name,
-        email,
-        created_at: new Date().toISOString()
-      });
-    }
-
-    myProfileName = name;
-    localStorage.setItem(PROFILE_NAME_KEY, name);
-    launchApp(currentUser, { name, profile_pic: '' });
-    await runWithBusy(async () => {
-      await loadAllData();
-    }, translations[currentLanguage].registerHeading);
+    await registerAndLaunch(name, email, password, 'register-error');
   });
 
   document.getElementById('forgot-form').addEventListener('submit', async (e) => {
