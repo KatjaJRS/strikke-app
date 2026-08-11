@@ -120,6 +120,37 @@ if (chatEditModal && !chatEditModal.dataset.bound) {
   });
 }
 
+async function deleteGroupAsAdmin(groupId) {
+  if (!isAdminUser() || !groupId) return;
+  const firstConfirm = confirm(translations[currentLanguage].deleteGroupConfirmFirst);
+  if (!firstConfirm) return;
+  const secondConfirm = confirm(translations[currentLanguage].deleteGroupConfirmSecond);
+  if (!secondConfirm) return;
+
+  const existingGroups = [...groups];
+  groups = groups.filter((group) => group.id !== groupId);
+  if (activeGroupId === groupId) {
+    activeGroupId = groups[0]?.id || null;
+  }
+  renderGroups();
+
+  const ok = await runWithBusy(
+    async () => deleteGroupById(groupId),
+    translations[currentLanguage].deleteGroupBusy
+  );
+
+  if (!ok) {
+    groups = existingGroups;
+    renderGroups();
+    alert(translations[currentLanguage].deleteGroupFailed);
+    return;
+  }
+
+  await refreshCommunityData();
+  renderGroups();
+  updateGroupsBadge();
+}
+
 function renderGroups() {
   groupList.innerHTML = '';
 
@@ -129,12 +160,26 @@ function renderGroups() {
   }
 
   groups.forEach((group) => {
+    const row = document.createElement('div');
+    row.className = 'group-pill-row';
+
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `group-pill${group.id === activeGroupId ? ' active' : ''}`;
     button.textContent = group.name;
     button.addEventListener('click', () => setActiveGroup(group.id));
-    groupList.appendChild(button);
+    row.appendChild(button);
+
+    if (isAdminUser()) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'group-delete-btn';
+      deleteBtn.textContent = translations[currentLanguage].deleteGroupButton;
+      deleteBtn.addEventListener('click', () => deleteGroupAsAdmin(group.id));
+      row.appendChild(deleteBtn);
+    }
+
+    groupList.appendChild(row);
   });
 
   // Vis ventende anmodninger

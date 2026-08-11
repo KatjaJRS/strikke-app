@@ -145,12 +145,40 @@ async function refreshCommunityData() {
     console.error('Error loading profiles:', error);
   }
 
-  memberProfiles = profileData
-    .map((profile) => ({
-      id: profile.id,
-      name: String(profile.name || '').trim(),
-      profile_pic: profile.profile_pic || ''
-    }))
+  const membersByName = new Map();
+  const upsertMember = (name, profilePic = '', id = '') => {
+    const normalizedName = String(name || '').trim();
+    if (!normalizedName) return;
+    const key = normalizedName.toLowerCase();
+    const existing = membersByName.get(key);
+    if (!existing) {
+      membersByName.set(key, {
+        id: id || '',
+        name: normalizedName,
+        profile_pic: profilePic || ''
+      });
+      return;
+    }
+
+    if (!existing.id && id) existing.id = id;
+    if (!existing.profile_pic && profilePic) existing.profile_pic = profilePic;
+  };
+
+  profileData.forEach((profile) => {
+    upsertMember(profile.name, profile.profile_pic || '', profile.id || '');
+  });
+
+  groupsData.forEach((group) => {
+    (group.invited_people || []).forEach((name) => upsertMember(name));
+  });
+
+  messagesData.forEach((message) => {
+    upsertMember(message.sender_name || '');
+  });
+
+  upsertMember(myProfileName || currentUser?.email || '');
+
+  memberProfiles = [...membersByName.values()]
     .filter((profile) => profile.name)
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
@@ -212,6 +240,21 @@ async function deleteMessageById(messageId) {
     return true;
   } catch (e) {
     console.error('Error deleting message:', e);
+    return false;
+  }
+}
+
+async function deleteGroupById(groupId) {
+  try {
+    const { error: messagesError } = await sb.from('messages').delete().eq('group_id', groupId);
+    if (messagesError) throw messagesError;
+
+    const { error: groupError } = await sb.from('groups').delete().eq('id', groupId);
+    if (groupError) throw groupError;
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting group:', error);
     return false;
   }
 }

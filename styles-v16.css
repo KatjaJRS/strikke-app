@@ -1432,6 +1432,13 @@ button:hover {
   gap: 8px;
 }
 
+.group-pill-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
 .group-list.compact {
   margin-top: 8px;
 }
@@ -1451,6 +1458,21 @@ button:hover {
   background: #e35c86;
   color: white;
   border-color: #e35c86;
+}
+
+.group-delete-btn {
+  border: 1px solid #f3b5c8;
+  background: #fff0f5;
+  color: #a63d57;
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.group-delete-btn:hover {
+  background: #ffdce8;
 }
 
 .group-chat-panel {
