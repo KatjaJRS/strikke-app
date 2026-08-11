@@ -260,8 +260,22 @@ function renderGroups() {
   }
 
   activeGroupName.textContent = activeGroup.name;
-  groupMembersList.innerHTML = activeGroup.invitedPeople.length
-    ? activeGroup.invitedPeople.map((person) => `<li>${getAvatarHTML(person, '')} ${escapeHTML(person)}</li>`).join('')
+  const knownMembersByName = new Map(
+    (Array.isArray(memberProfiles) ? memberProfiles : []).map((profile) => [
+      String(profile.name || '').trim().toLowerCase(),
+      profile,
+    ])
+  );
+  const visibleInvitedPeople = (activeGroup.invitedPeople || []).filter((person) => {
+    const key = String(person || '').trim().toLowerCase();
+    return key && knownMembersByName.has(key);
+  });
+
+  groupMembersList.innerHTML = visibleInvitedPeople.length
+    ? visibleInvitedPeople.map((person) => {
+      const profile = knownMembersByName.get(String(person || '').trim().toLowerCase());
+      return `<li>${getAvatarHTML(person, profile?.profile_pic || '')} ${escapeHTML(person)}</li>`;
+    }).join('')
     : `<li>${translations[currentLanguage].noInvitesYet}</li>`;
 
   if (activeGroup.messages.length === 0) {
