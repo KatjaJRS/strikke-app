@@ -89,6 +89,8 @@ function getAvatarHTML(name, picUrl) {
 let busyCount = 0;
 let busyShowTimer = null;
 let busyShownAt = 0;
+const BUSY_SHOW_DELAY_MS = 0;
+const BUSY_MIN_VISIBLE_MS = 650;
 
 function showBusyOverlay(message = 'Strikker lige...') {
   const overlay = document.getElementById('busy-overlay');
@@ -101,7 +103,7 @@ function showBusyOverlay(message = 'Strikker lige...') {
       overlay.classList.add('active');
       overlay.setAttribute('aria-hidden', 'false');
       busyShownAt = Date.now();
-    }, 40);
+    }, BUSY_SHOW_DELAY_MS);
   }
 }
 
@@ -115,8 +117,7 @@ function hideBusyOverlay() {
       busyShowTimer = null;
     }
     const elapsed = Date.now() - busyShownAt;
-    const minVisibleMs = 320;
-    const wait = elapsed < minVisibleMs ? (minVisibleMs - elapsed) : 0;
+    const wait = elapsed < BUSY_MIN_VISIBLE_MS ? (BUSY_MIN_VISIBLE_MS - elapsed) : 0;
     setTimeout(() => {
       if (busyCount > 0) return;
       overlay.classList.remove('active');
