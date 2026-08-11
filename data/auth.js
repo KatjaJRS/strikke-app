@@ -36,6 +36,13 @@ function showAuthError(id, msg) {
   el.classList.remove('hidden');
 }
 
+function resetLocalProfileState() {
+  myProfileName = 'You';
+  myProfilePic = '';
+  localStorage.removeItem(PROFILE_NAME_KEY);
+  localStorage.removeItem(PROFILE_PIC_KEY);
+}
+
 function isLikelyNetworkAuthError(error) {
   const message = String(error?.message || error || '').toLowerCase();
   return (
@@ -121,6 +128,11 @@ async function signInAndLaunch(email, password, loginErrorId) {
     }
 
     currentUser = data.user;
+    myProfileName = currentUser.email || email || 'You';
+    myProfilePic = '';
+    localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
+
     let profile = null;
     try {
       const profileResult = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
@@ -135,13 +147,13 @@ async function signInAndLaunch(email, password, loginErrorId) {
     saveLanguageForEmail(email, preferredLanguage);
 
     if (profile) {
-      myProfileName = profile.name || email;
+      myProfileName = profile.name || currentUser.email || email;
       myProfilePic = profile.profile_pic || '';
       localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
       localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
     }
 
-    launchApp(currentUser, profile || { name: myProfileName || email, profile_pic: myProfilePic || '' });
+    launchApp(currentUser, profile || { name: currentUser.email || email, profile_pic: '' });
 
     try {
       await loadAllData();
@@ -271,6 +283,7 @@ function launchApp(user, profile) {
     `;
     document.getElementById('logout-btn').addEventListener('click', async () => {
       await sb.auth.signOut();
+      resetLocalProfileState();
       location.reload();
     });
     document.getElementById('open-profile-btn').addEventListener('click', () => openProfileModal());
@@ -396,7 +409,17 @@ async function initAuth() {
 
   if (session) {
     currentUser = session.user;
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+    myProfileName = currentUser.email || 'You';
+    myProfilePic = '';
+
+    let profile = null;
+    try {
+      const profileResult = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+      profile = profileResult.data || null;
+    } catch (profileError) {
+      console.error('Failed to load profile on session restore:', profileError);
+    }
+
     myProfileName = profile?.name || currentUser.email || 'You';
     myProfilePic = profile?.profile_pic || '';
     localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
@@ -407,12 +430,6 @@ async function initAuth() {
     applyLanguage(preferredLanguage);
     saveLanguageForEmail(currentUser.email, preferredLanguage);
 
-    if (profile) {
-      myProfileName = profile.name || currentUser.email;
-      myProfilePic = profile.profile_pic || '';
-      localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
-      localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
-    }
     launchApp(currentUser, profile);
     loadAllData().catch((loadError) => {
       console.error('Background load failed on session restore:', loadError);
