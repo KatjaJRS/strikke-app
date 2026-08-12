@@ -154,6 +154,12 @@ async function deleteGroupAsAdmin(groupId) {
 function renderGroups() {
   groupList.innerHTML = '';
 
+  const profilesList = Array.isArray(memberProfiles) ? memberProfiles : [];
+  const profilesByName = new Map(
+    profilesList.map((profile) => [String(profile.name || '').trim().toLowerCase(), profile])
+  );
+  const hasSharedProfiles = profilesList.length > 1;
+
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
   if (adminRequestsSection) {
     adminRequestsSection.classList.toggle('hidden', !isAdminUser());
@@ -219,7 +225,33 @@ function renderGroups() {
   // Vis alle unikke medlemmer
   const allMembersList = document.getElementById('all-members-list');
   if (allMembersList) {
-    const allMembers = Array.isArray(memberProfiles) ? memberProfiles : [];
+    const mergedMembers = new Map();
+
+    profilesList.forEach((profile) => {
+      const key = String(profile.name || '').trim().toLowerCase();
+      if (!key) return;
+      mergedMembers.set(key, {
+        name: String(profile.name || '').trim(),
+        profile_pic: profile.profile_pic || ''
+      });
+    });
+
+    if (!hasSharedProfiles) {
+      groups.forEach((group) => {
+        (group.invitedPeople || []).forEach((name) => {
+          const normalizedName = String(name || '').trim();
+          if (!normalizedName) return;
+          const key = normalizedName.toLowerCase();
+          if (!mergedMembers.has(key)) {
+            mergedMembers.set(key, { name: normalizedName, profile_pic: '' });
+          }
+        });
+      });
+    }
+
+    const allMembers = [...mergedMembers.values()]
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
     allMembersList.innerHTML = allMembers.length
       ? allMembers.map((person) => `
         <li>
@@ -260,20 +292,14 @@ function renderGroups() {
   }
 
   activeGroupName.textContent = activeGroup.name;
-  const knownMembersByName = new Map(
-    (Array.isArray(memberProfiles) ? memberProfiles : []).map((profile) => [
-      String(profile.name || '').trim().toLowerCase(),
-      profile,
-    ])
-  );
-  const visibleInvitedPeople = (activeGroup.invitedPeople || []).filter((person) => {
-    const key = String(person || '').trim().toLowerCase();
-    return key && knownMembersByName.has(key);
-  });
+  const invitedPeople = (activeGroup.invitedPeople || []).filter((person) => String(person || '').trim());
+  const visibleInvitedPeople = hasSharedProfiles
+    ? invitedPeople.filter((person) => profilesByName.has(String(person || '').trim().toLowerCase()))
+    : invitedPeople;
 
   groupMembersList.innerHTML = visibleInvitedPeople.length
     ? visibleInvitedPeople.map((person) => {
-      const profile = knownMembersByName.get(String(person || '').trim().toLowerCase());
+      const profile = profilesByName.get(String(person || '').trim().toLowerCase());
       return `<li>${getAvatarHTML(person, profile?.profile_pic || '')} ${escapeHTML(person)}</li>`;
     }).join('')
     : `<li>${translations[currentLanguage].noInvitesYet}</li>`;

@@ -79,6 +79,21 @@ async function upsertProfileWithLanguage(profileData) {
   if (fallbackError) throw fallbackError;
 }
 
+async function ensureCurrentUserProfileRow(user, existingProfile = null) {
+  if (!user) return;
+  if (existingProfile?.id === user.id) return;
+
+  try {
+    await upsertProfileWithLanguage({
+      id: user.id,
+      name: String(myProfileName || user.email || '').trim(),
+      profile_pic: myProfilePic || ''
+    });
+  } catch (error) {
+    console.error('Could not ensure profile row for current user:', error);
+  }
+}
+
 async function deleteMyMembershipData(profile) {
   if (!currentUser) return;
   const firstConfirm = confirm(translations[currentLanguage].deleteMembershipDataConfirm);
@@ -151,6 +166,8 @@ async function signInAndLaunch(email, password, loginErrorId) {
     } catch (profileError) {
       console.error('Profile read failed during login:', profileError);
     }
+
+    await ensureCurrentUserProfileRow(currentUser, profile);
     const preferredLanguage = normalizeLanguage(
       profile?.preferred_language || getSavedLanguageForEmail(email) || currentLanguage
     );
@@ -430,6 +447,8 @@ async function initAuth() {
     } catch (profileError) {
       console.error('Failed to load profile on session restore:', profileError);
     }
+
+    await ensureCurrentUserProfileRow(currentUser, profile);
 
     myProfileName = profile?.name || currentUser.email || 'You';
     myProfilePic = profile?.profile_pic || '';
