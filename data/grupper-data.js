@@ -50,6 +50,35 @@ function markGroupsAsRead() {
 
 let profileRealtimeChannel = null;
 let profileSyncHeartbeatId = null;
+let communityRealtimeChannel = null;
+let cleanupRunning = false;
+
+async function cleanupDeletedProfilesFromGroups(profileData) {
+  if (!isAdminUser() || cleanupRunning) return;
+  if (!Array.isArray(profileData) || profileData.length < 2) return;
+
+  const validNames = new Set(
+    profileData
+      .map((profile) => String(profile.name || '').trim().toLowerCase())
+      .filter(Boolean)
+  );
+
+  cleanupRunning = true;
+  try {
+    for (const group of groups) {
+      const currentInvited = Array.isArray(group.invitedPeople) ? group.invitedPeople : [];
+      const filteredInvited = currentInvited.filter((name) => validNames.has(String(name || '').trim().toLowerCase()));
+      if (filteredInvited.length === currentInvited.length) continue;
+
+      group.invitedPeople = filteredInvited;
+      await sb.from('groups').update({ invited_people: filteredInvited }).eq('id', group.id);
+    }
+  } catch (error) {
+    console.error('Error cleaning deleted profiles from groups:', error);
+  } finally {
+    cleanupRunning = false;
+  }
+}
 
 async function refreshProfilesDirectoryOnly() {
   if (!currentUser) return false;
@@ -134,6 +163,28 @@ function ensureProfileSyncHeartbeat() {
     if (!ok) return;
     if (typeof renderGroups === 'function') renderGroups();
   }, 15000);
+}
+
+function ensureCommunityRealtimeSync() {
+  if (communityRealtimeChannel || !sb?.channel) return;
+
+  communityRealtimeChannel = sb
+    .channel('community-live-sync')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, async () => {
+      await refreshCommunityData();
+      if (typeof renderGroups === 'function') renderGroups();
+      if (typeof updateGroupsBadge === 'function') updateGroupsBadge();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => {
+      await refreshCommunityData();
+      if (typeof renderGroups === 'function') renderGroups();
+      if (typeof updateGroupsBadge === 'function') updateGroupsBadge();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_requests' }, async () => {
+      await refreshCommunityData();
+      if (typeof renderGroups === 'function') renderGroups();
+    })
+    .subscribe();
 }
 
 async function refreshCommunityData() {
@@ -286,6 +337,10 @@ async function refreshCommunityData() {
     if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
     if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
     if (typeof updateProfilePreview === 'function') updateProfilePreview();
+  }
+
+  if (profilesLoaded) {
+    await cleanupDeletedProfilesFromGroups(profileData);
   }
 
   normalizeGroups();

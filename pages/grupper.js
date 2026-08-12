@@ -158,7 +158,6 @@ function renderGroups() {
   const profilesByName = new Map(
     profilesList.map((profile) => [String(profile.name || '').trim().toLowerCase(), profile])
   );
-  const hasSharedProfiles = profilesList.length > 1;
 
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
   if (adminRequestsSection) {
@@ -225,31 +224,12 @@ function renderGroups() {
   // Vis alle unikke medlemmer
   const allMembersList = document.getElementById('all-members-list');
   if (allMembersList) {
-    const mergedMembers = new Map();
-
-    profilesList.forEach((profile) => {
-      const key = String(profile.name || '').trim().toLowerCase();
-      if (!key) return;
-      mergedMembers.set(key, {
+    const allMembers = profilesList
+      .map((profile) => ({
         name: String(profile.name || '').trim(),
         profile_pic: profile.profile_pic || ''
-      });
-    });
-
-    if (!hasSharedProfiles) {
-      groups.forEach((group) => {
-        (group.invitedPeople || []).forEach((name) => {
-          const normalizedName = String(name || '').trim();
-          if (!normalizedName) return;
-          const key = normalizedName.toLowerCase();
-          if (!mergedMembers.has(key)) {
-            mergedMembers.set(key, { name: normalizedName, profile_pic: '' });
-          }
-        });
-      });
-    }
-
-    const allMembers = [...mergedMembers.values()]
+      }))
+      .filter((profile) => profile.name)
       .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
     allMembersList.innerHTML = allMembers.length
@@ -293,9 +273,9 @@ function renderGroups() {
 
   activeGroupName.textContent = activeGroup.name;
   const invitedPeople = (activeGroup.invitedPeople || []).filter((person) => String(person || '').trim());
-  const visibleInvitedPeople = hasSharedProfiles
-    ? invitedPeople.filter((person) => profilesByName.has(String(person || '').trim().toLowerCase()))
-    : invitedPeople;
+  const visibleInvitedPeople = invitedPeople.filter((person) =>
+    profilesByName.has(String(person || '').trim().toLowerCase())
+  );
 
   groupMembersList.innerHTML = visibleInvitedPeople.length
     ? visibleInvitedPeople.map((person) => {

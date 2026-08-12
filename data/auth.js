@@ -284,6 +284,7 @@ function launchApp(user, profile) {
 
   if (typeof ensureProfileRealtimeSync === 'function') ensureProfileRealtimeSync();
   if (typeof ensureProfileSyncHeartbeat === 'function') ensureProfileSyncHeartbeat();
+  if (typeof ensureCommunityRealtimeSync === 'function') ensureCommunityRealtimeSync();
 
   const userBarSlot = document.getElementById('user-bar-slot');
   let userBar = document.getElementById('user-bar');
