@@ -106,6 +106,7 @@ function unmarkProjectDeleted(projectId) {
 
 // ── Gem ──────────────────────────────────────────────────────────────────
 let projectsHaveUnsavedChanges = false;
+let lastLocalSaveAt = 0;
 
 async function saveProjects(options = {}) {
   const { showBusy = true, busyMessage = 'Gemmer projekter...' } = options;
@@ -136,17 +137,7 @@ async function saveProjects(options = {}) {
       }
 
       projectsHaveUnsavedChanges = false;
-
-      // Profilen gemmes separat, så en profilfejl aldrig blokerer projektgemning.
-      try {
-        await sb.from('profiles').upsert({
-          id: currentUser.id,
-          name: myProfileName || currentUser.email || 'User',
-          profile_pic: myProfilePic || ''
-        });
-      } catch (profileError) {
-        console.warn('Profile upsert warning:', profileError?.message || profileError);
-      }
+      lastLocalSaveAt = Date.now();
 
       return true;
     } catch (e) {
@@ -220,16 +211,22 @@ async function loadProjectsFromSupabase() {
 let projectsRealtimeChannel = null;
 let projectsPollTimerId = null;
 let projectSyncListenersBound = false;
-const PROJECTS_POLL_INTERVAL_MS = 20000;
+let lastProjectsRefreshAt = 0;
+// Realtime står for hurtige opdateringer; opslaget her er kun et sikkerhedsnet.
+const PROJECTS_POLL_INTERVAL_MS = 120000;
+const PROJECTS_REFRESH_MIN_GAP_MS = 8000;
 
 function renderProjectsAfterSync() {
   if (typeof renderProjects === 'function') renderProjects();
   if (typeof updateHeroImage === 'function') updateHeroImage();
 }
 
-async function refreshProjectsFromCloud() {
+async function refreshProjectsFromCloud(options = {}) {
+  const { force = false } = options;
   if (!currentUser) return;
   if (projectsHaveUnsavedChanges) return;
+  if (!force && Date.now() - lastProjectsRefreshAt < PROJECTS_REFRESH_MIN_GAP_MS) return;
+  lastProjectsRefreshAt = Date.now();
   const ok = await loadProjectsFromSupabase();
   if (ok) renderProjectsAfterSync();
 }
@@ -244,6 +241,18 @@ async function flushPendingProjectSaves() {
   }
 }
 
+let projectsRefreshTimer = null;
+
+function scheduleProjectsRefresh() {
+  // Ignorer ekkoet af vores egen gemning, så vi ikke henter alt ned igen.
+  if (Date.now() - lastLocalSaveAt < 5000) return;
+  if (projectsRefreshTimer) return;
+  projectsRefreshTimer = setTimeout(() => {
+    projectsRefreshTimer = null;
+    refreshProjectsFromCloud({ force: true });
+  }, 1500);
+}
+
 function ensureProjectsRealtimeSync() {
   if (projectsRealtimeChannel || !sb?.channel || !currentUser) return;
 
@@ -252,7 +261,7 @@ function ensureProjectsRealtimeSync() {
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'projects', filter: `user_id=eq.${currentUser.id}` },
-      () => { refreshProjectsFromCloud(); }
+      scheduleProjectsRefresh
     )
     .subscribe();
 }

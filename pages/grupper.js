@@ -545,13 +545,13 @@ if (groupInviteInlineForm && !groupInviteInlineForm.dataset.bound) {
   });
 }
 
-// Hold community data in sync across devices while Groups and Chats is open.
+// Sikkerhedsnet ved siden af realtime: opdater kun når panelet rent faktisk vises.
 setInterval(async () => {
   if (!currentUser) return;
-  await refreshCommunityData();
+  if (document.visibilityState !== 'visible') return;
   const groupsSection = document.getElementById('groups-chats');
-  if (groupsSection && groupsSection.classList.contains('active')) {
-    renderGroups();
-    updateGroupsBadge();
-  }
-}, 12000);
+  if (!groupsSection || !groupsSection.classList.contains('active')) return;
+  await refreshCommunityData();
+  renderGroups();
+  updateGroupsBadge();
+}, 45000);

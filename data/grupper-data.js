@@ -124,8 +124,12 @@ function mergeKnownMembers(profileData = [], groupData = [], messageData = [], i
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 }
 
+let lastProfilesRefreshAt = 0;
+
 async function refreshProfilesDirectoryOnly() {
   if (!currentUser) return false;
+  if (Date.now() - lastProfilesRefreshAt < 5000) return false;
+  lastProfilesRefreshAt = Date.now();
 
   let profileData = [];
   try {
@@ -186,12 +190,30 @@ function ensureProfileRealtimeSync() {
 function ensureProfileSyncHeartbeat() {
   if (profileSyncHeartbeatId) return;
 
+  // Realtime dækker det meste; opslaget her er kun en sikkerhedsnet-opdatering.
   profileSyncHeartbeatId = setInterval(async () => {
     if (!currentUser) return;
+    if (document.visibilityState !== 'visible') return;
     const ok = await refreshProfilesDirectoryOnly();
     if (!ok) return;
     if (typeof renderGroups === 'function') renderGroups();
-  }, 15000);
+  }, 300000);
+}
+
+let communityRefreshTimer = null;
+let lastCommunityRefreshAt = 0;
+const COMMUNITY_REFRESH_MIN_GAP_MS = 4000;
+
+function scheduleCommunityRefresh() {
+  if (communityRefreshTimer) return;
+  const elapsed = Date.now() - lastCommunityRefreshAt;
+  const wait = Math.max(500, COMMUNITY_REFRESH_MIN_GAP_MS - elapsed);
+  communityRefreshTimer = setTimeout(async () => {
+    communityRefreshTimer = null;
+    await refreshCommunityData();
+    if (typeof renderGroups === 'function') renderGroups();
+    if (typeof updateGroupsBadge === 'function') updateGroupsBadge();
+  }, wait);
 }
 
 function ensureCommunityRealtimeSync() {
@@ -199,25 +221,25 @@ function ensureCommunityRealtimeSync() {
 
   communityRealtimeChannel = sb
     .channel('community-live-sync')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, async () => {
-      await refreshCommunityData();
-      if (typeof renderGroups === 'function') renderGroups();
-      if (typeof updateGroupsBadge === 'function') updateGroupsBadge();
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => {
-      await refreshCommunityData();
-      if (typeof renderGroups === 'function') renderGroups();
-      if (typeof updateGroupsBadge === 'function') updateGroupsBadge();
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_requests' }, async () => {
-      await refreshCommunityData();
-      if (typeof renderGroups === 'function') renderGroups();
-    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, scheduleCommunityRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, scheduleCommunityRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_requests' }, scheduleCommunityRefresh)
     .subscribe();
 }
 
+let communityRefreshInFlight = null;
+
 async function refreshCommunityData() {
   if (!currentUser) return;
+  if (communityRefreshInFlight) return communityRefreshInFlight;
+  communityRefreshInFlight = performCommunityRefresh().finally(() => {
+    communityRefreshInFlight = null;
+    lastCommunityRefreshAt = Date.now();
+  });
+  return communityRefreshInFlight;
+}
+
+async function performCommunityRefresh() {
   let profileData = [];
   let profilesLoaded = false;
   let groupsData = [];
@@ -250,7 +272,8 @@ async function refreshCommunityData() {
     const { data, error } = await sb
       .from('messages')
       .select('id, group_id, sender_name, text, image, link, link_label, created_at')
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false })
+      .limit(300);
     if (error) {
       console.error('Error loading messages:', {
         message: error?.message,
@@ -260,7 +283,7 @@ async function refreshCommunityData() {
         raw: error
       });
     } else {
-      messagesData = data || [];
+      messagesData = (data || []).slice().reverse();
     }
   } catch (error) {
     console.error('Error loading messages:', {
