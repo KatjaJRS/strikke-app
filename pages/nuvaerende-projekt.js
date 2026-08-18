@@ -21,8 +21,12 @@ function addYarnRow(typeVal = '', colorVal = '', amountVal = '') {
   entry.querySelector('.yarn-remove-btn').addEventListener('click', () => {
     if (yarnRowsContainer.querySelectorAll('.yarn-entry').length > 1) entry.remove();
     autoSaveDraft();
+    autoSaveCurrentProject();
   });
-  entry.querySelectorAll('input').forEach(inp => inp.addEventListener('input', autoSaveDraft));
+  entry.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
+    autoSaveDraft();
+    autoSaveCurrentProject();
+  }));
   yarnRowsContainer.appendChild(entry);
 }
 
@@ -30,8 +34,12 @@ function addYarnRow(typeVal = '', colorVal = '', amountVal = '') {
 document.querySelector('#yarn-rows-container .yarn-remove-btn').addEventListener('click', function () {
   if (yarnRowsContainer.querySelectorAll('.yarn-entry').length > 1) this.closest('.yarn-entry').remove();
   autoSaveDraft();
+  autoSaveCurrentProject();
 });
-document.querySelectorAll('#yarn-rows-container input').forEach(inp => inp.addEventListener('input', autoSaveDraft));
+document.querySelectorAll('#yarn-rows-container input').forEach(inp => inp.addEventListener('input', () => {
+  autoSaveDraft();
+  autoSaveCurrentProject();
+}));
 addYarnBtn.addEventListener('click', () => addYarnRow());
 
 // ── Populer formular med eksisterende projekt ─────────────────────────────
@@ -217,33 +225,41 @@ function restoreDraft() {
 // ── Auto-gem eksisterende projekt ─────────────────────────────────────────
 let autoSaveTimer = null;
 
-function autoSaveCurrentProject() {
+async function commitCurrentProjectEdits() {
+  if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null; }
   if (!currentEditingProjectId) return;
   const project = projects.find(p => p.id === currentEditingProjectId);
   if (!project) return;
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(async () => {
-    const updatedProject = {
-      ...project,
-      name: nameInput.value.trim() || project.name,
-      pattern: patternInput.value.trim(),
-      notes: notesInput.value.trim(),
-      patternLink: patternLinkInput.value.trim(),
-      status: statusInput.value,
-      rating: Number(ratingValueInput.value) || project.rating,
-      difficulty: Number(difficultyValueInput.value) || project.difficulty,
-      needles: needleInputs.map(n => n.value.trim()).filter(Boolean),
-      yarns: getYarnInputs().map(y => ({
-        type: y.type.value.trim(),
-        color: y.color.value.trim(),
-        amount: y.amount.value.trim()
-      })),
-    };
-    const becameFinished = shouldCelebrateFinishTransition(project.status, updatedProject.status);
-    projects = projects.map(p => p.id === currentEditingProjectId ? updatedProject : p);
-    await saveProjects({ showBusy: false });
-    if (becameFinished) showHighfiveCelebration();
-  }, 2000);
+
+  const updatedProject = {
+    ...project,
+    name: nameInput.value.trim() || project.name,
+    pattern: patternInput.value.trim(),
+    notes: notesInput.value.trim(),
+    patternLink: patternLinkInput.value.trim(),
+    status: statusInput.value,
+    rating: Number(ratingValueInput.value) || project.rating,
+    difficulty: Number(difficultyValueInput.value) || project.difficulty,
+    needles: needleInputs.map(n => n.value.trim()).filter(Boolean),
+    yarns: getYarnInputs().map(y => ({
+      type: y.type.value.trim(),
+      color: y.color.value.trim(),
+      amount: y.amount.value.trim()
+    })),
+  };
+  const becameFinished = shouldCelebrateFinishTransition(project.status, updatedProject.status);
+  projects = projects.map(p => p.id === currentEditingProjectId ? updatedProject : p);
+  await saveProjects({ showBusy: false });
+  if (becameFinished) showHighfiveCelebration();
+}
+
+// Gør ventende ændringer tilgængelige for synkroniseringen (fx når mobilen låses).
+window.flushPendingProjectEdits = commitCurrentProjectEdits;
+
+function autoSaveCurrentProject() {
+  if (!currentEditingProjectId) return;
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(commitCurrentProjectEdits, 1200);
 }
 
 // Gendan kladde ved sideindlæsning
@@ -251,7 +267,9 @@ restoreDraft();
 
 // Auto-gem til Supabase hvert 10. sekund
 setInterval(async () => {
-  if (currentUser && projects.length > 0) await saveProjects({ showBusy: false });
+  if (!currentUser) return;
+  if (!projectsHaveUnsavedChanges && deletedProjectIds.size === 0) return;
+  await saveProjects({ showBusy: false });
 }, 10000);
 
 // ── Kobl auto-gem til formfelter ──────────────────────────────────────────
@@ -269,6 +287,8 @@ starButtons.forEach((button) => {
     const value = button.dataset.value;
     ratingValueInput.value = value;
     starButtons.forEach((btn) => btn.classList.toggle('active', Number(btn.dataset.value) <= Number(value)));
+    autoSaveDraft();
+    autoSaveCurrentProject();
   });
 });
 
@@ -280,6 +300,8 @@ heartButtons.forEach((button) => {
     const value = button.dataset.value;
     difficultyValueInput.value = value;
     heartButtons.forEach((btn) => btn.classList.toggle('active', Number(btn.dataset.value) <= Number(value)));
+    autoSaveDraft();
+    autoSaveCurrentProject();
   });
 });
 
@@ -289,6 +311,19 @@ if (newProjectBtn) {
   newProjectBtn.addEventListener('click', () => {
     clearFormForNew();
     nameInput.focus();
+  });
+}
+
+// Gem straks når der vælges et nyt foto til et eksisterende projekt.
+if (imageInput) {
+  imageInput.addEventListener('change', async () => {
+    if (!currentEditingProjectId || !imageInput.files[0]) return;
+    const image = await readImageAsDataURL(imageInput.files[0]);
+    if (!image) return;
+    projects = projects.map(p => p.id === currentEditingProjectId ? { ...p, image } : p);
+    await saveProjects({ showBusy: false });
+    renderProjects();
+    updateHeroImage();
   });
 }
 

@@ -54,8 +54,8 @@ let communityRealtimeChannel = null;
 let cleanupRunning = false;
 
 async function cleanupDeletedProfilesFromGroups(profileData) {
-  if (!isAdminUser() || cleanupRunning) return;
-  if (!Array.isArray(profileData) || profileData.length < 2) return;
+  if (cleanupRunning) return;
+  if (!Array.isArray(profileData)) return;
 
   const validNames = new Set(
     profileData
@@ -80,6 +80,50 @@ async function cleanupDeletedProfilesFromGroups(profileData) {
   }
 }
 
+function mergeKnownMembers(profileData = [], groupData = [], messageData = [], includeFallbackNames = true) {
+  const membersByName = new Map();
+  const upsertMember = (name, profilePic = '', id = '') => {
+    const normalizedName = String(name || '').trim();
+    if (!normalizedName) return;
+    const key = normalizedName.toLowerCase();
+    const existing = membersByName.get(key);
+
+    if (!existing) {
+      membersByName.set(key, {
+        id: id || '',
+        name: normalizedName,
+        profile_pic: profilePic || ''
+      });
+      return;
+    }
+
+    if (!existing.id && id) existing.id = id;
+    if (!existing.profile_pic && profilePic) existing.profile_pic = profilePic;
+  };
+
+  (Array.isArray(profileData) ? profileData : []).forEach((profile) => {
+    upsertMember(profile.name, profile.profile_pic || '', profile.id || '');
+  });
+
+  if (includeFallbackNames) {
+    (Array.isArray(groupData) ? groupData : []).forEach((group) => {
+      (Array.isArray(group.invited_people) ? group.invited_people : []).forEach((person) => {
+        upsertMember(person);
+      });
+    });
+
+    (Array.isArray(messageData) ? messageData : []).forEach((message) => {
+      upsertMember(message.sender_name || '');
+    });
+  }
+
+  upsertMember(myProfileName || currentUser?.email || '');
+
+  return [...membersByName.values()]
+    .filter((profile) => profile.name)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+}
+
 async function refreshProfilesDirectoryOnly() {
   if (!currentUser) return false;
 
@@ -96,43 +140,28 @@ async function refreshProfilesDirectoryOnly() {
     return false;
   }
 
-  const membersByName = new Map();
-  const upsertMember = (name, profilePic = '', id = '') => {
-    const normalizedName = String(name || '').trim();
-    if (!normalizedName) return;
-    const key = normalizedName.toLowerCase();
-    if (!membersByName.has(key)) {
-      membersByName.set(key, { id: id || '', name: normalizedName, profile_pic: profilePic || '' });
-      return;
-    }
+  const groupData = Array.isArray(groups) ? groups : [];
+  const messageData = groupData.flatMap((group) => Array.isArray(group.messages) ? group.messages : []);
 
-    const existing = membersByName.get(key);
-    if (!existing.id && id) existing.id = id;
-    if (!existing.profile_pic && profilePic) existing.profile_pic = profilePic;
-  };
-
-  profileData.forEach((profile) => {
-    upsertMember(profile.name, profile.profile_pic || '', profile.id || '');
-  });
-
-  upsertMember(myProfileName || currentUser?.email || '');
-
-  memberProfiles = [...membersByName.values()]
-    .filter((profile) => profile.name)
-    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-
+  memberProfiles = mergeKnownMembers(profileData, groupData, messageData, false);
   memberDirectory = memberProfiles.map((profile) => profile.name);
 
   const currentProfile = profileData.find((profile) => profile.id === currentUser.id);
   if (currentProfile) {
-    myProfileName = currentProfile.name || myProfileName;
-    myProfilePic = currentProfile.profile_pic || myProfilePic;
+    myProfileName = currentProfile.name || currentUser.email || 'You';
+    myProfilePic = currentProfile.profile_pic || '';
     localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
     localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
-    if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
-    if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
-    if (typeof updateProfilePreview === 'function') updateProfilePreview();
+  } else {
+    myProfileName = currentUser.email || 'You';
+    myProfilePic = '';
+    localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
   }
+
+  if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+  if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
+  if (typeof updateProfilePreview === 'function') updateProfilePreview();
 
   return true;
 }
@@ -197,12 +226,24 @@ async function refreshCommunityData() {
   try {
     const { data, error } = await sb.from('groups').select('id, name, invited_people');
     if (error) {
-      console.error('Error loading groups:', error);
+      console.error('Error loading groups:', {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code,
+        raw: error
+      });
     } else {
       groupsData = data || [];
     }
   } catch (error) {
-    console.error('Error loading groups:', error);
+    console.error('Error loading groups:', {
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint,
+      code: error?.code,
+      raw: error
+    });
   }
 
   try {
@@ -211,12 +252,24 @@ async function refreshCommunityData() {
       .select('id, group_id, sender_name, text, image, link, link_label, created_at')
       .order('created_at', { ascending: true });
     if (error) {
-      console.error('Error loading messages:', error);
+      console.error('Error loading messages:', {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code,
+        raw: error
+      });
     } else {
       messagesData = data || [];
     }
   } catch (error) {
-    console.error('Error loading messages:', error);
+    console.error('Error loading messages:', {
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint,
+      code: error?.code,
+      raw: error
+    });
   }
 
   const messagesByGroup = new Map();
@@ -247,7 +300,13 @@ async function refreshCommunityData() {
     try {
       const { data: rData, error: requestsError } = await sb.from('membership_requests').select('*');
       if (requestsError) {
-        console.error('Error loading membership requests:', requestsError);
+        console.error('Error loading membership requests:', {
+          message: requestsError?.message,
+          details: requestsError?.details,
+          hint: requestsError?.hint,
+          code: requestsError?.code,
+          raw: requestsError
+        });
         membershipRequests = [];
       } else {
         const approvedNames = new Set(
@@ -277,67 +336,46 @@ async function refreshCommunityData() {
   try {
     const { data: rawProfiles, error: profilesError } = await sb.from('profiles').select('id, name, profile_pic');
     if (profilesError) {
-      console.error('Error loading profiles:', profilesError);
+      console.error('Error loading profiles:', {
+        message: profilesError?.message,
+        details: profilesError?.details,
+        hint: profilesError?.hint,
+        code: profilesError?.code,
+        raw: profilesError
+      });
     } else {
       profileData = rawProfiles || [];
       profilesLoaded = true;
     }
   } catch (error) {
-    console.error('Error loading profiles:', error);
-  }
-
-  const membersByName = new Map();
-  const upsertMember = (name, profilePic = '', id = '') => {
-    const normalizedName = String(name || '').trim();
-    if (!normalizedName) return;
-    const key = normalizedName.toLowerCase();
-    const existing = membersByName.get(key);
-    if (!existing) {
-      membersByName.set(key, {
-        id: id || '',
-        name: normalizedName,
-        profile_pic: profilePic || ''
-      });
-      return;
-    }
-
-    if (!existing.id && id) existing.id = id;
-    if (!existing.profile_pic && profilePic) existing.profile_pic = profilePic;
-  };
-
-  profileData.forEach((profile) => {
-    upsertMember(profile.name, profile.profile_pic || '', profile.id || '');
-  });
-
-  // Only fall back to group/message names if profiles cannot be loaded at all.
-  if (!profilesLoaded) {
-    groupsData.forEach((group) => {
-      (group.invited_people || []).forEach((name) => upsertMember(name));
-    });
-
-    messagesData.forEach((message) => {
-      upsertMember(message.sender_name || '');
+    console.error('Error loading profiles:', {
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint,
+      code: error?.code,
+      raw: error
     });
   }
 
-  upsertMember(myProfileName || currentUser?.email || '');
-
-  memberProfiles = [...membersByName.values()]
-    .filter((profile) => profile.name)
-    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-
+  memberProfiles = mergeKnownMembers(profileData, groupsData, messagesData, !profilesLoaded);
   memberDirectory = memberProfiles.map((profile) => profile.name);
 
   const currentProfile = profileData.find((profile) => profile.id === currentUser.id);
   if (currentProfile) {
-    myProfileName = currentProfile.name || myProfileName;
-    myProfilePic = currentProfile.profile_pic || myProfilePic;
+    myProfileName = currentProfile.name || currentUser.email || 'You';
+    myProfilePic = currentProfile.profile_pic || '';
     localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
     localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
-    if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
-    if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
-    if (typeof updateProfilePreview === 'function') updateProfilePreview();
+  } else {
+    myProfileName = currentUser.email || 'You';
+    myProfilePic = '';
+    localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
+    localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
   }
+
+  if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+  if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
+  if (typeof updateProfilePreview === 'function') updateProfilePreview();
 
   if (profilesLoaded) {
     await cleanupDeletedProfilesFromGroups(profileData);

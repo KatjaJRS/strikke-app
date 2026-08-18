@@ -348,7 +348,12 @@
               <div class="group-chat-panel">
                 <div class="group-chat-header">
                   <h3 id="active-group-name">Pattern circle</h3>
+                  <button type="button" id="invite-to-group-btn" class="inline-action-btn hidden">Invite members</button>
                 </div>
+                <form id="group-invite-inline-form" class="group-invite-inline hidden">
+                  <input id="group-invite-inline-input" type="text" placeholder="Invite people to this group" aria-label="Invite people to this group" />
+                  <button type="submit" class="inline-action-btn">Add</button>
+                </form>
                 <div class="group-members-card">
                   <h4 data-i18n="invitedPeopleHeading">Happy knitters in the group</h4>
                   <ul id="group-members" class="group-members"></ul>
@@ -410,21 +415,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260807-27"></script>
-    <script src="js/dom.js?v=20260807-27"></script>
-    <script src="js/utils.js?v=20260807-27"></script>
+    <script src="js/config.js?v=20260818-1"></script>
+    <script src="js/dom.js?v=20260818-1"></script>
+    <script src="js/utils.js?v=20260818-1"></script>
     <!-- Data: Supabase-kald og logik -->
-    <script src="data/projekter-data.js?v=20260807-27"></script>
-    <script src="data/grupper-data.js?v=20260807-27"></script>
-    <script src="data/profil.js?v=20260807-27"></script>
-    <script src="data/members.js?v=20260807-27"></script>
-    <script src="data/auth.js?v=20260807-27"></script>
+    <script src="data/indstillinger.js?v=20260818-1"></script>
+    <script src="data/projekter-data.js?v=20260818-1"></script>
+    <script src="data/grupper-data.js?v=20260818-1"></script>
+    <script src="data/profil.js?v=20260818-1"></script>
+    <script src="data/members.js?v=20260818-1"></script>
+    <script src="data/auth.js?v=20260818-1"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20260807-27"></script>
-    <script src="pages/andre-projekter.js?v=20260807-27"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20260807-27"></script>
-    <script src="pages/grupper.js?v=20260807-27"></script>
+    <script src="pages/forside.js?v=20260818-1"></script>
+    <script src="pages/andre-projekter.js?v=20260818-1"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20260818-1"></script>
+    <script src="pages/grupper.js?v=20260818-1"></script>
     <!-- Initialisering -->
-    <script src="app.js?v=20260807-27"></script>
+    <script src="app.js?v=20260818-1"></script>
   </body>
 </html>

@@ -6,14 +6,62 @@ function escapeHTML(text) {
   return String(text).replace(/[&<>"']/g, (m) => map[m]);
 }
 
+const MAX_IMAGE_DIMENSION = 1400;
+const IMAGE_QUALITY = 0.82;
+
+// Billeder gemmes som data-URL i databasen, så de komprimeres for at undgå
+// at gemninger fejler på store fotos fra mobilkameraet.
+function compressDataURL(dataUrl) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
+      if (scale === 1 && dataUrl.length < 400000) { resolve(dataUrl); return; }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      try {
+        resolve(canvas.toDataURL('image/jpeg', IMAGE_QUALITY));
+      } catch {
+        resolve(dataUrl);
+      }
+    };
+    image.onerror = () => resolve(dataUrl);
+    image.src = dataUrl;
+  });
+}
+
 function readImageAsDataURL(file) {
   return new Promise((resolve, reject) => {
     if (!file) { resolve(''); return; }
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => resolve(compressDataURL(String(reader.result || '')));
     reader.onerror = () => reject(new Error('Could not read the selected image.'));
     reader.readAsDataURL(file);
   });
+}
+
+let syncToastTimer = null;
+function showSyncToast(message, tone = 'error') {
+  let toast = document.getElementById('sync-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'sync-toast';
+    toast.style.cssText = `
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      max-width: 90vw; padding: 12px 18px; border-radius: 10px; color: #fff;
+      font-weight: 600; z-index: 2000; box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+      text-align: center;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.style.background = tone === 'error' ? '#c0392b' : '#3f8f5f';
+  toast.textContent = message;
+  toast.style.display = 'block';
+  if (syncToastTimer) clearTimeout(syncToastTimer);
+  syncToastTimer = setTimeout(() => { toast.style.display = 'none'; }, 4500);
 }
 
 function getOrderedProjects() {

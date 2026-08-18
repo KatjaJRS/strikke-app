@@ -17,12 +17,26 @@ const ADMIN_EMAIL = 'roldsgaardkatja@gmail.com';
 const ADMIN_EMAILS = ['roldsgaardkatja@gmail.com', 'roldsgaard@gmail.com'];
 const DRAFT_KEY = 'knitting-form-draft';
 const HERO_PAN_KEY = 'knitting-hero-pan';
+const PROJECTS_CACHE_KEY = 'knitting-projects-cache';
+const DELETED_PROJECTS_KEY = 'knitting-deleted-projects';
+const SETTINGS_TABLE = 'user_settings';
 
 // ── Global state ─────────────────────────────────────────────────────────
 let projectRounds = JSON.parse(localStorage.getItem(ROUNDS_KEY) || '{}');
 
+// Projekter slettet lokalt, men endnu ikke slettet i Supabase.
+let deletedProjectIds = new Set(JSON.parse(localStorage.getItem(DELETED_PROJECTS_KEY) || '[]'));
+
+function saveDeletedProjectIds() {
+  localStorage.setItem(DELETED_PROJECTS_KEY, JSON.stringify([...deletedProjectIds]));
+}
+
 function getRounds(projectId) { return projectRounds[projectId] || 0; }
-function saveRounds() { localStorage.setItem(ROUNDS_KEY, JSON.stringify(projectRounds)); }
+
+function saveRounds() {
+  localStorage.setItem(ROUNDS_KEY, JSON.stringify(projectRounds));
+  if (typeof queueSettingsSync === 'function') queueSettingsSync();
+}
 
 let filterStatus = 'all';
 let filterRating = 'all';

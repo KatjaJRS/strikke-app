@@ -8,7 +8,6 @@ function applyLanguage(lang) {
   currentLanguage = normalizeLanguage(lang);
   localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
   document.documentElement.lang = currentLanguage;
-
   if (currentUser?.email) {
     saveLanguageForEmail(currentUser.email, currentLanguage);
   }
@@ -44,7 +43,10 @@ function switchSection(sectionId) {
 
 // ── Sprogknapper ──────────────────────────────────────────────────────────
 langButtons.forEach((button) => {
-  button.addEventListener('click', () => applyLanguage(button.dataset.lang));
+  button.addEventListener('click', () => {
+    applyLanguage(button.dataset.lang);
+    queueSettingsSync();
+  });
 });
 
 // ── Navigationsknapper ────────────────────────────────────────────────────
@@ -56,6 +58,16 @@ navButtons.forEach((button) => {
 });
 
 // ── Hero-billede: træk/pan og upload ─────────────────────────────────────
+function applyHeroImageFromStorage() {
+  if (!heroImage) return;
+  const savedHeroImage = localStorage.getItem(HERO_IMAGE_KEY);
+  if (savedHeroImage) heroImage.src = savedHeroImage;
+  try {
+    const pan = JSON.parse(localStorage.getItem(HERO_PAN_KEY) || '{"x":50,"y":50}');
+    heroImage.style.objectPosition = `${pan.x}% ${pan.y}%`;
+  } catch { /* beholder nuværende position */ }
+}
+
 if (heroImage) {
   const savedHeroImage = localStorage.getItem(HERO_IMAGE_KEY);
   if (savedHeroImage) heroImage.src = savedHeroImage;
@@ -89,6 +101,7 @@ if (heroImage) {
     savedPan.x = panX;
     savedPan.y = panY;
     localStorage.setItem(HERO_PAN_KEY, JSON.stringify({ x: panX, y: panY }));
+    queueSettingsSync();
   });
 
   heroImage.style.cursor = 'grab';
@@ -116,6 +129,7 @@ if (heroImageInput) {
     const dataUrl = await readImageAsDataURL(file);
     heroImage.src = dataUrl;
     localStorage.setItem(HERO_IMAGE_KEY, dataUrl);
+    queueSettingsSync();
     heroImageInput.value = '';
   });
 }

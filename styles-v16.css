@@ -1489,6 +1489,42 @@ button:hover {
   align-items: center;
 }
 
+.inline-action-btn {
+  border: 1px solid #e35c86;
+  background: #fff6f8;
+  color: #a63d57;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.inline-action-btn:hover {
+  background: #ffe4ed;
+}
+
+.group-invite-inline {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.group-invite-inline input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #f3b5c8;
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: white;
+  color: #5a2b39;
+}
+
+.group-invite-inline input:focus {
+  outline: 2px solid #f5c9d8;
+  border-color: #e35c86;
+}
+
 .ghost-btn {
   background: #ffe0e8;
   color: #a63d57;

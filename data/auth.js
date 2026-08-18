@@ -1,25 +1,11 @@
 // ── Login og rettigheder — Supabase authentication ────────────────────────
 
 async function loadAllData() {
-  // Projekter
-  const { data: pData } = await sb.from('projects').select('*').eq('user_id', currentUser.id);
-  const allLoaded = (pData || []).map(p => ({
-    id: p.id, name: p.name, pattern: p.pattern || '',
-    status: p.status || 'Planning', notes: p.notes || '',
-    patternLink: p.pattern_link || '', needles: p.needles || [],
-    yarns: p.yarns || [], rating: p.rating || 0, difficulty: p.difficulty || 0,
-    image: p.image || '', lastViewedAt: p.last_viewed_at || 0
-  }));
+  await loadProjectsFromSupabase();
+  await refreshUserSettings();
 
-  // Dedupliker i hukommelsen: behold nyeste per navn
-  const seen = new Map();
-  allLoaded.sort((a, b) => b.lastViewedAt - a.lastViewedAt);
-  for (const p of allLoaded) {
-    const key = p.name.trim().toLowerCase();
-    if (!seen.has(key)) seen.set(key, p);
-  }
-  projects = [...seen.values()];
-  normalizeProjects();
+  // Gemninger der ikke nåede at blive sendt fra en anden session sendes nu.
+  if (deletedProjectIds.size > 0) await saveProjects({ showBusy: false });
 
   await refreshCommunityData();
 }
@@ -45,7 +31,10 @@ function resetLocalProfileState() {
 
 async function forceFreshLoginState() {
   try {
-    await sb.auth.signOut();
+    const { data: { session } = {} } = await sb.auth.getSession();
+    if (session) {
+      await sb.auth.signOut();
+    }
   } catch (error) {
     console.error('Forced pre-login sign-out failed:', error);
   }
@@ -94,6 +83,40 @@ async function ensureCurrentUserProfileRow(user, existingProfile = null) {
   }
 }
 
+async function syncCurrentUserProfileFromSupabase() {
+  if (!currentUser) return null;
+
+  try {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Could not sync current user profile from Supabase:', error);
+      return null;
+    }
+
+    const nextName = String(data?.name || currentUser.email || 'You').trim() || 'You';
+    const nextPic = data?.profile_pic || '';
+
+    myProfileName = nextName;
+    myProfilePic = nextPic;
+    localStorage.setItem(PROFILE_NAME_KEY, nextName);
+    localStorage.setItem(PROFILE_PIC_KEY, nextPic);
+
+    if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
+    if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
+    if (typeof updateProfilePreview === 'function') updateProfilePreview();
+
+    return data || null;
+  } catch (error) {
+    console.error('Profile sync failed:', error);
+    return null;
+  }
+}
+
 async function deleteMyMembershipData(profile) {
   if (!currentUser) return;
   const firstConfirm = confirm(translations[currentLanguage].deleteMembershipDataConfirm);
@@ -127,17 +150,36 @@ async function deleteMyMembershipData(profile) {
   localStorage.removeItem(HERO_IMAGE_KEY);
   localStorage.removeItem(HERO_PAN_KEY);
   localStorage.removeItem(ROUNDS_KEY);
+  localStorage.removeItem(PROJECTS_CACHE_KEY);
+  localStorage.removeItem(DELETED_PROJECTS_KEY);
+  localStorage.removeItem(SETTINGS_UPDATED_KEY);
+  await sb.from(SETTINGS_TABLE).delete().eq('user_id', currentUser.id).then(() => {}, () => {});
   await sb.auth.signOut();
   location.reload();
 }
 
 async function signInAndLaunch(email, password, loginErrorId) {
   return runWithBusy(async () => {
-    await forceFreshLoginState();
+    const trimmedEmail = String(email || '').trim().toLowerCase();
+    const trimmedPassword = String(password || '').trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
+      showAuthError(loginErrorId, translations[currentLanguage].loginErrorWrong);
+      return false;
+    }
+
+    try {
+      const { data: { session } = {} } = await sb.auth.getSession();
+      if (session) {
+        await sb.auth.signOut();
+      }
+    } catch (error) {
+      console.warn('Session cleanup before login failed:', error);
+    }
 
     let authResult;
     try {
-      authResult = await sb.auth.signInWithPassword({ email, password });
+      authResult = await sb.auth.signInWithPassword({ email: trimmedEmail, password: trimmedPassword });
     } catch (authError) {
       showAuthError(loginErrorId, translations[currentLanguage].loginErrorNetwork);
       console.error('Login request failed:', authError);
@@ -154,7 +196,7 @@ async function signInAndLaunch(email, password, loginErrorId) {
     }
 
     currentUser = data.user;
-    myProfileName = currentUser.email || email || 'You';
+    myProfileName = currentUser.email || trimmedEmail || 'You';
     myProfilePic = '';
     localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
     localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
@@ -175,7 +217,7 @@ async function signInAndLaunch(email, password, loginErrorId) {
     saveLanguageForEmail(email, preferredLanguage);
 
     if (profile) {
-      myProfileName = profile.name || currentUser.email || email;
+      myProfileName = profile.name || currentUser.email || trimmedEmail;
       myProfilePic = profile.profile_pic || '';
       localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
       localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
@@ -285,6 +327,9 @@ function launchApp(user, profile) {
   if (typeof ensureProfileRealtimeSync === 'function') ensureProfileRealtimeSync();
   if (typeof ensureProfileSyncHeartbeat === 'function') ensureProfileSyncHeartbeat();
   if (typeof ensureCommunityRealtimeSync === 'function') ensureCommunityRealtimeSync();
+  if (typeof ensureProjectsRealtimeSync === 'function') ensureProjectsRealtimeSync();
+  if (typeof ensureProjectSyncHeartbeat === 'function') ensureProjectSyncHeartbeat();
+  if (typeof ensureSettingsRealtimeSync === 'function') ensureSettingsRealtimeSync();
 
   const userBarSlot = document.getElementById('user-bar-slot');
   let userBar = document.getElementById('user-bar');
@@ -311,6 +356,7 @@ function launchApp(user, profile) {
       <button type="button" id="logout-btn" class="user-bar-logout" data-i18n="logoutLabel">Sign out</button>
     `;
     document.getElementById('logout-btn').addEventListener('click', async () => {
+      if (typeof flushPendingProjectSaves === 'function') await flushPendingProjectSaves();
       await sb.auth.signOut();
       resetLocalProfileState();
       location.reload();
@@ -486,7 +532,7 @@ async function initAuth() {
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim().toLowerCase();
-    const password = document.getElementById('login-password').value;
+    const password = document.getElementById('login-password').value.trim();
     await signInAndLaunch(email, password, 'login-error');
   });
 

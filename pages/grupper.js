@@ -151,6 +151,54 @@ async function deleteGroupAsAdmin(groupId) {
   updateGroupsBadge();
 }
 
+function addMembersToActiveGroup(rawInput) {
+  const activeGroup = getActiveGroup();
+  if (!activeGroup) return;
+
+  const nextNames = rawInput
+    .split(',')
+    .map((name) => String(name || '').trim())
+    .filter(Boolean);
+
+  if (nextNames.length === 0) return;
+
+  const existing = new Set((activeGroup.invitedPeople || []).map((name) => String(name || '').trim().toLowerCase()));
+  const additions = nextNames.filter((name) => !existing.has(name.trim().toLowerCase()));
+  if (additions.length === 0) return;
+
+  groups = groups.map((group) => {
+    if (group.id !== activeGroup.id) return group;
+    const merged = [...(group.invitedPeople || []), ...additions.map((name) => String(name || '').trim())];
+    return {
+      ...group,
+      invitedPeople: merged.filter((name, index, arr) => {
+        const normalized = String(name || '').trim().toLowerCase();
+        return arr.findIndex((item) => String(item || '').trim().toLowerCase() === normalized) === index;
+      })
+    };
+  });
+
+  renderGroups();
+  return true;
+}
+
+async function inviteMembersToSelectedGroup() {
+  const activeGroup = getActiveGroup();
+  if (!activeGroup) return;
+
+  const inviteInput = document.getElementById('group-invite-inline-input');
+  if (!inviteInput) return;
+
+  const rawInput = inviteInput.value;
+  if (!rawInput || !addMembersToActiveGroup(rawInput)) return;
+
+  inviteInput.value = '';
+
+  await saveGroups();
+  await refreshCommunityData();
+  renderGroups();
+}
+
 function renderGroups() {
   groupList.innerHTML = '';
 
@@ -158,6 +206,25 @@ function renderGroups() {
   const profilesByName = new Map(
     profilesList.map((profile) => [String(profile.name || '').trim().toLowerCase(), profile])
   );
+
+  const knownCommunityNames = new Map();
+  const addKnownCommunityName = (name) => {
+    const normalized = String(name || '').trim();
+    if (!normalized) return;
+    const key = normalized.toLowerCase();
+    if (!knownCommunityNames.has(key)) {
+      knownCommunityNames.set(key, {
+        name: normalized,
+        profile_pic: profilesByName.get(key)?.profile_pic || ''
+      });
+    }
+  };
+
+  profilesList.forEach((profile) => addKnownCommunityName(profile.name));
+  groups.forEach((group) => {
+    (group.invitedPeople || []).forEach((person) => addKnownCommunityName(person));
+    (group.messages || []).forEach((message) => addKnownCommunityName(message.sender));
+  });
 
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
   if (adminRequestsSection) {
@@ -224,10 +291,10 @@ function renderGroups() {
   // Vis alle unikke medlemmer
   const allMembersList = document.getElementById('all-members-list');
   if (allMembersList) {
-    const allMembers = profilesList
-      .map((profile) => ({
-        name: String(profile.name || '').trim(),
-        profile_pic: profile.profile_pic || ''
+    const allMembers = [...knownCommunityNames.values()]
+      .map((person) => ({
+        name: String(person.name || '').trim(),
+        profile_pic: person.profile_pic || ''
       }))
       .filter((profile) => profile.name)
       .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
@@ -246,9 +313,11 @@ function renderGroups() {
     allMembersList.querySelectorAll('.member-picker-btn').forEach((button) => {
       button.addEventListener('click', () => {
         const memberName = button.dataset.memberName || '';
-        if (!memberName || !groupInvitesInput) return;
+        const activeInviteInput = document.getElementById('group-invite-inline-input');
+        const targetInput = activeInviteInput && getActiveGroup() ? activeInviteInput : groupInvitesInput;
+        if (!memberName || !targetInput) return;
 
-        const existingInvites = groupInvitesInput.value
+        const existingInvites = targetInput.value
           .split(',')
           .map((name) => name.trim())
           .filter(Boolean);
@@ -257,10 +326,19 @@ function renderGroups() {
         );
         if (!exists) existingInvites.push(memberName);
 
-        groupInvitesInput.value = existingInvites.join(', ');
-        groupInvitesInput.focus();
+        targetInput.value = existingInvites.join(', ');
+        targetInput.focus();
       });
     });
+  }
+
+  const inviteBtn = document.getElementById('invite-to-group-btn');
+  const inviteForm = document.getElementById('group-invite-inline-form');
+  if (inviteBtn) {
+    inviteBtn.classList.toggle('hidden', !getActiveGroup());
+  }
+  if (inviteForm) {
+    inviteForm.classList.toggle('hidden', !getActiveGroup());
   }
 
   const activeGroup = getActiveGroup();
@@ -268,14 +346,19 @@ function renderGroups() {
     activeGroupName.textContent = translations[currentLanguage].noGroupYet;
     groupMembersList.innerHTML = '';
     chatMessages.innerHTML = `<p class="chat-empty">${translations[currentLanguage].createGroupToStartChat}</p>`;
+    if (inviteBtn) inviteBtn.classList.add('hidden');
+    if (inviteForm) inviteForm.classList.add('hidden');
     return;
   }
 
   activeGroupName.textContent = activeGroup.name;
+  if (inviteBtn) inviteBtn.classList.remove('hidden');
+  if (inviteForm) inviteForm.classList.remove('hidden');
   const invitedPeople = (activeGroup.invitedPeople || []).filter((person) => String(person || '').trim());
-  const visibleInvitedPeople = invitedPeople.filter((person) =>
-    profilesByName.has(String(person || '').trim().toLowerCase())
-  );
+  const visibleInvitedPeople = [...new Map(invitedPeople.map((person) => {
+    const normalized = String(person || '').trim();
+    return [normalized.toLowerCase(), normalized];
+  })).values()];
 
   groupMembersList.innerHTML = visibleInvitedPeople.length
     ? visibleInvitedPeople.map((person) => {
@@ -438,6 +521,27 @@ if (copyInviteButton) {
       copyInviteButton.textContent = translations[currentLanguage].copyFailed;
       setTimeout(() => { copyInviteButton.textContent = translations[currentLanguage].copyInviteLink; }, 1600);
     }
+  });
+}
+
+const inviteToGroupBtn = document.getElementById('invite-to-group-btn');
+if (inviteToGroupBtn && !inviteToGroupBtn.dataset.bound) {
+  inviteToGroupBtn.dataset.bound = 'true';
+  inviteToGroupBtn.addEventListener('click', () => {
+    const inviteInput = document.getElementById('group-invite-inline-input');
+    if (inviteInput) {
+      inviteInput.focus();
+      inviteInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+}
+
+const groupInviteInlineForm = document.getElementById('group-invite-inline-form');
+if (groupInviteInlineForm && !groupInviteInlineForm.dataset.bound) {
+  groupInviteInlineForm.dataset.bound = 'true';
+  groupInviteInlineForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await inviteMembersToSelectedGroup();
   });
 }
 
