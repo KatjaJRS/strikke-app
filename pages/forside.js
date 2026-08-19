@@ -126,7 +126,8 @@ if (heroImageInput) {
   heroImageInput.addEventListener('change', async () => {
     const file = heroImageInput.files[0];
     if (!file) return;
-    const dataUrl = await readImageAsDataURL(file);
+    const dataUrl = await storeImageFile(file, 'hero');
+    if (!dataUrl) return;
     heroImage.src = dataUrl;
     localStorage.setItem(HERO_IMAGE_KEY, dataUrl);
     queueSettingsSync();

@@ -8,6 +8,12 @@ async function loadAllData() {
   if (deletedProjectIds.size > 0) await saveProjects({ showBusy: false });
 
   await refreshCommunityData();
+
+  if (typeof migrateLegacyImagesToStorage === 'function') {
+    migrateLegacyImagesToStorage().catch((error) => {
+      console.error('Image migration failed:', error);
+    });
+  }
 }
 
 function showAuthForm(formId) {
@@ -412,7 +418,7 @@ function launchApp(user, profile) {
   document.getElementById('profile-modal-pic-input').addEventListener('change', async () => {
     const file = document.getElementById('profile-modal-pic-input').files[0];
     if (!file) return;
-    myProfilePic = await readImageAsDataURL(file);
+    myProfilePic = await storeImageFile(file, 'profile');
     localStorage.setItem(PROFILE_PIC_KEY, myProfilePic);
     await sb.from('profiles').upsert({ id: currentUser.id, name: myProfileName || profile?.name || '', profile_pic: myProfilePic });
     updateModalAvatar();

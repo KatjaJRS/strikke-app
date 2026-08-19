@@ -451,7 +451,7 @@ let pendingChatImage = '';
 chatImageInput.addEventListener('change', async () => {
   const file = chatImageInput.files[0];
   if (!file) return;
-  pendingChatImage = await readImageAsDataURL(file);
+  pendingChatImage = await storeImageFile(file, 'chat');
   chatImagePreview.src = pendingChatImage;
   chatImagePreviewRow.classList.remove('hidden');
 });

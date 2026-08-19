@@ -318,7 +318,7 @@ if (newProjectBtn) {
 if (imageInput) {
   imageInput.addEventListener('change', async () => {
     if (!currentEditingProjectId || !imageInput.files[0]) return;
-    const image = await readImageAsDataURL(imageInput.files[0]);
+    const image = await storeImageFile(imageInput.files[0], 'projects');
     if (!image) return;
     projects = projects.map(p => p.id === currentEditingProjectId ? { ...p, image } : p);
     await saveProjects({ showBusy: false });
@@ -346,7 +346,7 @@ form.addEventListener('submit', async (event) => {
 
   if (!name || !pattern) return;
 
-  const image = await readImageAsDataURL(imageInput.files[0]);
+  const image = await storeImageFile(imageInput.files[0], 'projects');
   let becameFinished = false;
 
   if (currentEditingProjectId) {

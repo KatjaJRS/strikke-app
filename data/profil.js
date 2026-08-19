@@ -54,9 +54,10 @@ if (profilePicInput) {
   profilePicInput.addEventListener('change', async () => {
     const file = profilePicInput.files[0];
     if (!file) return;
-    const dataUrl = await readImageAsDataURL(file);
-    myProfilePic = dataUrl;
-    localStorage.setItem(PROFILE_PIC_KEY, dataUrl);
+    const imageUrl = await storeImageFile(file, 'profile');
+    if (!imageUrl) return;
+    myProfilePic = imageUrl;
+    localStorage.setItem(PROFILE_PIC_KEY, imageUrl);
     await saveCurrentProfileToDatabase();
     updateProfilePreview();
     if (typeof refreshCurrentUserDisplay === 'function') refreshCurrentUserDisplay();
