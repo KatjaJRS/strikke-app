@@ -1178,6 +1178,7 @@ button:hover {
 
 .profile-mode-toggle {
   display: inline-flex;
+  justify-content: flex-start;
   gap: 8px;
   padding: 6px;
   border-radius: 999px;
@@ -1194,6 +1195,7 @@ button:hover {
   padding: 9px 14px;
   border-radius: 999px;
   font-weight: 700;
+  text-align: left;
   cursor: pointer;
 }
 
@@ -1278,7 +1280,8 @@ button:hover {
   padding: 13px 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  text-align: left;
   gap: 12px;
 }
 
@@ -1288,6 +1291,7 @@ button:hover {
   font-weight: 700;
   line-height: 1;
   color: #c04a72;
+  margin-left: auto;
 }
 
 .dashboard-collapsible[open] .collapsible-summary {
