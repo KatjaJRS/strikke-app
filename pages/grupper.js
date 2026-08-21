@@ -10,6 +10,29 @@ const chatEditSaveBtn = document.getElementById('chat-edit-save');
 const chatEditCancelBtn = document.getElementById('chat-edit-cancel');
 let editingMessageContext = null;
 
+function initGroupCollapsibles() {
+  const collapsibles = Array.from(document.querySelectorAll('[data-collapsible]'));
+  if (collapsibles.length === 0) return;
+
+  collapsibles.forEach((section) => {
+    if (section.dataset.bound === 'true') return;
+    section.dataset.bound = 'true';
+
+    section.addEventListener('toggle', () => {
+      if (!section.open) return;
+      const groupName = section.dataset.collapsibleGroup;
+      if (!groupName) return;
+
+      collapsibles.forEach((other) => {
+        if (other === section) return;
+        if (other.dataset.collapsibleGroup === groupName) other.open = false;
+      });
+    });
+  });
+}
+
+initGroupCollapsibles();
+
 function closeChatEditModal() {
   if (!chatEditModal) return;
   chatEditModal.classList.add('hidden');
