@@ -15,6 +15,8 @@ async function saveCurrentProfileToDatabase() {
 }
 
 function updateProfilePreview() {
+  if (!profileAvatarPreview) return;
+
   if (myProfilePic) {
     profileAvatarPreview.innerHTML = '';
     profileAvatarPreview.style.backgroundImage = `url(${myProfilePic})`;
