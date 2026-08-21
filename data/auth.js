@@ -61,6 +61,15 @@ function isLikelyNetworkAuthError(error) {
   );
 }
 
+function isLikelyDatabaseSignupError(error) {
+  const message = String(error?.message || error || '').toLowerCase();
+  const code = String(error?.code || error?.error_code || '').toLowerCase();
+  return (
+    message.includes('database error saving new user') ||
+    code.includes('unexpected_failure')
+  );
+}
+
 function withAdminProfileFlags(profileData = {}) {
   const email = String(currentUser?.email || profileData.email || '').trim().toLowerCase();
   const isAdmin = isAdminUser(email, profileData);
@@ -270,7 +279,9 @@ async function registerAndLaunch(name, email, password, registerErrorId) {
     if (error) {
       const signUpMessage = isLikelyNetworkAuthError(error)
         ? translations[currentLanguage].registerErrorNetwork
-        : (error.message || translations[currentLanguage].registerErrorExists);
+        : isLikelyDatabaseSignupError(error)
+          ? translations[currentLanguage].registerErrorServerSetup
+          : (error.message || translations[currentLanguage].registerErrorExists);
       showAuthError(registerErrorId, signUpMessage);
       return false;
     }
@@ -283,20 +294,11 @@ async function registerAndLaunch(name, email, password, registerErrorId) {
     currentUser = data.user;
 
     if (!data.session) {
-      let autoLogin;
-      try {
-        autoLogin = await sb.auth.signInWithPassword({ email, password });
-      } catch (autoLoginError) {
-        showAuthError(registerErrorId, translations[currentLanguage].registerErrorNetwork);
-        console.error('Auto-login failed after sign up:', autoLoginError);
-        return false;
-      }
-
-      if (autoLogin.error || !autoLogin.data?.user) {
-        showAuthError(registerErrorId, translations[currentLanguage].registerNeedEmailConfirm);
-        return false;
-      }
-      currentUser = autoLogin.data.user;
+      showAuthError(registerErrorId, translations[currentLanguage].registerNeedEmailConfirm);
+      showAuthForm('login-form');
+      const loginEmailInput = document.getElementById('login-email');
+      if (loginEmailInput) loginEmailInput.value = email;
+      return true;
     }
 
     try {
