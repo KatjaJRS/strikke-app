@@ -1204,6 +1204,84 @@ button:hover {
   color: white;
 }
 
+.groups-workspace {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.groups-left-nav {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.groups-left-nav .profile-mode-toggle {
+  display: grid;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 8px;
+  border-radius: 14px;
+  background: #fff7fb;
+}
+
+.groups-left-nav .profile-mode-btn {
+  width: 100%;
+  border: 1px solid transparent;
+}
+
+.group-nav-btn {
+  width: 100%;
+  border: 1px solid #f3b5c8;
+  background: #fff8fb;
+  color: #8a4d62;
+  border-radius: 12px;
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.group-nav-btn.active {
+  background: #e35c86;
+  color: #fff;
+  border-color: #e35c86;
+}
+
+.groups-right-content {
+  display: grid;
+  gap: 14px;
+}
+
+.group-content-panel {
+  border: 1px solid #f3b5c8;
+  background: linear-gradient(180deg, #fffdfd 0%, #fff7fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(197, 90, 116, 0.06);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.group-content-panel.hidden {
+  display: none !important;
+}
+
+.group-panel-title {
+  margin: 0;
+  color: #8a4d62;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .profile-mode-section.hidden,
 .hidden {
   display: none !important;
@@ -2403,6 +2481,15 @@ button:hover {
     gap: 14px;
   }
 
+  .groups-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .groups-left-nav {
+    position: static;
+    grid-template-columns: 1fr;
+  }
+
   .group-sidebar {
     position: static;
   }
@@ -2430,6 +2517,19 @@ button:hover {
 }
 
 @media (max-width: 640px) {
+  .groups-left-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .group-nav-btn {
+    padding: 10px 11px;
+    font-size: 0.86rem;
+  }
+
+  .group-content-panel {
+    padding: 12px;
+  }
+
   .collapsible-panel {
     padding: 12px;
   }

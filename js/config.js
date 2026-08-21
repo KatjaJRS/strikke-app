@@ -63,25 +63,37 @@ function applyProfileModeUI() {
   const adminToggle = document.getElementById('profile-mode-toggle');
   const memberBtn = document.getElementById('profile-mode-member');
   const adminBtn = document.getElementById('profile-mode-admin');
-  const memberSection = document.getElementById('member-profile-section');
   const adminSection = document.getElementById('admin-profile-section');
-  const groupForm = document.getElementById('group-form');
-  const joinRequestBox = document.querySelector('.join-request-box');
+  const createNavBtn = document.getElementById('group-nav-create');
+  const joinNavBtn = document.getElementById('group-nav-join');
+  const requestsNavBtn = document.getElementById('group-nav-requests');
+  const createPanel = document.getElementById('group-panel-create');
+  const joinPanel = document.getElementById('group-panel-join');
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
 
   const isAdmin = isAdminUser();
   const activeMode = isAdmin ? getProfileMode() : 'member';
+  const isAdminMode = isAdmin && activeMode === 'admin';
 
   if (adminToggle) adminToggle.classList.toggle('hidden', !isAdmin);
   if (memberBtn) memberBtn.classList.toggle('active', activeMode === 'member');
   if (adminBtn) adminBtn.classList.toggle('active', activeMode === 'admin');
 
-  if (memberSection) memberSection.classList.toggle('hidden', isAdmin && activeMode !== 'member');
-  if (adminSection) adminSection.classList.toggle('hidden', !isAdmin || activeMode !== 'admin');
+  if (adminSection) adminSection.classList.toggle('hidden', !isAdminMode);
+  if (createNavBtn) createNavBtn.classList.toggle('hidden', isAdminMode);
+  if (joinNavBtn) joinNavBtn.classList.toggle('hidden', isAdminMode);
+  if (createPanel) createPanel.classList.toggle('hidden', isAdminMode);
+  if (joinPanel) joinPanel.classList.toggle('hidden', isAdminMode);
 
-  if (groupForm) groupForm.classList.toggle('hidden', isAdmin && activeMode === 'admin');
-  if (joinRequestBox) joinRequestBox.classList.toggle('hidden', isAdmin && activeMode === 'admin');
-  if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !(isAdmin && activeMode === 'admin'));
+  if (requestsNavBtn) requestsNavBtn.classList.toggle('hidden', !isAdminMode);
+  if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !isAdminMode);
+
+  if (typeof setActiveGroupPanel === 'function') {
+    const activePanel = document.querySelector('.group-nav-btn.active')?.dataset.groupPanel;
+    if (!activePanel || document.getElementById(`group-panel-${activePanel}`)?.classList.contains('hidden')) {
+      setActiveGroupPanel(isAdminMode ? 'groups' : 'create');
+    }
+  }
   if (typeof renderGroups === 'function') renderGroups();
 }
 

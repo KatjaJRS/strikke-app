@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Day Away</title>
-    <link rel="stylesheet" href="styles-v16.css?v=20260821-3" />
+    <link rel="stylesheet" href="styles-v16.css?v=20260821-4" />
   </head>
   <body>
     <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
@@ -307,65 +307,80 @@
             <input id="project-search-groups" type="text" class="search-input" data-i18n-placeholder="searchProjectsPlaceholder" placeholder="Search by name, pattern, or notes" />
           </div>
 
-          <div id="profile-mode-toggle" class="profile-mode-toggle hidden" aria-label="Profile mode switcher">
-            <button type="button" id="profile-mode-member" class="profile-mode-btn active">My profile</button>
-            <button type="button" id="profile-mode-admin" class="profile-mode-btn">Admin profile</button>
-          </div>
-
-          <div class="group-layout">
-            <div class="group-main">
-              <div id="member-profile-section" class="profile-mode-section">
-                <details class="dashboard-collapsible" data-collapsible data-collapsible-group="member-tools">
-                  <summary class="collapsible-summary" data-i18n="groupQuickCreate">Create</summary>
-                  <div class="collapsible-panel">
-                    <div class="profile-setup">
-                      <div id="profile-avatar-preview" class="avatar avatar-initials" style="background:hsl(330,55%,65%)">Y</div>
-                      <div class="profile-setup-fields">
-                        <label>
-                          <span data-i18n="profileNameLabel">Your display name</span>
-                          <input id="profile-name-input" type="text" placeholder="e.g. Anna" />
-                        </label>
-                      </div>
-                    </div>
-
-                    <form id="group-form" class="group-form">
-                      <label>
-                        <span data-i18n="groupNameLabel">Group name</span>
-                        <input id="group-name" type="text" data-i18n-placeholder="groupNamePlaceholder" placeholder="e.g. Weekend knit circle" required />
-                      </label>
-                      <label>
-                        <span data-i18n="groupInvitesLabel">Invite people</span>
-                        <input id="group-invites" type="text" data-i18n-placeholder="groupInvitesPlaceholder" placeholder="Maja, Lars, Emma" />
-                      </label>
-                      <button type="submit" data-i18n="createGroupButton">Create group</button>
-                    </form>
-                  </div>
-                </details>
-
-                <details class="dashboard-collapsible" data-collapsible data-collapsible-group="member-tools">
-                  <summary class="collapsible-summary" data-i18n="groupQuickJoin">Join</summary>
-                  <div class="collapsible-panel">
-                    <div class="join-request-box">
-                      <form id="join-request-form" class="group-form">
-                        <label>
-                          <span data-i18n="requestNameLabel">Your name</span>
-                          <input id="request-name-input" type="text" data-i18n-placeholder="requestNamePlaceholder" placeholder="e.g. Maja" required />
-                        </label>
-                        <label>
-                          <span data-i18n="requestEmailLabel">Your email</span>
-                          <input id="request-email-input" type="email" data-i18n-placeholder="requestEmailPlaceholder" placeholder="maja@example.com" />
-                        </label>
-                        <button type="submit" data-i18n="requestJoinButton">Send request</button>
-                      </form>
-                    </div>
-                  </div>
-                </details>
+          <div class="groups-workspace">
+            <aside class="groups-left-nav">
+              <div id="profile-mode-toggle" class="profile-mode-toggle hidden" aria-label="Profile mode switcher">
+                <button type="button" id="profile-mode-member" class="profile-mode-btn active">Me</button>
+                <button type="button" id="profile-mode-admin" class="profile-mode-btn">Admin</button>
               </div>
+
+              <button type="button" id="group-nav-create" class="group-nav-btn active" data-group-panel="create" data-i18n="groupQuickCreate">Create</button>
+              <button type="button" id="group-nav-join" class="group-nav-btn" data-group-panel="join" data-i18n="groupQuickJoin">Join</button>
+              <button type="button" id="group-nav-groups" class="group-nav-btn" data-group-panel="groups" data-i18n="groupQuickGroups">Groups</button>
+              <button type="button" id="group-nav-requests" class="group-nav-btn hidden" data-group-panel="requests" data-i18n="groupQuickRequests">Requests</button>
+              <button type="button" id="group-nav-members" class="group-nav-btn" data-group-panel="members" data-i18n="groupQuickMembers">Members</button>
+            </aside>
+
+            <div class="groups-right-content">
+              <section id="group-panel-create" class="group-content-panel active">
+                <div class="profile-setup">
+                  <div id="profile-avatar-preview" class="avatar avatar-initials" style="background:hsl(330,55%,65%)">Y</div>
+                  <div class="profile-setup-fields">
+                    <label>
+                      <span data-i18n="profileNameLabel">Your display name</span>
+                      <input id="profile-name-input" type="text" placeholder="e.g. Anna" />
+                    </label>
+                  </div>
+                </div>
+
+                <form id="group-form" class="group-form">
+                  <label>
+                    <span data-i18n="groupNameLabel">Group name</span>
+                    <input id="group-name" type="text" data-i18n-placeholder="groupNamePlaceholder" placeholder="e.g. Weekend knit circle" required />
+                  </label>
+                  <label>
+                    <span data-i18n="groupInvitesLabel">Invite people</span>
+                    <input id="group-invites" type="text" data-i18n-placeholder="groupInvitesPlaceholder" placeholder="Maja, Lars, Emma" />
+                  </label>
+                  <button type="submit" data-i18n="createGroupButton">Create group</button>
+                </form>
+              </section>
+
+              <section id="group-panel-join" class="group-content-panel hidden">
+                <div class="join-request-box">
+                  <form id="join-request-form" class="group-form">
+                    <label>
+                      <span data-i18n="requestNameLabel">Your name</span>
+                      <input id="request-name-input" type="text" data-i18n-placeholder="requestNamePlaceholder" placeholder="e.g. Maja" required />
+                    </label>
+                    <label>
+                      <span data-i18n="requestEmailLabel">Your email</span>
+                      <input id="request-email-input" type="email" data-i18n-placeholder="requestEmailPlaceholder" placeholder="maja@example.com" />
+                    </label>
+                    <button type="submit" data-i18n="requestJoinButton">Send request</button>
+                  </form>
+                </div>
+              </section>
+
+              <section id="group-panel-groups" class="group-content-panel hidden">
+                <h4 class="group-panel-title" data-i18n="myGroupsHeading">My groups</h4>
+                <div id="group-list" class="group-list"></div>
+              </section>
+
+              <section id="admin-membership-requests-section" class="group-content-panel hidden">
+                <h4 class="group-panel-title" data-i18n="pendingRequestsHeading">Membership requests</h4>
+                <ul id="pending-requests-list" class="pending-requests-list"></ul>
+              </section>
+
+              <section id="group-panel-members" class="group-content-panel hidden">
+                <h4 class="group-panel-title" data-i18n="allMembersHeading">All members</h4>
+                <ul id="all-members-list" class="group-members all-members-list"></ul>
+              </section>
 
               <div id="admin-profile-section" class="profile-mode-section hidden">
                 <div class="admin-profile-card">
                   <h3>Admin profile</h3>
-                  <p>Here you can manage requests, group members, and moderation without disturbing the regular user view.</p>
+                  <p>Use the left menu to jump between requests, groups, and members.</p>
                 </div>
               </div>
 
@@ -406,29 +421,6 @@
                 </form>
               </div>
             </div>
-
-            <aside class="group-sidebar">
-              <details class="dashboard-collapsible" data-collapsible data-collapsible-group="sidebar-panels">
-                <summary class="collapsible-summary" data-i18n="groupQuickGroups">Groups</summary>
-                <div class="collapsible-panel">
-                  <div id="group-list" class="group-list"></div>
-                </div>
-              </details>
-
-              <details id="admin-membership-requests-section" class="dashboard-collapsible" data-collapsible data-collapsible-group="sidebar-panels">
-                <summary class="collapsible-summary" data-i18n="groupQuickRequests">Requests</summary>
-                <div class="collapsible-panel">
-                  <ul id="pending-requests-list" class="pending-requests-list"></ul>
-                </div>
-              </details>
-
-              <details class="dashboard-collapsible" data-collapsible data-collapsible-group="sidebar-panels">
-                <summary class="collapsible-summary" data-i18n="groupQuickMembers">Members</summary>
-                <div class="collapsible-panel">
-                  <ul id="all-members-list" class="group-members all-members-list"></ul>
-                </div>
-              </details>
-            </aside>
           </div>
         </section>
       </div>
@@ -449,7 +441,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260821-4"></script>
+    <script src="js/config.js?v=20260821-5"></script>
     <script src="js/dom.js?v=20260821-1"></script>
     <script src="js/utils.js?v=20260821-1"></script>
     <!-- Data: Supabase-kald og logik -->
@@ -464,7 +456,7 @@
     <script src="pages/forside.js?v=20260821-1"></script>
     <script src="pages/andre-projekter.js?v=20260821-1"></script>
     <script src="pages/nuvaerende-projekt.js?v=20260821-1"></script>
-    <script src="pages/grupper.js?v=20260821-3"></script>
+    <script src="pages/grupper.js?v=20260821-4"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>
   </body>

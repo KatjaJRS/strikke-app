@@ -9,29 +9,49 @@ const chatEditText = document.getElementById('chat-edit-text');
 const chatEditSaveBtn = document.getElementById('chat-edit-save');
 const chatEditCancelBtn = document.getElementById('chat-edit-cancel');
 let editingMessageContext = null;
+let activeGroupPanel = 'create';
 
-function initGroupCollapsibles() {
-  const collapsibles = Array.from(document.querySelectorAll('[data-collapsible]'));
-  if (collapsibles.length === 0) return;
+function setActiveGroupPanel(panelName) {
+  const nextPanel = String(panelName || '').trim();
+  if (!nextPanel) return;
 
-  collapsibles.forEach((section) => {
-    if (section.dataset.bound === 'true') return;
-    section.dataset.bound = 'true';
-
-    section.addEventListener('toggle', () => {
-      if (!section.open) return;
-      const groupName = section.dataset.collapsibleGroup;
-      if (!groupName) return;
-
-      collapsibles.forEach((other) => {
-        if (other === section) return;
-        if (other.dataset.collapsibleGroup === groupName) other.open = false;
-      });
-    });
+  const buttons = document.querySelectorAll('.group-nav-btn');
+  buttons.forEach((button) => {
+    button.classList.toggle('active', button.dataset.groupPanel === nextPanel);
   });
+
+  const panels = document.querySelectorAll('.group-content-panel');
+  panels.forEach((panel) => {
+    const isMatch = panel.id === `group-panel-${nextPanel}`;
+    panel.classList.toggle('hidden', !isMatch);
+  });
+
+  if (nextPanel === 'requests') {
+    const requestsPanel = document.getElementById('admin-membership-requests-section');
+    if (requestsPanel) requestsPanel.classList.remove('hidden');
+  }
+
+  activeGroupPanel = nextPanel;
 }
 
-initGroupCollapsibles();
+function initGroupPanelNavigation() {
+  const buttons = Array.from(document.querySelectorAll('.group-nav-btn'));
+  if (buttons.length === 0) return;
+
+  buttons.forEach((button) => {
+    if (button.dataset.bound === 'true') return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', () => {
+      const panelName = button.dataset.groupPanel;
+      if (!panelName) return;
+      setActiveGroupPanel(panelName);
+    });
+  });
+
+  setActiveGroupPanel(activeGroupPanel);
+}
+
+initGroupPanelNavigation();
 
 function closeChatEditModal() {
   if (!chatEditModal) return;
@@ -250,8 +270,16 @@ function renderGroups() {
   });
 
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
+  const requestsNavBtn = document.getElementById('group-nav-requests');
+  const canSeeRequests = canManageAdminProfile();
   if (adminRequestsSection) {
-    adminRequestsSection.classList.toggle('hidden', !canManageAdminProfile());
+    adminRequestsSection.classList.toggle('hidden', !canSeeRequests);
+  }
+  if (requestsNavBtn) {
+    requestsNavBtn.classList.toggle('hidden', !canSeeRequests);
+  }
+  if (!canSeeRequests && activeGroupPanel === 'requests') {
+    setActiveGroupPanel('groups');
   }
 
   groups.forEach((group) => {
@@ -279,7 +307,7 @@ function renderGroups() {
 
   // Vis ventende anmodninger
   const pendingList = document.getElementById('pending-requests-list');
-  if (pendingList && canManageAdminProfile()) {
+  if (pendingList && canSeeRequests) {
     const visibleRequests = membershipRequests.filter((req) => !reviewedMembershipRequestIds.has(req.id));
     if (visibleRequests.length === 0) {
       pendingList.innerHTML = `<li class="no-pending">${translations[currentLanguage].noPendingRequests}</li>`;
