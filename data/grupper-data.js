@@ -147,7 +147,7 @@ async function refreshProfilesDirectoryOnly() {
   const groupData = Array.isArray(groups) ? groups : [];
   const messageData = groupData.flatMap((group) => Array.isArray(group.messages) ? group.messages : []);
 
-  memberProfiles = mergeKnownMembers(profileData, groupData, messageData, false);
+  memberProfiles = mergeKnownMembers(profileData, groupData, messageData, true);
   memberDirectory = memberProfiles.map((profile) => profile.name);
 
   const currentProfile = profileData.find((profile) => profile.id === currentUser.id);
@@ -380,7 +380,7 @@ async function performCommunityRefresh() {
     });
   }
 
-  memberProfiles = mergeKnownMembers(profileData, groupsData, messagesData, !profilesLoaded);
+  memberProfiles = mergeKnownMembers(profileData, groupsData, messagesData, true);
   memberDirectory = memberProfiles.map((profile) => profile.name);
 
   const currentProfile = profileData.find((profile) => profile.id === currentUser.id);
@@ -400,7 +400,7 @@ async function performCommunityRefresh() {
   if (typeof refreshCurrentProfileModalAvatar === 'function') refreshCurrentProfileModalAvatar();
   if (typeof updateProfilePreview === 'function') updateProfilePreview();
 
-  if (profilesLoaded) {
+  if (profilesLoaded && canManageAdminProfile()) {
     await cleanupDeletedProfilesFromGroups(profileData);
   }
 
