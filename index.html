@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Day Away</title>
-    <link rel="stylesheet" href="styles-v16.css?v=20260807-27" />
+    <link rel="stylesheet" href="styles-v16.css?v=20260821-1" />
   </head>
   <body>
     <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
@@ -306,43 +306,58 @@
           <div class="search-row">
             <input id="project-search-groups" type="text" class="search-input" data-i18n-placeholder="searchProjectsPlaceholder" placeholder="Search by name, pattern, or notes" />
           </div>
+
+          <div id="profile-mode-toggle" class="profile-mode-toggle hidden" aria-label="Profile mode switcher">
+            <button type="button" id="profile-mode-member" class="profile-mode-btn active">My profile</button>
+            <button type="button" id="profile-mode-admin" class="profile-mode-btn">Admin profile</button>
+          </div>
+
           <div class="group-layout">
             <div class="group-main">
-              <div class="profile-setup">
-                <div id="profile-avatar-preview" class="avatar avatar-initials" style="background:hsl(330,55%,65%)">Y</div>
-                <div class="profile-setup-fields">
+              <div id="member-profile-section" class="profile-mode-section">
+                <div class="profile-setup">
+                  <div id="profile-avatar-preview" class="avatar avatar-initials" style="background:hsl(330,55%,65%)">Y</div>
+                  <div class="profile-setup-fields">
+                    <label>
+                      <span data-i18n="profileNameLabel">Your display name</span>
+                      <input id="profile-name-input" type="text" placeholder="e.g. Anna" />
+                    </label>
+                  </div>
+                </div>
+
+                <form id="group-form" class="group-form">
                   <label>
-                    <span data-i18n="profileNameLabel">Your display name</span>
-                    <input id="profile-name-input" type="text" placeholder="e.g. Anna" />
+                    <span data-i18n="groupNameLabel">Group name</span>
+                    <input id="group-name" type="text" data-i18n-placeholder="groupNamePlaceholder" placeholder="e.g. Weekend knit circle" required />
                   </label>
+                  <label>
+                    <span data-i18n="groupInvitesLabel">Invite people</span>
+                    <input id="group-invites" type="text" data-i18n-placeholder="groupInvitesPlaceholder" placeholder="Maja, Lars, Emma" />
+                  </label>
+                  <button type="submit" data-i18n="createGroupButton">Create group</button>
+                </form>
+
+                <div class="join-request-box">
+                  <h4 data-i18n="requestJoinHeading">Request to join</h4>
+                  <form id="join-request-form" class="group-form">
+                    <label>
+                      <span data-i18n="requestNameLabel">Your name</span>
+                      <input id="request-name-input" type="text" data-i18n-placeholder="requestNamePlaceholder" placeholder="e.g. Maja" required />
+                    </label>
+                    <label>
+                      <span data-i18n="requestEmailLabel">Your email</span>
+                      <input id="request-email-input" type="email" data-i18n-placeholder="requestEmailPlaceholder" placeholder="maja@example.com" />
+                    </label>
+                    <button type="submit" data-i18n="requestJoinButton">Send request</button>
+                  </form>
                 </div>
               </div>
 
-              <form id="group-form" class="group-form">
-                <label>
-                  <span data-i18n="groupNameLabel">Group name</span>
-                  <input id="group-name" type="text" data-i18n-placeholder="groupNamePlaceholder" placeholder="e.g. Weekend knit circle" required />
-                </label>
-                <label>
-                  <span data-i18n="groupInvitesLabel">Invite people</span>
-                  <input id="group-invites" type="text" data-i18n-placeholder="groupInvitesPlaceholder" placeholder="Maja, Lars, Emma" />
-                </label>
-                <button type="submit" data-i18n="createGroupButton">Create group</button>
-              </form>
-
-              <div class="join-request-box">
-                <h4 data-i18n="requestJoinHeading">Request to join</h4>
-                <form id="join-request-form" class="group-form">
-                  <label>
-                    <span data-i18n="requestNameLabel">Your name</span>
-                    <input id="request-name-input" type="text" data-i18n-placeholder="requestNamePlaceholder" placeholder="e.g. Maja" required />
-                  </label>
-                  <label>
-                    <span data-i18n="requestEmailLabel">Your email</span>
-                    <input id="request-email-input" type="email" data-i18n-placeholder="requestEmailPlaceholder" placeholder="maja@example.com" />
-                  </label>
-                  <button type="submit" data-i18n="requestJoinButton">Send request</button>
-                </form>
+              <div id="admin-profile-section" class="profile-mode-section hidden">
+                <div class="admin-profile-card">
+                  <h3>Admin profile</h3>
+                  <p>Here you can manage requests, group members, and moderation without disturbing the regular user view.</p>
+                </div>
               </div>
 
               <div class="group-chat-panel">
@@ -415,23 +430,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260819-1"></script>
-    <script src="js/dom.js?v=20260819-1"></script>
-    <script src="js/utils.js?v=20260819-1"></script>
+    <script src="js/config.js?v=20260821-1"></script>
+    <script src="js/dom.js?v=20260821-1"></script>
+    <script src="js/utils.js?v=20260821-1"></script>
     <!-- Data: Supabase-kald og logik -->
-    <script src="data/indstillinger.js?v=20260819-1"></script>
-    <script src="data/billeder.js?v=20260819-1"></script>
-    <script src="data/projekter-data.js?v=20260819-1"></script>
-    <script src="data/grupper-data.js?v=20260819-1"></script>
-    <script src="data/profil.js?v=20260819-1"></script>
-    <script src="data/members.js?v=20260819-1"></script>
-    <script src="data/auth.js?v=20260819-1"></script>
+    <script src="data/indstillinger.js?v=20260821-1"></script>
+    <script src="data/billeder.js?v=20260821-1"></script>
+    <script src="data/projekter-data.js?v=20260821-1"></script>
+    <script src="data/grupper-data.js?v=20260821-1"></script>
+    <script src="data/profil.js?v=20260821-1"></script>
+    <script src="data/members.js?v=20260821-1"></script>
+    <script src="data/auth.js?v=20260821-1"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20260819-1"></script>
-    <script src="pages/andre-projekter.js?v=20260819-1"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20260819-1"></script>
-    <script src="pages/grupper.js?v=20260819-1"></script>
+    <script src="pages/forside.js?v=20260821-1"></script>
+    <script src="pages/andre-projekter.js?v=20260821-1"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20260821-1"></script>
+    <script src="pages/grupper.js?v=20260821-1"></script>
     <!-- Initialisering -->
-    <script src="app.js?v=20260819-1"></script>
+    <script src="app.js?v=20260821-1"></script>
   </body>
 </html>

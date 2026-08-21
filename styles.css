@@ -1279,9 +1279,59 @@ button:hover {
   grid-template-columns: minmax(220px, 280px) 1fr;
 }
 
+.profile-mode-toggle {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 245, 248, 0.95);
+  border: 1px solid #f4b5c7;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 16px rgba(197, 90, 116, 0.08);
+}
+
+.profile-mode-btn {
+  border: 0;
+  background: transparent;
+  color: #8a4d62;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile-mode-btn.active {
+  background: #e35c86;
+  color: white;
+}
+
+.profile-mode-section.hidden,
+.hidden {
+  display: none !important;
+}
+
+.admin-profile-card {
+  background: linear-gradient(180deg, #fffdfd 0%, #fff7fa 100%);
+  border: 1px solid #f3b5c8;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 8px 22px rgba(197, 90, 116, 0.06);
+  display: grid;
+  gap: 8px;
+}
+
+.admin-profile-card h3 {
+  color: #8a4d62;
+}
+
+.admin-profile-card p {
+  color: #7a4b5d;
+  line-height: 1.5;
+}
+
 .group-layout {
   display: grid;
-  grid-template-columns: 1fr 220px;
+  grid-template-columns: 290px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
 }
@@ -1291,7 +1341,45 @@ button:hover {
   gap: 16px;
 }
 
+.group-main > .profile-setup,
+.group-main > .group-form,
+.group-main > .join-request-box,
+.group-main > .group-chat-panel {
+  border: 1px solid #f3b5c8;
+  background: linear-gradient(180deg, #fffdfd 0%, #fff7fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(197, 90, 116, 0.06);
+}
+
+.group-main > .group-form,
+.group-main > .join-request-box {
+  padding: 16px;
+}
+
+.group-main > .group-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.group-main > .group-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.group-main > .group-form label:last-of-type,
+.group-main > .group-form button[type="submit"] {
+  grid-column: 1 / -1;
+}
+
+.group-main > .join-request-box {
+  padding: 14px 16px;
+}
+
 .group-sidebar {
+  position: sticky;
+  top: 16px;
   display: grid;
   gap: 12px;
   background: #fff7fa;
@@ -1427,6 +1515,9 @@ button:hover {
 .chat-form {
   display: grid;
   gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f4d0dc;
 }
 
 .chat-input-row {
@@ -1439,6 +1530,34 @@ button:hover {
   flex: 1;
 }
 
+.chat-bubble {
+  border: 1px solid #f3b5c8;
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(197, 90, 116, 0.04);
+}
+
+.chat-bubble-me {
+  background: #fff0f5;
+}
+
+.chat-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #8a4d62;
+  font-size: 0.8rem;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
 .chat-attach-btn {
   background: #fff0f5;
   border: 1px solid #f3b5c8;
@@ -1526,6 +1645,13 @@ button:hover {
   margin-top: 8px;
 }
 
+.group-pill-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
 .group-pill {
   border: 1px solid #f3b5c8;
   background: #fff8fb;
@@ -1535,12 +1661,19 @@ button:hover {
   text-align: left;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.group-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(227, 92, 134, 0.12);
 }
 
 .group-pill.active {
   background: #e35c86;
   color: white;
   border-color: #e35c86;
+  box-shadow: 0 8px 20px rgba(227, 92, 134, 0.18);
 }
 
 .group-chat-panel {
@@ -1548,6 +1681,8 @@ button:hover {
   border: 1px solid #f3b5c8;
   border-radius: 18px;
   padding: 16px;
+  display: grid;
+  gap: 14px;
 }
 
 .group-chat-header {
@@ -1555,6 +1690,17 @@ button:hover {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f4d0dc;
+}
+
+.chat-messages {
+  display: grid;
+  gap: 10px;
+  min-height: 180px;
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .ghost-btn {

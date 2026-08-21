@@ -121,7 +121,7 @@ if (chatEditModal && !chatEditModal.dataset.bound) {
 }
 
 async function deleteGroupAsAdmin(groupId) {
-  if (!isAdminUser() || !groupId) return;
+  if (!canManageAdminProfile() || !groupId) return;
   const firstConfirm = confirm(translations[currentLanguage].deleteGroupConfirmFirst);
   if (!firstConfirm) return;
   const secondConfirm = confirm(translations[currentLanguage].deleteGroupConfirmSecond);
@@ -228,7 +228,7 @@ function renderGroups() {
 
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
   if (adminRequestsSection) {
-    adminRequestsSection.classList.toggle('hidden', !isAdminUser());
+    adminRequestsSection.classList.toggle('hidden', !canManageAdminProfile());
   }
 
   groups.forEach((group) => {
@@ -242,7 +242,7 @@ function renderGroups() {
     button.addEventListener('click', () => setActiveGroup(group.id));
     row.appendChild(button);
 
-    if (isAdminUser()) {
+    if (canManageAdminProfile()) {
       const deleteBtn = document.createElement('button');
       deleteBtn.type = 'button';
       deleteBtn.className = 'group-delete-btn';
@@ -256,7 +256,7 @@ function renderGroups() {
 
   // Vis ventende anmodninger
   const pendingList = document.getElementById('pending-requests-list');
-  if (pendingList && isAdminUser()) {
+  if (pendingList && canManageAdminProfile()) {
     const visibleRequests = membershipRequests.filter((req) => !reviewedMembershipRequestIds.has(req.id));
     if (visibleRequests.length === 0) {
       pendingList.innerHTML = `<li class="no-pending">${translations[currentLanguage].noPendingRequests}</li>`;

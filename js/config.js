@@ -11,6 +11,7 @@ const LANGUAGE_STORAGE_KEY = 'knitting-language';
 const LANGUAGE_BY_EMAIL_KEY = 'knitting-language-by-email';
 const PROFILE_PIC_KEY = 'knitting-profile-picture';
 const PROFILE_NAME_KEY = 'knitting-profile-name';
+const PROFILE_MODE_KEY = 'knitting-profile-mode';
 const HERO_IMAGE_KEY = 'knitting-hero-image';
 const ROUNDS_KEY = 'knitting-rounds';
 const ADMIN_EMAIL = 'roldsgaardkatja@gmail.com';
@@ -47,8 +48,41 @@ const APP_BASE_URL = 'https://katjajrs.github.io/strikke-app/';
 let lastDeletedProject = null;
 let undoTimeoutId = null;
 
-function isAdminUser(email = currentUser?.email) {
-  return ADMIN_EMAILS.includes(String(email || '').trim().toLowerCase());
+function isAdminUser(email = currentUser?.email, profile = null) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (ADMIN_EMAILS.includes(normalizedEmail)) return true;
+  if (!profile) return false;
+  return Boolean(profile.is_admin || profile.role === 'admin');
+}
+
+function canManageAdminProfile() {
+  return isAdminUser() && getProfileMode() === 'admin';
+}
+
+function applyProfileModeUI() {
+  const adminToggle = document.getElementById('profile-mode-toggle');
+  const memberBtn = document.getElementById('profile-mode-member');
+  const adminBtn = document.getElementById('profile-mode-admin');
+  const memberSection = document.getElementById('member-profile-section');
+  const adminSection = document.getElementById('admin-profile-section');
+  const groupForm = document.getElementById('group-form');
+  const joinRequestBox = document.querySelector('.join-request-box');
+  const adminRequestsSection = document.getElementById('admin-membership-requests-section');
+
+  const isAdmin = isAdminUser();
+  const activeMode = isAdmin ? getProfileMode() : 'member';
+
+  if (adminToggle) adminToggle.classList.toggle('hidden', !isAdmin);
+  if (memberBtn) memberBtn.classList.toggle('active', activeMode === 'member');
+  if (adminBtn) adminBtn.classList.toggle('active', activeMode === 'admin');
+
+  if (memberSection) memberSection.classList.toggle('hidden', isAdmin && activeMode !== 'member');
+  if (adminSection) adminSection.classList.toggle('hidden', !isAdmin || activeMode !== 'admin');
+
+  if (groupForm) groupForm.classList.toggle('hidden', isAdmin && activeMode === 'admin');
+  if (joinRequestBox) joinRequestBox.classList.toggle('hidden', isAdmin && activeMode === 'admin');
+  if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !(isAdmin && activeMode === 'admin'));
+  if (typeof renderGroups === 'function') renderGroups();
 }
 
 let projects = [];
@@ -61,6 +95,23 @@ let activeGroupId = null;
 let currentLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en';
 let myProfilePic = localStorage.getItem(PROFILE_PIC_KEY) || '';
 let myProfileName = localStorage.getItem(PROFILE_NAME_KEY) || 'You';
+let profileMode = 'member';
+
+function normalizeProfileMode(mode) {
+  return mode === 'admin' ? 'admin' : 'member';
+}
+
+function getProfileMode() {
+  if (!isAdminUser()) return 'member';
+  const savedMode = localStorage.getItem(PROFILE_MODE_KEY);
+  return normalizeProfileMode(savedMode === 'admin' ? 'admin' : 'member');
+}
+
+function setProfileMode(mode) {
+  profileMode = normalizeProfileMode(mode);
+  localStorage.setItem(PROFILE_MODE_KEY, profileMode);
+  if (typeof applyProfileModeUI === 'function') applyProfileModeUI();
+}
 
 function normalizeLanguage(language) {
   return language === 'da' ? 'da' : 'en';

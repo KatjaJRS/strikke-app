@@ -31,8 +31,10 @@ function showAuthError(id, msg) {
 function resetLocalProfileState() {
   myProfileName = 'You';
   myProfilePic = '';
+  profileMode = 'member';
   localStorage.removeItem(PROFILE_NAME_KEY);
   localStorage.removeItem(PROFILE_PIC_KEY);
+  localStorage.removeItem(PROFILE_MODE_KEY);
 }
 
 async function forceFreshLoginState() {
@@ -59,8 +61,18 @@ function isLikelyNetworkAuthError(error) {
   );
 }
 
+function withAdminProfileFlags(profileData = {}) {
+  const email = String(currentUser?.email || profileData.email || '').trim().toLowerCase();
+  const isAdmin = isAdminUser(email, profileData);
+  return {
+    ...profileData,
+    role: isAdmin ? 'admin' : 'member',
+    is_admin: isAdmin,
+  };
+}
+
 async function upsertProfileWithLanguage(profileData) {
-  const withLanguage = { ...profileData, preferred_language: normalizeLanguage(currentLanguage) };
+  const withLanguage = { ...withAdminProfileFlags(profileData), preferred_language: normalizeLanguage(currentLanguage) };
   const { error } = await sb.from('profiles').upsert(withLanguage);
 
   if (!error) return;
@@ -68,7 +80,7 @@ async function upsertProfileWithLanguage(profileData) {
   const missingLanguageColumn = /preferred_language|column/i.test(String(error.message || ''));
   if (!missingLanguageColumn) throw error;
 
-  const fallback = { ...profileData };
+  const fallback = { ...withAdminProfileFlags(profileData) };
   delete fallback.preferred_language;
   const { error: fallbackError } = await sb.from('profiles').upsert(fallback);
   if (fallbackError) throw fallbackError;
@@ -346,6 +358,17 @@ function launchApp(user, profile) {
     userBarSlot.appendChild(userBar);
   }
 
+  const memberToggle = document.getElementById('profile-mode-member');
+  const adminToggle = document.getElementById('profile-mode-admin');
+  if (memberToggle && !memberToggle.dataset.bound) {
+    memberToggle.dataset.bound = 'true';
+    memberToggle.addEventListener('click', () => setProfileMode('member'));
+  }
+  if (adminToggle && !adminToggle.dataset.bound) {
+    adminToggle.dataset.bound = 'true';
+    adminToggle.addEventListener('click', () => setProfileMode('admin'));
+  }
+
   function refreshUserBar() {
     const displayName = myProfileName || profile?.name || user.email;
     const initials = displayName.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -472,6 +495,8 @@ function launchApp(user, profile) {
   });
 
   applyLanguage(currentLanguage);
+  profileMode = getProfileMode();
+  applyProfileModeUI();
   renderProjects();
   updateHeroImage();
   renderGroups();
