@@ -1,5 +1,7 @@
 // ── Login og rettigheder — Supabase authentication ────────────────────────
 
+const LAST_AUTH_USER_ID_KEY = 'knitting-last-auth-user-id';
+
 async function loadAllData() {
   await loadProjectsFromSupabase();
   await refreshUserSettings();
@@ -35,6 +37,38 @@ function resetLocalProfileState() {
   localStorage.removeItem(PROFILE_NAME_KEY);
   localStorage.removeItem(PROFILE_PIC_KEY);
   localStorage.removeItem(PROFILE_MODE_KEY);
+}
+
+function clearUserScopedLocalCache() {
+  localStorage.removeItem(PROFILE_NAME_KEY);
+  localStorage.removeItem(PROFILE_PIC_KEY);
+  localStorage.removeItem(PROFILE_MODE_KEY);
+  localStorage.removeItem(HERO_IMAGE_KEY);
+  localStorage.removeItem(HERO_PAN_KEY);
+  localStorage.removeItem(ROUNDS_KEY);
+  localStorage.removeItem(DRAFT_KEY);
+  localStorage.removeItem(PROJECTS_CACHE_KEY);
+  localStorage.removeItem(DELETED_PROJECTS_KEY);
+  localStorage.removeItem(SETTINGS_UPDATED_KEY);
+
+  myProfileName = 'You';
+  myProfilePic = '';
+  profileMode = 'member';
+  projectRounds = {};
+  deletedProjectIds = new Set();
+  saveDeletedProjectIds();
+  saveRounds();
+}
+
+function ensureIsolatedLocalStateForUser(userId) {
+  const normalizedUserId = String(userId || '').trim();
+  if (!normalizedUserId) return;
+
+  const previousUserId = String(localStorage.getItem(LAST_AUTH_USER_ID_KEY) || '').trim();
+  if (previousUserId !== normalizedUserId) {
+    clearUserScopedLocalCache();
+  }
+  localStorage.setItem(LAST_AUTH_USER_ID_KEY, normalizedUserId);
 }
 
 async function forceFreshLoginState() {
@@ -223,6 +257,7 @@ async function signInAndLaunch(email, password, loginErrorId) {
     }
 
     currentUser = data.user;
+    ensureIsolatedLocalStateForUser(currentUser.id);
     myProfileName = currentUser.email || trimmedEmail || 'You';
     myProfilePic = '';
     localStorage.setItem(PROFILE_NAME_KEY, myProfileName);
@@ -292,6 +327,7 @@ async function registerAndLaunch(name, email, password, registerErrorId) {
     }
 
     currentUser = data.user;
+    ensureIsolatedLocalStateForUser(currentUser.id);
 
     if (!data.session) {
       showAuthError(registerErrorId, translations[currentLanguage].registerNeedEmailConfirm);
@@ -517,6 +553,7 @@ async function initAuth() {
 
   if (session) {
     currentUser = session.user;
+    ensureIsolatedLocalStateForUser(currentUser.id);
     myProfileName = currentUser.email || 'You';
     myProfilePic = '';
 
