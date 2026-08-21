@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Day Away</title>
-    <link rel="stylesheet" href="styles-v16.css?v=20260821-6" />
+    <link rel="stylesheet" href="styles-v16.css?v=20260821-7" />
   </head>
   <body>
     <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
@@ -314,11 +314,13 @@
                 <button type="button" id="profile-mode-admin" class="profile-mode-btn">Admin</button>
               </div>
 
-              <button type="button" id="group-nav-create" class="group-nav-btn active" data-group-panel="create" data-i18n="groupQuickCreate">Create</button>
-              <button type="button" id="group-nav-join" class="group-nav-btn" data-group-panel="join" data-i18n="groupQuickJoin">Join</button>
-              <button type="button" id="group-nav-groups" class="group-nav-btn" data-group-panel="groups" data-i18n="groupQuickGroups">Groups</button>
-              <button type="button" id="group-nav-requests" class="group-nav-btn hidden" data-group-panel="requests" data-i18n="groupQuickRequests">Requests</button>
-              <button type="button" id="group-nav-members" class="group-nav-btn" data-group-panel="members" data-i18n="groupQuickMembers">Members</button>
+              <button type="button" id="group-main-groups" class="group-main-btn active" data-group-main="groups" data-i18n="groupQuickGroups">Groups</button>
+              <div id="group-subnav-groups" class="group-subnav">
+                <button type="button" id="group-nav-join" class="group-nav-btn" data-group-panel="join" data-i18n="groupQuickJoin">Join</button>
+                <button type="button" id="group-nav-create" class="group-nav-btn active" data-group-panel="create" data-i18n="groupQuickCreate">Create</button>
+                <button type="button" id="group-nav-groups" class="group-nav-btn" data-group-panel="groups" data-i18n="myGroupsHeading">My groups</button>
+              </div>
+              <button type="button" id="group-main-members" class="group-main-btn" data-group-main="members" data-group-panel="members" data-i18n="groupQuickMembers">Members</button>
             </aside>
 
             <div class="groups-right-content">
@@ -367,12 +369,11 @@
                 <div id="group-list" class="group-list"></div>
               </section>
 
-              <section id="admin-membership-requests-section" class="group-content-panel hidden">
-                <h4 class="group-panel-title" data-i18n="pendingRequestsHeading">Membership requests</h4>
-                <ul id="pending-requests-list" class="pending-requests-list"></ul>
-              </section>
-
               <section id="group-panel-members" class="group-content-panel hidden">
+                <div id="admin-membership-requests-section" class="group-membership-requests hidden">
+                  <h4 class="group-panel-title" data-i18n="pendingRequestsHeading">Membership requests</h4>
+                  <ul id="pending-requests-list" class="pending-requests-list"></ul>
+                </div>
                 <h4 class="group-panel-title" data-i18n="allMembersHeading">All members</h4>
                 <ul id="all-members-list" class="group-members all-members-list"></ul>
               </section>
@@ -441,7 +442,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260821-6"></script>
+    <script src="js/config.js?v=20260821-7"></script>
     <script src="js/dom.js?v=20260821-1"></script>
     <script src="js/utils.js?v=20260821-1"></script>
     <!-- Data: Supabase-kald og logik -->
@@ -456,7 +457,7 @@
     <script src="pages/forside.js?v=20260821-1"></script>
     <script src="pages/andre-projekter.js?v=20260821-1"></script>
     <script src="pages/nuvaerende-projekt.js?v=20260821-1"></script>
-    <script src="pages/grupper.js?v=20260821-6"></script>
+    <script src="pages/grupper.js?v=20260821-7"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>
   </body>

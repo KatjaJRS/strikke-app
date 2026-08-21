@@ -1219,6 +1219,33 @@ button:hover {
   align-content: start;
 }
 
+.group-main-btn {
+  width: 100%;
+  border: 1px solid #f3b5c8;
+  background: #fff5fa;
+  color: #8a4d62;
+  border-radius: 12px;
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.group-main-btn.active {
+  background: #e35c86;
+  color: #fff;
+  border-color: #e35c86;
+}
+
+.group-subnav {
+  display: grid;
+  gap: 6px;
+  padding-left: 10px;
+}
+
 .groups-left-nav .profile-mode-toggle {
   display: grid;
   width: 100%;
@@ -1239,12 +1266,12 @@ button:hover {
   background: #fff8fb;
   color: #8a4d62;
   border-radius: 12px;
-  padding: 11px 12px;
+  padding: 9px 11px;
   text-align: left;
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
   cursor: pointer;
 }
 
@@ -1267,6 +1294,14 @@ button:hover {
   padding: 14px;
   display: grid;
   gap: 10px;
+}
+
+.group-membership-requests {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #f3b5c8;
 }
 
 .group-content-panel.hidden {

@@ -10,13 +10,14 @@ const chatEditSaveBtn = document.getElementById('chat-edit-save');
 const chatEditCancelBtn = document.getElementById('chat-edit-cancel');
 let editingMessageContext = null;
 let activeGroupPanel = 'create';
+let activeGroupMain = 'groups';
 
 function setActiveGroupPanel(panelName) {
   const nextPanel = String(panelName || '').trim();
   if (!nextPanel) return;
 
-  const buttons = document.querySelectorAll('.group-nav-btn');
-  buttons.forEach((button) => {
+  const subButtons = document.querySelectorAll('#group-subnav-groups .group-nav-btn');
+  subButtons.forEach((button) => {
     button.classList.toggle('active', button.dataset.groupPanel === nextPanel);
   });
 
@@ -26,29 +27,62 @@ function setActiveGroupPanel(panelName) {
     panel.classList.toggle('hidden', !isMatch);
   });
 
-  if (nextPanel === 'requests') {
-    const requestsPanel = document.getElementById('admin-membership-requests-section');
-    if (requestsPanel) requestsPanel.classList.remove('hidden');
-  }
-
   activeGroupPanel = nextPanel;
 }
 
-function initGroupPanelNavigation() {
-  const buttons = Array.from(document.querySelectorAll('.group-nav-btn'));
-  if (buttons.length === 0) return;
+function setActiveGroupMain(mainName, options = {}) {
+  const { autoPanel = true } = options;
+  const nextMain = mainName === 'members' ? 'members' : 'groups';
+  activeGroupMain = nextMain;
 
-  buttons.forEach((button) => {
+  const mainButtons = document.querySelectorAll('.group-main-btn');
+  mainButtons.forEach((button) => {
+    button.classList.toggle('active', button.dataset.groupMain === nextMain);
+  });
+
+  const subnav = document.getElementById('group-subnav-groups');
+  if (subnav) subnav.classList.toggle('hidden', nextMain !== 'groups');
+
+  if (!autoPanel) return;
+  if (nextMain === 'members') {
+    setActiveGroupPanel('members');
+    return;
+  }
+
+  if (!['create', 'join', 'groups'].includes(activeGroupPanel)) {
+    setActiveGroupPanel('create');
+  } else {
+    setActiveGroupPanel(activeGroupPanel);
+  }
+}
+
+function initGroupPanelNavigation() {
+  const subButtons = Array.from(document.querySelectorAll('#group-subnav-groups .group-nav-btn'));
+  const mainButtons = Array.from(document.querySelectorAll('.group-main-btn'));
+  if (subButtons.length === 0 && mainButtons.length === 0) return;
+
+  subButtons.forEach((button) => {
     if (button.dataset.bound === 'true') return;
     button.dataset.bound = 'true';
     button.addEventListener('click', () => {
       const panelName = button.dataset.groupPanel;
       if (!panelName) return;
+      setActiveGroupMain('groups', { autoPanel: false });
       setActiveGroupPanel(panelName);
     });
   });
 
-  setActiveGroupPanel(activeGroupPanel);
+  mainButtons.forEach((button) => {
+    if (button.dataset.bound === 'true') return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', () => {
+      const mainName = button.dataset.groupMain;
+      if (!mainName) return;
+      setActiveGroupMain(mainName);
+    });
+  });
+
+  setActiveGroupMain(activeGroupMain);
 }
 
 initGroupPanelNavigation();
@@ -270,16 +304,9 @@ function renderGroups() {
   });
 
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
-  const requestsNavBtn = document.getElementById('group-nav-requests');
   const canSeeRequests = canManageAdminProfile();
   if (adminRequestsSection) {
     adminRequestsSection.classList.toggle('hidden', !canSeeRequests);
-  }
-  if (requestsNavBtn) {
-    requestsNavBtn.classList.toggle('hidden', !canSeeRequests);
-  }
-  if (!canSeeRequests && activeGroupPanel === 'requests') {
-    setActiveGroupPanel('groups');
   }
 
   groups.forEach((group) => {

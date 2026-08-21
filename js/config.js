@@ -66,9 +66,12 @@ function applyProfileModeUI() {
   const adminSection = document.getElementById('admin-profile-section');
   const createNavBtn = document.getElementById('group-nav-create');
   const joinNavBtn = document.getElementById('group-nav-join');
-  const requestsNavBtn = document.getElementById('group-nav-requests');
+  const groupsMainBtn = document.getElementById('group-main-groups');
+  const membersMainBtn = document.getElementById('group-main-members');
+  const groupsSubnav = document.getElementById('group-subnav-groups');
   const createPanel = document.getElementById('group-panel-create');
   const joinPanel = document.getElementById('group-panel-join');
+  const membersPanel = document.getElementById('group-panel-members');
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
 
   const isAdmin = isAdminUser();
@@ -84,14 +87,22 @@ function applyProfileModeUI() {
   if (joinNavBtn) joinNavBtn.classList.toggle('hidden', isAdminMode);
   if (createPanel) createPanel.classList.toggle('hidden', isAdminMode);
   if (joinPanel) joinPanel.classList.toggle('hidden', isAdminMode);
-
-  if (requestsNavBtn) requestsNavBtn.classList.toggle('hidden', !isAdminMode);
+  if (groupsMainBtn) groupsMainBtn.classList.toggle('hidden', false);
+  if (membersMainBtn) membersMainBtn.classList.toggle('hidden', false);
+  if (groupsSubnav && isAdminMode) groupsSubnav.classList.remove('hidden');
+  if (membersPanel) membersPanel.classList.toggle('hidden', false);
   if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !isAdminMode);
 
   if (typeof setActiveGroupPanel === 'function') {
-    const activePanel = document.querySelector('.group-nav-btn.active')?.dataset.groupPanel;
+    const activePanel = document.querySelector('#group-subnav-groups .group-nav-btn.active')?.dataset.groupPanel;
     if (!activePanel || document.getElementById(`group-panel-${activePanel}`)?.classList.contains('hidden')) {
       setActiveGroupPanel(isAdminMode ? 'groups' : 'create');
+    }
+  }
+  if (typeof setActiveGroupMain === 'function') {
+    const activeMain = document.querySelector('.group-main-btn.active')?.dataset.groupMain;
+    if (!activeMain) {
+      setActiveGroupMain(isAdminMode ? 'groups' : 'groups', { autoPanel: false });
     }
   }
   if (typeof renderGroups === 'function') renderGroups();
