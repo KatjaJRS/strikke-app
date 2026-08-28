@@ -126,9 +126,9 @@ function mergeKnownMembers(profileData = [], groupData = [], messageData = [], i
 
 let lastProfilesRefreshAt = 0;
 
-async function refreshProfilesDirectoryOnly() {
+async function refreshProfilesDirectoryOnly(force = false) {
   if (!currentUser) return false;
-  if (Date.now() - lastProfilesRefreshAt < 5000) return false;
+  if (!force && Date.now() - lastProfilesRefreshAt < 5000) return false;
   lastProfilesRefreshAt = Date.now();
 
   let profileData = [];

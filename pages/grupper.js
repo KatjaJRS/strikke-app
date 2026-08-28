@@ -28,6 +28,24 @@ function setActiveGroupPanel(panelName) {
   });
 
   activeGroupPanel = nextPanel;
+
+  if (nextPanel === 'members') {
+    if (typeof refreshProfilesDirectoryOnly === 'function') {
+      refreshProfilesDirectoryOnly(true)
+        .then((ok) => {
+          if (ok && typeof renderGroups === 'function') renderGroups();
+        })
+        .catch(() => {});
+    }
+
+    if (typeof refreshCommunityData === 'function') {
+      refreshCommunityData()
+        .then(() => {
+          if (typeof renderGroups === 'function') renderGroups();
+        })
+        .catch(() => {});
+    }
+  }
 }
 
 function setActiveGroupMain(mainName, options = {}) {
