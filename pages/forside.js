@@ -53,7 +53,11 @@ langButtons.forEach((button) => {
 navButtons.forEach((button) => {
   button.addEventListener('click', () => {
     switchSection(button.dataset.section);
-    if (button.dataset.section === 'groups-chats') markGroupsAsRead();
+    if (button.dataset.section === 'groups-chats') {
+      markGroupsAsRead();
+      if (typeof setActiveGroupMain === 'function') setActiveGroupMain('groups', { autoPanel: false });
+      if (typeof setActiveGroupPanel === 'function') setActiveGroupPanel('groups');
+    }
   });
 });
 

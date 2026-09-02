@@ -9,7 +9,7 @@ const chatEditText = document.getElementById('chat-edit-text');
 const chatEditSaveBtn = document.getElementById('chat-edit-save');
 const chatEditCancelBtn = document.getElementById('chat-edit-cancel');
 let editingMessageContext = null;
-let activeGroupPanel = 'create';
+let activeGroupPanel = 'groups';
 let activeGroupMain = 'groups';
 
 function setActiveGroupPanel(panelName) {
@@ -97,6 +97,7 @@ function initGroupPanelNavigation() {
       const mainName = button.dataset.groupMain;
       if (!mainName) return;
       setActiveGroupMain(mainName);
+      if (mainName === 'groups') setActiveGroupPanel('groups');
     });
   });
 

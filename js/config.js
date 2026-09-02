@@ -94,9 +94,9 @@ function applyProfileModeUI() {
   if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !isAdminMode);
 
   if (typeof setActiveGroupPanel === 'function') {
-    const activePanel = document.querySelector('#group-subnav-groups .group-nav-btn.active')?.dataset.groupPanel;
+    const activePanel = typeof activeGroupPanel === 'string' ? activeGroupPanel : 'groups';
     if (!activePanel || document.getElementById(`group-panel-${activePanel}`)?.classList.contains('hidden')) {
-      setActiveGroupPanel(isAdminMode ? 'groups' : 'create');
+      setActiveGroupPanel('groups');
     }
   }
   if (typeof setActiveGroupMain === 'function') {
