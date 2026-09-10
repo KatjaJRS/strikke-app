@@ -2605,3 +2605,98 @@ button:hover {
     font-size: 1rem;
   }
 }
+
+/* Harmonized rose palette */
+:root {
+  background: #fff4f6;
+  color: #633d49;
+}
+
+body,
+.auth-overlay {
+  background: linear-gradient(135deg, #fff4f6 0%, #f8e2e8 100%);
+  color: #633d49;
+}
+
+.app-shell,
+.group-content-panel,
+.group-chat-panel,
+.groups-left-nav,
+.profile-mode-toggle,
+.admin-profile-card,
+.group-main-btn,
+.group-nav-btn,
+.project-card,
+.add-project-form,
+.join-request-box,
+.profile-modal-card,
+.search-row,
+.filter-controls,
+.busy-card {
+  background: #fffafb;
+  border-color: #e8b2c1;
+}
+
+button,
+.group-main-btn,
+.profile-mode-btn,
+.nav-btn.active,
+.group-pill.active,
+.auth-btn,
+.inline-action-btn {
+  background-color: #d76b8c;
+  border-color: #d76b8c;
+  color: #fff;
+}
+
+.group-nav-btn,
+.group-main-btn:not(.active),
+.profile-mode-btn:not(.active),
+.nav-btn:not(.active),
+.group-pill,
+.group-delete-btn {
+  background: #fff6f8;
+  color: #815667;
+}
+
+input,
+textarea,
+select {
+  background: #fffcfd;
+  border-color: #e8b2c1;
+  color: #633d49;
+}
+
+h1,
+h2,
+h3,
+h4,
+.group-panel-title,
+.group-sidebar h4 {
+  color: #633d49;
+}
+
+p,
+label,
+span,
+.subtitle,
+.eyebrow {
+  color: #815667;
+}
+
+.profile-mode-btn.active,
+.group-nav-btn.active {
+  background: #d76b8c;
+  color: #fff;
+}
+
+.group-nav-btn:hover,
+.group-main-btn:hover,
+button:hover {
+  background-color: #f0c3cf;
+  color: #633d49;
+}
+
+.accept-btn {
+  background: #d98aa2;
+}
