@@ -51,12 +51,14 @@ langButtons.forEach((button) => {
 
 // ── Navigationsknapper ────────────────────────────────────────────────────
 navButtons.forEach((button) => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     switchSection(button.dataset.section);
     if (button.dataset.section === 'groups-chats') {
       markGroupsAsRead();
-      if (typeof setActiveGroupMain === 'function') setActiveGroupMain('groups', { autoPanel: false });
-      if (typeof setActiveGroupPanel === 'function') setActiveGroupPanel('groups');
+      if (currentUser) {
+        await refreshCommunityData();
+        renderGroups();
+      }
     }
   });
 });

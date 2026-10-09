@@ -63,15 +63,6 @@ function applyProfileModeUI() {
   const adminToggle = document.getElementById('profile-mode-toggle');
   const memberBtn = document.getElementById('profile-mode-member');
   const adminBtn = document.getElementById('profile-mode-admin');
-  const adminSection = document.getElementById('admin-profile-section');
-  const createNavBtn = document.getElementById('group-nav-create');
-  const joinNavBtn = document.getElementById('group-nav-join');
-  const groupsMainBtn = document.getElementById('group-main-groups');
-  const membersMainBtn = document.getElementById('group-main-members');
-  const groupsSubnav = document.getElementById('group-subnav-groups');
-  const createPanel = document.getElementById('group-panel-create');
-  const joinPanel = document.getElementById('group-panel-join');
-  const membersPanel = document.getElementById('group-panel-members');
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
 
   const isAdmin = isAdminUser();
@@ -82,29 +73,8 @@ function applyProfileModeUI() {
   if (memberBtn) memberBtn.classList.toggle('active', activeMode === 'member');
   if (adminBtn) adminBtn.classList.toggle('active', activeMode === 'admin');
 
-  if (adminSection) adminSection.classList.toggle('hidden', !isAdminMode);
-  if (createNavBtn) createNavBtn.classList.toggle('hidden', isAdminMode);
-  if (joinNavBtn) joinNavBtn.classList.toggle('hidden', isAdminMode);
-  if (createPanel) createPanel.classList.toggle('hidden', isAdminMode);
-  if (joinPanel) joinPanel.classList.toggle('hidden', isAdminMode);
-  if (groupsMainBtn) groupsMainBtn.classList.toggle('hidden', false);
-  if (membersMainBtn) membersMainBtn.classList.toggle('hidden', false);
-  if (groupsSubnav && isAdminMode) groupsSubnav.classList.remove('hidden');
-  if (membersPanel) membersPanel.classList.toggle('hidden', false);
   if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !isAdminMode);
 
-  if (typeof setActiveGroupPanel === 'function') {
-    const activePanel = typeof activeGroupPanel === 'string' ? activeGroupPanel : 'groups';
-    if (!activePanel || document.getElementById(`group-panel-${activePanel}`)?.classList.contains('hidden')) {
-      setActiveGroupPanel('groups');
-    }
-  }
-  if (typeof setActiveGroupMain === 'function') {
-    const activeMain = document.querySelector('.group-main-btn.active')?.dataset.groupMain;
-    if (!activeMain) {
-      setActiveGroupMain(isAdminMode ? 'groups' : 'groups', { autoPanel: false });
-    }
-  }
   if (typeof renderGroups === 'function') renderGroups();
 }
 
@@ -231,7 +201,7 @@ const translations = {
     difficultyDisplayLabel: 'Difficulty',
     needlesDisplayLabel: 'Knitting needles',
     yarnsDisplayLabel: 'Yarns',
-    groupsHeading: 'Groups and Chats',
+    groupsHeading: 'Community wall',
     groupNameLabel: 'Group name',
     groupNamePlaceholder: 'e.g. Weekend knit circle',
     groupInvitesLabel: 'Invite people',
@@ -261,6 +231,36 @@ const translations = {
     pendingReject: 'Reject',
     requestSentMsg: 'Your request has been sent to the admin!',
     noPendingRequests: 'No pending requests',
+    communityWallHeading: 'Knitting community',
+    communityWallSubtitle: 'Share your knitting with everyone.',
+    notificationsHeading: 'Notifications',
+    notificationsLoading: 'Loading notifications...',
+    notificationsEmpty: 'You are all caught up.',
+    notificationsLoadFailed: 'Could not load notifications. The Supabase setup may need to be run.',
+    notificationPost: 'shared a new post on the community wall.',
+    notificationComment: 'commented on your post.',
+    notificationMention: 'mentioned you in a post or comment.',
+    unreadPostsLabel: 'unread posts',
+    unreadInteractionsLabel: 'unread comments or mentions',
+    mentionHint: 'Use @name in a post or comment to mention a member.',
+    postsLoadFailed: 'Could not load posts from the database. Your posts are still saved; please try again.',
+    postTextLabel: 'Write a post',
+    postPlaceholder: 'What are you knitting?',
+    postAddImage: 'Add image',
+    postButton: 'Post',
+    postSaveFailed: 'Could not save the post. Please try again.',
+    imageUploadFailed: 'Could not load that image. Please try another one.',
+    noCommunityMembers: 'There are no members yet.',
+    noCommunityPosts: 'There are no posts yet. Start the conversation!',
+    communityMemberFallback: 'Member',
+    communityPostImageAlt: 'Image in post',
+    commentsHeading: 'Comments',
+    commentLabel: 'Write a comment',
+    commentPlaceholder: 'Write a comment...',
+    commentButton: 'Comment',
+    commentSaveFailed: 'Could not save the comment. Please try again.',
+    commentSetupRequired: 'Comments need a one-time Supabase setup. See supabase/post-comments.sql.',
+    requestSaveFailed: 'Could not save the request. Please try again.',
     noGroupYet: 'No group yet',
     createGroupToStartChat: 'Create a group to start chatting.',
     noInvitesYet: 'No invites yet',
@@ -375,7 +375,7 @@ const translations = {
     difficultyDisplayLabel: 'Sværhedsgrad',
     needlesDisplayLabel: 'Strikkepinde',
     yarnsDisplayLabel: 'Garn',
-    groupsHeading: 'Grupper og chats',
+    groupsHeading: 'Strikkefællesskab',
     groupNameLabel: 'Gruppenavn',
     groupNamePlaceholder: 'fx. Weekendstrikkecircle',
     groupInvitesLabel: 'Invitér personer',
@@ -405,6 +405,36 @@ const translations = {
     pendingReject: 'Afvis',
     requestSentMsg: 'Din anmodning er sendt til administratoren!',
     noPendingRequests: 'Ingen ventende anmodninger',
+    communityWallHeading: 'Strikkefællesskabet',
+    communityWallSubtitle: 'Del dine strikkeprojekter med alle.',
+    notificationsHeading: 'Notifikationer',
+    notificationsLoading: 'Henter notifikationer...',
+    notificationsEmpty: 'Du er helt opdateret.',
+    notificationsLoadFailed: 'Notifikationer kunne ikke hentes. Supabase-opsætningen skal muligvis køres.',
+    notificationPost: 'har delt et nyt opslag på opslagstavlen.',
+    notificationComment: 'har kommenteret på dit opslag.',
+    notificationMention: 'har nævnt dig i et opslag eller en kommentar.',
+    unreadPostsLabel: 'ulæste opslag',
+    unreadInteractionsLabel: 'ulæste kommentarer eller omtaler',
+    mentionHint: 'Skriv @navn i et opslag eller en kommentar for at nævne et medlem.',
+    postsLoadFailed: 'Opslagene kunne ikke hentes fra databasen. De er stadig gemt; prøv igen.',
+    postTextLabel: 'Skriv et opslag',
+    postPlaceholder: 'Hvad strikker du på?',
+    postAddImage: 'Tilføj billede',
+    postButton: 'Slå op',
+    postSaveFailed: 'Opslaget kunne ikke gemmes. Prøv igen.',
+    imageUploadFailed: 'Billedet kunne ikke indlæses. Prøv et andet billede.',
+    noCommunityMembers: 'Der er ingen medlemmer endnu.',
+    noCommunityPosts: 'Der er ingen opslag endnu. Start samtalen!',
+    communityMemberFallback: 'Medlem',
+    communityPostImageAlt: 'Billede i opslag',
+    commentsHeading: 'Kommentarer',
+    commentLabel: 'Skriv en kommentar',
+    commentPlaceholder: 'Skriv en kommentar...',
+    commentButton: 'Kommentér',
+    commentSaveFailed: 'Kommentaren kunne ikke gemmes. Prøv igen.',
+    commentSetupRequired: 'Kommentarer kræver en engangsopsætning i Supabase. Se supabase/post-comments.sql.',
+    requestSaveFailed: 'Anmodningen kunne ikke gemmes. Prøv igen.',
     noGroupYet: 'Ingen gruppe endnu',
     createGroupToStartChat: 'Opret en gruppe for at starte chatten.',
     noInvitesYet: 'Ingen inviterede endnu',

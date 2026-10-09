@@ -1,14 +1,11 @@
 // ── Medlemsdata — anmodninger om optagelse ────────────────────────────────
 
 const REVIEWED_MEMBERSHIP_REQUESTS_KEY = 'knitting-reviewed-membership-requests';
-const COMMUNITY_GROUP_ID = 'group-community';
 let reviewedMembershipRequestIds = new Set(JSON.parse(localStorage.getItem(REVIEWED_MEMBERSHIP_REQUESTS_KEY) || '[]'));
 
 function saveReviewedMembershipRequests() {
   localStorage.setItem(REVIEWED_MEMBERSHIP_REQUESTS_KEY, JSON.stringify([...reviewedMembershipRequestIds]));
 }
-
-async function saveMembershipRequests() {}
 
 async function acceptMember(id) {
   const req = membershipRequests.find(r => r.id === id);
@@ -64,28 +61,34 @@ const joinRequestForm = document.getElementById('join-request-form');
 const requestNameInput = document.getElementById('request-name-input');
 const requestEmailInput = document.getElementById('request-email-input');
 
-joinRequestForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const name = requestNameInput.value.trim();
-  const email = requestEmailInput.value.trim();
-  if (!name) return;
+if (joinRequestForm) {
+  joinRequestForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = requestNameInput.value.trim();
+    const email = requestEmailInput.value.trim();
+    if (!name) return;
 
-  const newRequest = { id: `req-${Date.now()}`, name, email, createdAt: Date.now() };
-  try {
-    await sb.from('membership_requests').insert({
-      id: newRequest.id,
-      name: newRequest.name,
-      email: newRequest.email || '',
-      created_at: new Date(newRequest.createdAt).toISOString()
-    });
-    membershipRequests.push(newRequest);
-  } catch (e) { console.error('Error saving request:', e); }
-  renderGroups();
+    const newRequest = { id: `req-${Date.now()}`, name, email, createdAt: Date.now() };
+    try {
+      const { error } = await sb.from('membership_requests').insert({
+        id: newRequest.id,
+        name: newRequest.name,
+        email: newRequest.email || '',
+        created_at: new Date(newRequest.createdAt).toISOString()
+      });
+      if (error) throw error;
+      membershipRequests.push(newRequest);
+      renderGroups();
+      joinRequestForm.reset();
+      alert(translations[currentLanguage].requestSentMsg);
+    } catch (error) {
+      console.error('Error saving membership request:', error);
+      alert(translations[currentLanguage].requestSaveFailed);
+      return;
+    }
 
-  const subject = encodeURIComponent(`New membership request: ${name}`);
-  const body = encodeURIComponent(`Hi,\n\nA new person wants to join Knitting My Day Away:\n\nName: ${name}\nEmail: ${email || '(not provided)'}\n\nPlease open the app to accept or reject this request.\n\nKnitting My Day Away`);
-  window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
-
-  joinRequestForm.reset();
-  alert(translations[currentLanguage].requestSentMsg);
-});
+    const subject = encodeURIComponent(`New membership request: ${name}`);
+    const body = encodeURIComponent(`Hi,\n\nA new person wants to join Knitting My Day Away:\n\nName: ${name}\nEmail: ${email || '(not provided)'}\n\nPlease open the app to accept or reject this request.\n\nKnitting My Day Away`);
+    window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
+  });
+}

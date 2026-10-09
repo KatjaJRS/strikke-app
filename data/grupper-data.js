@@ -1,51 +1,142 @@
 // ── Gruppedata — gem og hent fra Supabase ─────────────────────────────────
 
+const COMMUNITY_GROUP_ID = 'group-community';
+const COMMUNITY_GROUP_NAME = 'Knitting community';
+const POST_COMMENTS_TABLE = 'post_comments';
+const POST_NOTIFICATIONS_TABLE = 'post_notifications';
+
 function normalizeGroups() {
-  groups = (Array.isArray(groups) ? groups : []).map((group) => ({
-    id: group.id || `group-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    name: group.name || 'Pattern circle',
-    invitedPeople: Array.isArray(group.invitedPeople) ? group.invitedPeople : [],
-    messages: Array.isArray(group.messages) ? group.messages : [],
-  }));
+  const community = (Array.isArray(groups) ? groups : []).find((group) => group.id === COMMUNITY_GROUP_ID);
+  groups = [{
+    id: COMMUNITY_GROUP_ID,
+    name: COMMUNITY_GROUP_NAME,
+    invitedPeople: Array.isArray(community?.invitedPeople) ? community.invitedPeople : [],
+    messages: Array.isArray(community?.messages) ? community.messages : []
+  }];
+  activeGroupId = COMMUNITY_GROUP_ID;
+}
 
-  if (groups.length === 0) { groups = []; activeGroupId = null; }
-
-  const params = new URLSearchParams(window.location.search);
-  const requestedGroupId = params.get(GROUP_QUERY_PARAM);
-
-  if (requestedGroupId && groups.some((group) => group.id === requestedGroupId)) {
-    activeGroupId = requestedGroupId;
-  } else if (groups.length > 0 && !groups.some((group) => group.id === activeGroupId)) {
-    activeGroupId = groups[0].id;
-  } else if (groups.length === 0) {
-    activeGroupId = null;
-  }
+async function ensureCommunityGroup() {
+  const { data, error } = await sb
+    .from('groups')
+    .select('id')
+    .eq('id', COMMUNITY_GROUP_ID)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error('The shared community group has not been created. Run supabase/post-comments.sql in the Supabase SQL Editor.');
 }
 
 function updateGroupsBadge() {
-  const groupsNavBtn = document.querySelector('.nav-btn[data-section="groups-chats"]');
-  if (!groupsNavBtn) return;
-  let unread = 0;
-  groups.forEach((group) => {
-    group.messages.forEach((msg) => { if (msg.createdAt > groupsLastRead) unread++; });
-  });
-  let badge = groupsNavBtn.querySelector('.notif-badge');
-  if (unread > 0) {
-    if (!badge) {
-      badge = document.createElement('span');
-      badge.className = 'notif-badge';
-      groupsNavBtn.appendChild(badge);
-    }
-    badge.textContent = unread;
-  } else if (badge) {
-    badge.remove();
-  }
+  const wallButton = document.querySelector('.nav-btn[data-section="groups-chats"]');
+  const notificationButton = document.getElementById('community-notifications-button');
+  if (!wallButton || !notificationButton) return;
+
+  const postCount = Number(notificationButton.dataset.postUnread || 0);
+  const interactionCount = Number(notificationButton.dataset.interactionUnread || 0);
+  wallButton.dataset.postUnread = String(postCount);
+  wallButton.dataset.interactionUnread = String(interactionCount);
+  wallButton.setAttribute('aria-label', `${translations[currentLanguage].groupsHeading}. ${postCount} ${translations[currentLanguage].unreadPostsLabel}, ${interactionCount} ${translations[currentLanguage].unreadInteractionsLabel}`);
+  wallButton.title = wallButton.getAttribute('aria-label');
+
+  const total = postCount + interactionCount;
+  notificationButton.dataset.unread = String(total);
+  notificationButton.setAttribute('aria-label', `${translations[currentLanguage].notificationsHeading}${total ? ` (${total})` : ''}`);
+  notificationButton.title = notificationButton.getAttribute('aria-label');
 }
 
 function markGroupsAsRead() {
   groupsLastRead = Date.now();
-  localStorage.setItem(GROUPS_READ_KEY, groupsLastRead);
+  localStorage.setItem(GROUPS_READ_KEY, String(groupsLastRead));
+}
+
+async function refreshCommunityNotifications() {
+  if (!currentUser) return;
+  const button = document.getElementById('community-notifications-button');
+  if (!button) return;
+  const [postsResult, interactionsResult] = await Promise.all([
+    sb
+      .from(POST_NOTIFICATIONS_TABLE)
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', currentUser.id)
+      .eq('notification_type', 'new_post')
+      .is('read_at', null),
+    sb
+      .from(POST_NOTIFICATIONS_TABLE)
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', currentUser.id)
+      .in('notification_type', ['new_comment', 'mention'])
+      .is('read_at', null)
+  ]);
+  const error = postsResult.error || interactionsResult.error;
+  if (error) {
+    console.error('Could not load unread community notifications. Run supabase/post-comments.sql:', error);
+    button.dataset.postUnread = '0';
+    button.dataset.interactionUnread = '0';
+    button.disabled = true;
+  } else {
+    button.dataset.postUnread = String(postsResult.count || 0);
+    button.dataset.interactionUnread = String(interactionsResult.count || 0);
+    button.disabled = false;
+  }
   updateGroupsBadge();
+}
+
+async function showCommunityNotifications() {
+  const panel = document.getElementById('community-notifications');
+  if (!panel || !currentUser) return;
+  panel.classList.toggle('hidden');
+  if (panel.classList.contains('hidden')) return;
+
+  panel.innerHTML = `<p>${escapeHTML(translations[currentLanguage].notificationsLoading)}</p>`;
+  const { data, error } = await sb
+    .from(POST_NOTIFICATIONS_TABLE)
+    .select('id, post_id, notification_type, actor_name, message_preview, created_at, read_at')
+    .eq('recipient_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) {
+    console.error('Could not load community notifications:', error);
+    panel.innerHTML = `<p class="post-error" role="alert">${escapeHTML(translations[currentLanguage].notificationsLoadFailed)}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    panel.innerHTML = `<p>${escapeHTML(translations[currentLanguage].notificationsEmpty)}</p>`;
+    return;
+  }
+
+  panel.innerHTML = data.map((notification) => `
+    <button type="button" class="community-notification${notification.read_at ? '' : ' is-unread'}" data-notification-id="${escapeHTML(notification.id)}" data-post-id="${escapeHTML(notification.post_id)}">
+      <strong>${escapeHTML(notification.actor_name)}</strong>
+      <span>${escapeHTML(translations[currentLanguage][notification.notification_type === 'new_post' ? 'notificationPost' : notification.notification_type === 'mention' ? 'notificationMention' : 'notificationComment'])}</span>
+      ${notification.message_preview ? `<span>${escapeHTML(notification.message_preview)}</span>` : ''}
+      <time>${escapeHTML(new Date(notification.created_at).toLocaleString(currentLanguage === 'da' ? 'da-DK' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' }))}</time>
+    </button>
+  `).join('');
+
+  panel.querySelectorAll('.community-notification').forEach((notificationButton) => {
+    notificationButton.addEventListener('click', async () => {
+      const { error: updateError } = await sb
+        .from(POST_NOTIFICATIONS_TABLE)
+        .update({ read_at: new Date().toISOString() })
+        .eq('id', notificationButton.dataset.notificationId)
+        .eq('recipient_id', currentUser.id);
+      if (updateError) {
+        console.error('Could not mark community notification as read:', updateError);
+        return;
+      }
+      panel.classList.add('hidden');
+      const post = document.querySelector(`.community-post[data-post-id="${CSS.escape(notificationButton.dataset.postId)}"]`);
+      post?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      await refreshCommunityNotifications();
+      panel.innerHTML = '';
+    });
+  });
+}
+
+const communityNotificationsButton = document.getElementById('community-notifications-button');
+if (communityNotificationsButton) {
+  communityNotificationsButton.addEventListener('click', showCommunityNotifications);
 }
 
 let profileRealtimeChannel = null;
@@ -223,6 +314,8 @@ function ensureCommunityRealtimeSync() {
     .channel('community-live-sync')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, scheduleCommunityRefresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, scheduleCommunityRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: POST_COMMENTS_TABLE }, scheduleCommunityRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: POST_NOTIFICATIONS_TABLE }, scheduleCommunityRefresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_requests' }, scheduleCommunityRefresh)
     .subscribe();
 }
@@ -239,14 +332,22 @@ async function refreshCommunityData() {
   return communityRefreshInFlight;
 }
 
+let postCommentsLoadError = null;
+let communityPostsLoadError = null;
+
 async function performCommunityRefresh() {
   let profileData = [];
   let profilesLoaded = false;
   let groupsData = [];
   let messagesData = [];
+  communityPostsLoadError = null;
 
   try {
-    const { data, error } = await sb.from('groups').select('id, name, invited_people');
+    await ensureCommunityGroup();
+    const { data, error } = await sb
+      .from('groups')
+      .select('id, name, invited_people')
+      .eq('id', COMMUNITY_GROUP_ID);
     if (error) {
       console.error('Error loading groups:', {
         message: error?.message,
@@ -259,22 +360,18 @@ async function performCommunityRefresh() {
       groupsData = data || [];
     }
   } catch (error) {
-    console.error('Error loading groups:', {
-      message: error?.message,
-      details: error?.details,
-      hint: error?.hint,
-      code: error?.code,
-      raw: error
-    });
+    console.error('Error loading community group:', error);
   }
 
   try {
     const { data, error } = await sb
       .from('messages')
-      .select('id, group_id, sender_name, text, image, link, link_label, created_at')
+      .select('id, group_id, sender_name, author_id, text, image, link, link_label, created_at')
+      .eq('group_id', COMMUNITY_GROUP_ID)
       .order('created_at', { ascending: false })
       .limit(300);
     if (error) {
+      communityPostsLoadError = error;
       console.error('Error loading messages:', {
         message: error?.message,
         details: error?.details,
@@ -283,9 +380,10 @@ async function performCommunityRefresh() {
         raw: error
       });
     } else {
-      messagesData = (data || []).slice().reverse();
+      messagesData = data || [];
     }
   } catch (error) {
+    communityPostsLoadError = error;
     console.error('Error loading messages:', {
       message: error?.message,
       details: error?.details,
@@ -295,29 +393,57 @@ async function performCommunityRefresh() {
     });
   }
 
+  const postIds = messagesData.map((message) => message.id).filter(Boolean);
+  let commentsByPost = new Map();
+  postCommentsLoadError = null;
+  if (postIds.length > 0) {
+    try {
+      const { data, error } = await sb
+        .from(POST_COMMENTS_TABLE)
+        .select('id, post_id, user_id, sender_name, text, created_at')
+        .in('post_id', postIds)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      (data || []).forEach((comment) => {
+        if (!commentsByPost.has(comment.post_id)) commentsByPost.set(comment.post_id, []);
+        commentsByPost.get(comment.post_id).push({
+          id: comment.id,
+          userId: comment.user_id,
+          sender: comment.sender_name || 'You',
+          text: comment.text || '',
+          createdAt: new Date(comment.created_at).getTime()
+        });
+      });
+    } catch (error) {
+      postCommentsLoadError = error;
+      console.error('Error loading post comments. Run the Supabase setup in supabase/post-comments.sql:', error);
+    }
+  }
+
   const messagesByGroup = new Map();
   messagesData.forEach((message) => {
     const key = message.group_id;
     if (!messagesByGroup.has(key)) messagesByGroup.set(key, []);
     messagesByGroup.get(key).push({
       id: message.id,
+      authorId: message.author_id || '',
       sender: message.sender_name || 'You',
       text: message.text || '',
       image: message.image || '',
       link: message.link || '',
       linkLabel: message.link_label || '',
-      createdAt: new Date(message.created_at).getTime()
+      createdAt: new Date(message.created_at).getTime(),
+      comments: commentsByPost.get(message.id) || []
     });
   });
 
-  if (groupsData.length > 0) {
-    groups = groupsData.map((group) => ({
-      id: group.id,
-      name: group.name,
-      invitedPeople: group.invited_people || [],
-      messages: messagesByGroup.get(group.id) || []
-    }));
-  }
+  const communityGroup = groupsData.find((group) => group.id === COMMUNITY_GROUP_ID);
+  groups = [{
+    id: COMMUNITY_GROUP_ID,
+    name: COMMUNITY_GROUP_NAME,
+    invitedPeople: communityGroup?.invited_people || [],
+    messages: messagesByGroup.get(COMMUNITY_GROUP_ID) || []
+  }];
 
   if (isAdminUser()) {
     try {
@@ -355,6 +481,8 @@ async function performCommunityRefresh() {
   } else {
     membershipRequests = [];
   }
+
+  await refreshCommunityNotifications();
 
   try {
     const { data: rawProfiles, error: profilesError } = await sb.from('profiles').select('id, name, profile_pic');
@@ -418,17 +546,46 @@ async function saveGroups() {
 
 async function saveNewMessage(groupId, message) {
   try {
-    await sb.from('messages').insert({
+    if (!currentUser?.id) throw new Error('You must be signed in to publish a community post.');
+    const { data, error } = await sb.from('messages').insert({
       id: message.id,
-      group_id: groupId,
+      group_id: COMMUNITY_GROUP_ID,
+      author_id: currentUser.id,
       sender_name: message.sender || 'You',
       text: message.text || '',
       image: message.image || '',
       link: message.link || '',
       link_label: message.linkLabel || '',
       created_at: new Date(message.createdAt).toISOString()
-    });
-  } catch (e) { console.error('Error saving message:', e); }
+    }).select('id').single();
+    if (error) throw error;
+    if (!data?.id) throw new Error('Supabase did not confirm that the community post was saved.');
+    return true;
+  } catch (error) {
+    console.error('Error saving community post:', error);
+    return false;
+  }
+}
+
+async function savePostComment(postId, text) {
+  const { data, error } = await sb
+    .from(POST_COMMENTS_TABLE)
+    .insert({
+      post_id: postId,
+      user_id: currentUser.id,
+      sender_name: myProfileName || currentUser.email || 'You',
+      text: text.trim()
+    })
+    .select('id, post_id, user_id, sender_name, text, created_at')
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    userId: data.user_id,
+    sender: data.sender_name || 'You',
+    text: data.text,
+    createdAt: new Date(data.created_at).getTime()
+  };
 }
 
 async function updateMessageById(messageId, payload) {
@@ -469,13 +626,10 @@ async function deleteGroupById(groupId) {
 }
 
 function setActiveGroup(groupId) {
-  activeGroupId = groupId;
-  const params = new URLSearchParams(window.location.search);
-  params.set(GROUP_QUERY_PARAM, groupId);
-  window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+  activeGroupId = COMMUNITY_GROUP_ID;
   renderGroups();
 }
 
 function getActiveGroup() {
-  return groups.find((group) => group.id === activeGroupId) || groups[0] || null;
+  return groups.find((group) => group.id === COMMUNITY_GROUP_ID) || null;
 }

@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Day Away</title>
-    <link rel="stylesheet" href="styles-v16.css?v=20260910-1" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261009-2" />
   </head>
   <body>
     <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
@@ -303,112 +303,51 @@
         </section>
 
         <section id="groups-chats" class="section-view">
-          <div class="search-row">
-            <input id="project-search-groups" type="text" class="search-input" data-i18n-placeholder="searchProjectsPlaceholder" placeholder="Search by name, pattern, or notes" />
-          </div>
-
           <div class="groups-workspace">
-            <aside class="groups-left-nav">
+            <aside class="groups-left-nav community-sidebar">
               <div id="profile-mode-toggle" class="profile-mode-toggle hidden" aria-label="Profile mode switcher">
                 <button type="button" id="profile-mode-member" class="profile-mode-btn active">Me</button>
                 <button type="button" id="profile-mode-admin" class="profile-mode-btn">Admin</button>
               </div>
-
-              <button type="button" id="group-main-groups" class="group-main-btn active" data-group-main="groups" data-group-panel="groups" data-i18n="myGroupsHeading">My groups</button>
-              <div id="group-subnav-groups" class="group-subnav">
-                <button type="button" id="group-nav-join" class="group-nav-btn" data-group-panel="join" data-i18n="groupQuickJoin">Join</button>
-                <button type="button" id="group-nav-create" class="group-nav-btn active" data-group-panel="create" data-i18n="groupQuickCreate">Create</button>
+              <div id="admin-membership-requests-section" class="group-membership-requests hidden">
+                <h4 class="group-panel-title" data-i18n="pendingRequestsHeading">Membership requests</h4>
+                <ul id="pending-requests-list" class="pending-requests-list"></ul>
               </div>
-              <button type="button" id="group-main-members" class="group-main-btn" data-group-main="members" data-group-panel="members" data-i18n="groupQuickMembers">Members</button>
+              <h2 class="community-members-heading" data-i18n="allMembersHeading">All members</h2>
+              <ul id="all-members-list" class="group-members all-members-list"></ul>
             </aside>
 
-            <div class="groups-right-content">
-              <section id="group-panel-create" class="group-content-panel active">
-                <form id="group-form" class="group-form">
-                  <label>
-                    <span data-i18n="groupNameLabel">Group name</span>
-                    <input id="group-name" type="text" data-i18n-placeholder="groupNamePlaceholder" placeholder="e.g. Weekend knit circle" required />
-                  </label>
-                  <label>
-                    <span data-i18n="groupInvitesLabel">Invite people</span>
-                    <input id="group-invites" type="text" data-i18n-placeholder="groupInvitesPlaceholder" placeholder="Maja, Lars, Emma" />
-                  </label>
-                  <button type="submit" data-i18n="createGroupButton">Create group</button>
-                </form>
-              </section>
-
-              <section id="group-panel-join" class="group-content-panel hidden">
-                <div class="join-request-box">
-                  <form id="join-request-form" class="group-form">
-                    <label>
-                      <span data-i18n="requestNameLabel">Your name</span>
-                      <input id="request-name-input" type="text" data-i18n-placeholder="requestNamePlaceholder" placeholder="e.g. Maja" required />
-                    </label>
-                    <label>
-                      <span data-i18n="requestEmailLabel">Your email</span>
-                      <input id="request-email-input" type="email" data-i18n-placeholder="requestEmailPlaceholder" placeholder="maja@example.com" />
-                    </label>
-                    <button type="submit" data-i18n="requestJoinButton">Send request</button>
-                  </form>
-                </div>
-              </section>
-
-              <section id="group-panel-groups" class="group-content-panel hidden">
-                <h4 class="group-panel-title" data-i18n="myGroupsHeading">My groups</h4>
-                <div id="group-list" class="group-list"></div>
-              </section>
-
-              <section id="group-panel-members" class="group-content-panel hidden">
-                <div id="admin-membership-requests-section" class="group-membership-requests hidden">
-                  <h4 class="group-panel-title" data-i18n="pendingRequestsHeading">Membership requests</h4>
-                  <ul id="pending-requests-list" class="pending-requests-list"></ul>
-                </div>
-                <h4 class="group-panel-title" data-i18n="allMembersHeading">All members</h4>
-                <ul id="all-members-list" class="group-members all-members-list"></ul>
-              </section>
-
-              <div id="admin-profile-section" class="profile-mode-section hidden">
-                <div class="admin-profile-card">
-                  <h3>Admin profile</h3>
-                  <p>Use the left menu to jump between requests, groups, and members.</p>
-                </div>
-              </div>
-
+            <div class="community-wall">
               <div class="group-chat-panel">
                 <div class="group-chat-header">
-                  <h3 id="active-group-name">Pattern circle</h3>
-                  <button type="button" id="invite-to-group-btn" class="inline-action-btn hidden">Invite members</button>
+                  <div>
+                    <h2 id="active-group-name" data-i18n="communityWallHeading">Knitting community</h2>
+                    <p data-i18n="communityWallSubtitle">Share your knitting with everyone.</p>
+                  </div>
+                  <div class="community-notifications">
+                    <button id="community-notifications-button" type="button" data-unread="0" data-i18n="notificationsHeading">Notifications</button>
+                    <div id="community-notifications" class="community-notifications-panel hidden" aria-live="polite"></div>
+                  </div>
                 </div>
-                <form id="group-invite-inline-form" class="group-invite-inline hidden">
-                  <input id="group-invite-inline-input" type="text" placeholder="Invite people to this group" aria-label="Invite people to this group" />
-                  <button type="submit" class="inline-action-btn">Add</button>
-                </form>
-                <div class="group-members-card">
-                  <h4 data-i18n="invitedPeopleHeading">Happy knitters in the group</h4>
-                  <ul id="group-members" class="group-members"></ul>
-                </div>
-                <div id="chat-messages" class="chat-messages"></div>
-                <form id="chat-form" class="chat-form">
-                  <div class="chat-input-row">
-                    <input id="chat-message" type="text" data-i18n-placeholder="chatPlaceholder" placeholder="Share a pattern idea..." />
-                    <label class="chat-attach-btn" title="Attach image">
+                <form id="chat-form" class="post-composer">
+                  <label class="sr-only" for="chat-message" data-i18n="postTextLabel">Write a post</label>
+                  <textarea id="chat-message" rows="3" data-i18n-placeholder="postPlaceholder" placeholder="What are you knitting?"></textarea>
+                  <p class="post-mention-hint" data-i18n="mentionHint">Use @name to mention a member.</p>
+                  <div id="chat-image-preview-row" class="chat-image-preview-row hidden">
+                    <img id="chat-image-preview" src="" alt="Image preview" />
+                    <button type="button" id="chat-image-clear-btn" aria-label="Remove image">✕</button>
+                  </div>
+                  <div class="post-composer-actions">
+                    <label class="chat-attach-btn" title="Add image">
                       <span class="attach-icon" aria-hidden="true">📷</span>
+                      <span data-i18n="postAddImage">Add image</span>
                       <input id="chat-image-input" type="file" accept="image/*" class="hidden-file-input" />
                     </label>
-                    <button type="button" id="chat-link-btn" class="chat-attach-btn" title="Add link">
-                      <span class="attach-icon" aria-hidden="true">🔗</span>
-                    </button>
-                    <button type="submit" data-i18n="sendButton">Send</button>
+                    <button type="submit" data-i18n="postButton">Post</button>
                   </div>
-                  <div id="chat-link-row" class="chat-link-row hidden">
-                    <input id="chat-link-input" type="url" placeholder="https://..." />
-                    <input id="chat-link-label-input" type="text" placeholder="Link text (optional)" />
-                  </div>
-                  <div id="chat-image-preview-row" class="chat-image-preview-row hidden">
-                    <img id="chat-image-preview" src="" alt="preview" />
-                    <button type="button" id="chat-image-clear-btn">✕</button>
-                  </div>
+                  <p id="post-form-error" class="post-error hidden" role="alert"></p>
                 </form>
+                <div id="chat-messages" class="chat-messages"></div>
               </div>
             </div>
           </div>
@@ -431,22 +370,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260902-1"></script>
-    <script src="js/dom.js?v=20260821-1"></script>
+    <script src="js/config.js?v=20261009-2"></script>
+    <script src="js/dom.js?v=20261008-1"></script>
     <script src="js/utils.js?v=20260821-1"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260821-1"></script>
     <script src="data/billeder.js?v=20260821-1"></script>
     <script src="data/projekter-data.js?v=20260821-1"></script>
-    <script src="data/grupper-data.js?v=20260821-13"></script>
+    <script src="data/grupper-data.js?v=20261009-2"></script>
     <script src="data/profil.js?v=20260821-12"></script>
-    <script src="data/members.js?v=20260821-1"></script>
+    <script src="data/members.js?v=20261008-1"></script>
     <script src="data/auth.js?v=20260821-10"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20260902-1"></script>
+    <script src="pages/forside.js?v=20261009-2"></script>
     <script src="pages/andre-projekter.js?v=20260821-1"></script>
     <script src="pages/nuvaerende-projekt.js?v=20260821-1"></script>
-    <script src="pages/grupper.js?v=20260902-1"></script>
+    <script src="pages/community-wall.js?v=20261009-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>
   </body>
