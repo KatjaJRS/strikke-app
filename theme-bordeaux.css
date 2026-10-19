@@ -455,12 +455,12 @@ textarea:focus,
   outline-color: var(--preview-lavender);
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option),
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle),
 .add-row-btn {
   background: var(--preview-clay);
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):hover,
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle):hover,
 .add-row-btn:hover {
   background: var(--preview-clay-hover);
 }
@@ -555,6 +555,17 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
 .current-project-option.active {
   background: var(--preview-burgundy);
   color: #fff;
+}
+
+.password-toggle {
+  background: #fff;
+  border-color: var(--preview-border);
+  color: var(--preview-burgundy);
+}
+
+.password-toggle:hover {
+  background: var(--preview-lavender-soft);
+  border-color: var(--preview-lavender);
 }
 
 .group-membership-requests,
