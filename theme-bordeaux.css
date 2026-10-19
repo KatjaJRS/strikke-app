@@ -300,22 +300,26 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
 }
 
 :root {
-  --preview-page: #f4efe7;
-  --preview-surface: #fcf9f4;
-  --preview-surface-muted: #f1ebe2;
-  --preview-border: #ded3c7;
+  --preview-page: #f3f2f1;
+  --preview-surface: #fffdfc;
+  --preview-surface-muted: #f3f2fb;
+  --preview-border: #d8d6e8;
   --preview-text: #51343d;
   --preview-muted: #806b71;
   --preview-burgundy: #713b4b;
   --preview-clay: #713b4b;
   --preview-clay-hover: #5e303e;
-  --preview-rose: #b98787;
-  --preview-olive: #898a72;
+  --preview-rose: #ed9583;
+  --preview-olive: #8b8cc4;
+  --preview-lavender: #bdbde6;
+  --preview-lavender-soft: #f3f2fb;
+  --preview-peach: #fdc9b5;
+  --preview-peach-soft: #fff2ed;
 }
 
 body,
 .auth-overlay {
-  background: linear-gradient(135deg, var(--preview-page), #eee7df);
+  background: linear-gradient(135deg, var(--preview-page), #f3f2f1);
   color: var(--preview-text);
 }
 
@@ -447,16 +451,16 @@ textarea:focus,
 .needle-type:focus,
 .post-comment-form input:focus,
 .post-composer textarea:focus {
-  border-color: var(--preview-olive);
-  outline-color: var(--preview-olive);
+  border-color: var(--preview-lavender);
+  outline-color: var(--preview-lavender);
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn),
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option),
 .add-row-btn {
   background: var(--preview-clay);
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):hover,
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):hover,
 .add-row-btn:hover {
   background: var(--preview-clay-hover);
 }
@@ -482,7 +486,7 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
 .chat-attach-btn:hover,
 .user-bar-profile-btn:hover,
 .user-bar-logout:hover {
-  background: var(--preview-surface-muted);
+  background: var(--preview-lavender-soft);
 }
 
 .nav-btn.active,
@@ -524,7 +528,7 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
 .dashboard-collapsible[open] .collapsible-summary,
 .chat-bubble-me,
 .community-notification.is-unread {
-  background: #f3e9e4;
+  background: var(--preview-peach-soft);
 }
 
 .yarn-remove-btn,
@@ -534,7 +538,23 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
 
 .project-card-current {
   border-color: var(--preview-olive) !important;
-  box-shadow: 0 0 0 2px rgba(137, 138, 114, 0.16), 0 4px 12px rgba(81, 52, 61, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(189, 189, 230, 0.38), 0 4px 12px rgba(81, 52, 61, 0.08) !important;
+}
+
+.current-project-selector-label {
+  color: var(--preview-burgundy);
+}
+
+.current-project-option {
+  border-color: var(--preview-burgundy);
+  background: var(--preview-surface);
+  color: var(--preview-burgundy);
+}
+
+.current-project-option:hover,
+.current-project-option.active {
+  background: var(--preview-burgundy);
+  color: #fff;
 }
 
 .group-membership-requests,
