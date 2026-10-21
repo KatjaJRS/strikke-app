@@ -61,9 +61,9 @@ function renderProjects() {
             <div class="round-counter" data-project-id="${escapeHTML(project.id)}">
               <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(project.id)}">−</button>
               <span class="round-display">${getRounds(project.id)}</span>
-              <span class="round-label">omgange</span>
+              <span class="round-label">${translations[currentLanguage].roundsLabel}</span>
               <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(project.id)}">+</button>
-              <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(project.id)}" title="Nulstil">↺</button>
+              <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(project.id)}" title="${translations[currentLanguage].resetRoundsButton}">↺</button>
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@ function renderProjects() {
 
     card.querySelector('.round-reset').addEventListener('click', (e) => {
       e.stopPropagation();
-      if (confirm('Nulstil omgangstælleren til 0?')) {
+      if (confirm(translations[currentLanguage].resetRoundsConfirm)) {
         projectRounds[project.id] = 0;
         saveRounds();
         card.querySelector('.round-display').textContent = 0;

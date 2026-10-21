@@ -739,6 +739,51 @@ body {
   color: white;
 }
 
+.current-project-selector-wrapper {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.current-project-selector-wrapper[hidden] {
+  display: none;
+}
+
+.current-project-selector-label {
+  margin: 0;
+  color: #7a2742;
+  font-weight: 700;
+}
+
+.current-project-selector {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+}
+
+.current-project-option {
+  flex: 0 0 auto;
+  max-width: 240px;
+  overflow: hidden;
+  padding: 8px 14px;
+  border: 1px solid #e35c86;
+  border-radius: 999px;
+  background: white;
+  color: #a63d57;
+  font: inherit;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.current-project-option:hover,
+.current-project-option.active {
+  background: #e35c86;
+  color: white;
+}
+
 .notif-badge {
   position: absolute;
   top: -8px;
@@ -1122,7 +1167,6 @@ label {
   border: none;
   margin-right: 8px;
   vertical-align: middle;
-  background-color: #e35c86 !important;
 }
 
 input,

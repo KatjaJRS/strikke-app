@@ -2,15 +2,122 @@
   color-scheme: light;
   background: #f3f1ea;
   color: #51343d;
+  --theme-bg: #f3f1ea;
+  --theme-bg-end: #e8ece5;
+  --theme-surface: #fffdfc;
+  --theme-surface-soft: #f5f2ef;
+  --theme-border: #d9ddd5;
+  --theme-text: #51343d;
+  --theme-muted: #806b71;
+  --theme-burgundy: #713b4b;
+  --theme-burgundy-deep: #5e303e;
+  --theme-rose: #ed9583;
+  --theme-lavender: #bdbde6;
+  --theme-lavender-soft: #f3f2fb;
+  --theme-peach: #fdc9b5;
+  --theme-peach-soft: #fff2ed;
+  --theme-yarn: #8b8cc4;
+  --theme-yarn-soft: #ecebf8;
+  --theme-yarn-hue: -130deg;
+  --theme-post: #c0392b;
+  --theme-interaction: #2d7a5d;
+}
+
+html[data-season="spring"] {
+  --theme-bg: #f3efe6;
+  --theme-bg-end: #efe8d8;
+  --theme-surface: #fffdf8;
+  --theme-surface-soft: #f7f1e3;
+  --theme-border: #e0d6b8;
+  --theme-text: #4e3d38;
+  --theme-muted: #7d6d63;
+  --theme-burgundy: #7d3f4d;
+  --theme-burgundy-deep: #6b2e3d;
+  --theme-rose: #d67d6a;
+  --theme-lavender: #b4c2a5;
+  --theme-lavender-soft: #edf3ea;
+  --theme-peach: #f3c5a5;
+  --theme-peach-soft: #fff2ea;
+  --theme-yarn: #7b8f72;
+  --theme-yarn-soft: #edf3e8;
+  --theme-yarn-hue: 95deg;
+  --theme-post: #b85e5f;
+  --theme-interaction: #688d62;
+}
+
+html[data-season="summer"] {
+  --theme-bg: #f5f3eb;
+  --theme-bg-end: #efe8d2;
+  --theme-surface: #fffdf9;
+  --theme-surface-soft: #f9f4ea;
+  --theme-border: #e5d8bb;
+  --theme-text: #4f3b3a;
+  --theme-muted: #6f645f;
+  --theme-burgundy: #7d3547;
+  --theme-burgundy-deep: #692738;
+  --theme-rose: #d77a68;
+  --theme-lavender: #b7b7d9;
+  --theme-lavender-soft: #f2f1fb;
+  --theme-peach: #f7c7ab;
+  --theme-peach-soft: #fff0e9;
+  --theme-yarn: #81916d;
+  --theme-yarn-soft: #edf3ea;
+  --theme-yarn-hue: 15deg;
+  --theme-post: #c26a64;
+  --theme-interaction: #5f8a6b;
+}
+
+html[data-season="autumn"] {
+  --theme-bg: #f4efe8;
+  --theme-bg-end: #eaded7;
+  --theme-surface: #fffaf5;
+  --theme-surface-soft: #f5ece6;
+  --theme-border: #e3cfbf;
+  --theme-text: #4f3f3b;
+  --theme-muted: #796967;
+  --theme-burgundy: #7b2f44;
+  --theme-burgundy-deep: #6b2533;
+  --theme-rose: #d58d77;
+  --theme-lavender: #d7c8d9;
+  --theme-lavender-soft: #f6effa;
+  --theme-peach: #efb995;
+  --theme-peach-soft: #f9efe7;
+  --theme-yarn: #7b2f44;
+  --theme-yarn-soft: #f3e7eb;
+  --theme-yarn-hue: -45deg;
+  --theme-post: #ad6269;
+  --theme-interaction: #6c8878;
+}
+
+html[data-season="winter"] {
+  --theme-bg: #f1eff6;
+  --theme-bg-end: #e4e4f2;
+  --theme-surface: #fdfcff;
+  --theme-surface-soft: #efedf7;
+  --theme-border: #d6d4eb;
+  --theme-text: #4b3f48;
+  --theme-muted: #786d75;
+  --theme-burgundy: #6e3746;
+  --theme-burgundy-deep: #5c2837;
+  --theme-rose: #cd8f9b;
+  --theme-lavender: #b7b4df;
+  --theme-lavender-soft: #f1f0fb;
+  --theme-peach: #f1c7b8;
+  --theme-peach-soft: #fff2ee;
+  --theme-yarn: #8c8ac3;
+  --theme-yarn-soft: #eceaf9;
+  --theme-yarn-hue: -130deg;
+  --theme-post: #b66a78;
+  --theme-interaction: #5f7d6d;
 }
 
 body {
-  background: linear-gradient(135deg, #f3f1ea 0%, #e8ece5 100%);
-  color: #454a45;
+  background: linear-gradient(135deg, var(--theme-bg) 0%, var(--theme-bg-end) 100%);
+  color: var(--theme-text);
 }
 
 .auth-overlay {
-  background: linear-gradient(135deg, #f3f1ea 0%, #e8ece5 100%);
+  background: linear-gradient(135deg, var(--theme-bg) 0%, var(--theme-bg-end) 100%);
 }
 
 .auth-card,
@@ -87,11 +194,11 @@ textarea:focus,
   outline-color: #63776b;
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn) {
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.password-toggle) {
   background: #63776b;
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):hover {
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.password-toggle):hover {
   background: #53665a;
 }
 
@@ -277,10 +384,6 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
   color: #52675b;
 }
 
-.color-swatch {
-  background-color: #b9826d !important;
-}
-
 .round-reset,
 .reject-btn,
 .danger-link {
@@ -301,6 +404,7 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
 
 :root {
   --preview-page: #f3f2f1;
+  --preview-page-end: #eeedf6;
   --preview-surface: #fffdfc;
   --preview-surface-muted: #f3f2fb;
   --preview-border: #d8d6e8;
@@ -317,9 +421,85 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
   --preview-peach-soft: #fff2ed;
 }
 
+html[data-season="spring"] {
+  --preview-page: #f3efe6;
+  --preview-page-end: #efe8d8;
+  --preview-surface: #fffdf8;
+  --preview-surface-muted: #f7f1e3;
+  --preview-border: #e0d6b8;
+  --preview-text: #4e3d38;
+  --preview-muted: #7d6d63;
+  --preview-burgundy: #7d3f4d;
+  --preview-clay: #713b4b;
+  --preview-clay-hover: #5e303e;
+  --preview-rose: #d67d6a;
+  --preview-olive: #7b8f72;
+  --preview-lavender: #b4c2a5;
+  --preview-lavender-soft: #edf3ea;
+  --preview-peach: #f3c5a5;
+  --preview-peach-soft: #fff2ea;
+}
+
+html[data-season="summer"] {
+  --preview-page: #f5f3eb;
+  --preview-page-end: #efe8d2;
+  --preview-surface: #fffdf9;
+  --preview-surface-muted: #f9f4ea;
+  --preview-border: #e5d8bb;
+  --preview-text: #4f3b3a;
+  --preview-muted: #6f645f;
+  --preview-burgundy: #7d3547;
+  --preview-clay: #713b4b;
+  --preview-clay-hover: #5e303e;
+  --preview-rose: #d77a68;
+  --preview-olive: #81916d;
+  --preview-lavender: #b7b7d9;
+  --preview-lavender-soft: #f2f1fb;
+  --preview-peach: #f7c7ab;
+  --preview-peach-soft: #fff0e9;
+}
+
+html[data-season="autumn"] {
+  --preview-page: #f4efe8;
+  --preview-page-end: #eaded7;
+  --preview-surface: #fffaf5;
+  --preview-surface-muted: #f5ece6;
+  --preview-border: #e3cfbf;
+  --preview-text: #4f3f3b;
+  --preview-muted: #796967;
+  --preview-burgundy: #7b2f44;
+  --preview-clay: #713b4b;
+  --preview-clay-hover: #5e303e;
+  --preview-rose: #d58d77;
+  --preview-olive: #b17d64;
+  --preview-lavender: #d7c8d9;
+  --preview-lavender-soft: #f6effa;
+  --preview-peach: #efb995;
+  --preview-peach-soft: #f9efe7;
+}
+
+html[data-season="winter"] {
+  --preview-page: #f1eff6;
+  --preview-page-end: #e4e4f2;
+  --preview-surface: #fdfcff;
+  --preview-surface-muted: #efedf7;
+  --preview-border: #d6d4eb;
+  --preview-text: #4b3f48;
+  --preview-muted: #786d75;
+  --preview-burgundy: #6e3746;
+  --preview-clay: #713b4b;
+  --preview-clay-hover: #5e303e;
+  --preview-rose: #cd8f9b;
+  --preview-olive: #8c8ac3;
+  --preview-lavender: #b7b4df;
+  --preview-lavender-soft: #f1f0fb;
+  --preview-peach: #f1c7b8;
+  --preview-peach-soft: #fff2ee;
+}
+
 body,
 .auth-overlay {
-  background: linear-gradient(135deg, var(--preview-page), #f3f2f1);
+  background: linear-gradient(135deg, var(--preview-page), var(--preview-page-end));
   color: var(--preview-text);
 }
 
@@ -356,8 +536,7 @@ body,
 .subtitle,
 .secondary-subtitle,
 .auth-link,
-.chat-link,
-.color-swatch {
+.chat-link {
   color: var(--preview-rose);
 }
 
@@ -531,8 +710,7 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
   background: var(--preview-peach-soft);
 }
 
-.yarn-remove-btn,
-.color-swatch {
+.yarn-remove-btn {
   background-color: var(--preview-rose) !important;
 }
 
@@ -573,4 +751,334 @@ button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.
 .chat-form,
 .post-comments {
   border-color: var(--preview-border);
+}
+
+html[data-season="spring"] .current-project-option,
+html[data-season="summer"] .current-project-option,
+html[data-season="autumn"] .current-project-option,
+html[data-season="winter"] .current-project-option {
+  border-color: var(--theme-burgundy);
+  color: var(--theme-burgundy);
+}
+
+html[data-season="spring"] .current-project-option:hover,
+html[data-season="summer"] .current-project-option:hover,
+html[data-season="autumn"] .current-project-option:hover,
+html[data-season="winter"] .current-project-option:hover,
+html[data-season="spring"] .current-project-option.active,
+html[data-season="summer"] .current-project-option.active,
+html[data-season="autumn"] .current-project-option.active,
+html[data-season="winter"] .current-project-option.active {
+  background: var(--theme-burgundy);
+  color: #fff;
+}
+
+.password-toggle {
+  background: var(--theme-burgundy) !important;
+  border-color: var(--theme-burgundy) !important;
+  color: #fff !important;
+}
+
+.password-toggle:hover {
+  background: var(--theme-burgundy-deep) !important;
+  border-color: var(--theme-burgundy-deep) !important;
+  color: #fff !important;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--theme-rose);
+  outline-offset: 2px;
+}
+
+.nav-btn[data-post-unread]:not([data-post-unread="0"])::after {
+  background: var(--theme-post);
+}
+
+.nav-btn[data-interaction-unread]:not([data-interaction-unread="0"])::before {
+  background: var(--theme-interaction);
+}
+
+.notif-badge {
+  background: var(--theme-post);
+}
+
+.difficulty-icon {
+  background: var(--theme-yarn-soft);
+  border-color: var(--theme-yarn);
+}
+
+.yarn-ball-icon,
+.auth-logo,
+.busy-yarn-spinner {
+  display: inline-block;
+  filter: grayscale(1) sepia(1) saturate(4) hue-rotate(var(--theme-yarn-hue));
+}
+
+.difficulty-icon.is-empty {
+  opacity: 1;
+}
+
+html[data-season] body,
+html[data-season] .auth-overlay {
+  background: linear-gradient(135deg, var(--preview-page), var(--preview-page-end));
+  color: var(--preview-text);
+}
+
+html[data-season] .auth-card,
+html[data-season] .hero,
+html[data-season] .panel,
+html[data-season] .section-view,
+html[data-season] .project-card,
+html[data-season] .project-card-current,
+html[data-season] .group-content-panel,
+html[data-season] .admin-profile-card,
+html[data-season] .group-main > .group-chat-panel,
+html[data-season] .dashboard-collapsible,
+html[data-season] .join-request-box,
+html[data-season] .community-sidebar,
+html[data-season] .chat-bubble,
+html[data-season] .community-post,
+html[data-season] .post-composer,
+html[data-season] .community-notifications-panel,
+html[data-season] .pending-request-item {
+  background-color: var(--preview-surface);
+  border-color: var(--preview-border);
+}
+
+html[data-season] .lang-switcher,
+html[data-season] .user-bar,
+html[data-season] .profile-mode-toggle,
+html[data-season] .yarns-section,
+html[data-season] .yarn-entry,
+html[data-season] .needles-section,
+html[data-season] .collapsible-summary,
+html[data-season] .group-sidebar,
+html[data-season] #community-notifications-button,
+html[data-season] .chat-attach-btn,
+html[data-season] .round-reset,
+html[data-season] .reject-btn,
+html[data-season] .danger-link {
+  background-color: var(--preview-surface-muted);
+  border-color: var(--preview-border);
+}
+
+html[data-season] h1,
+html[data-season] h2,
+html[data-season] h3,
+html[data-season] h4,
+html[data-season] label,
+html[data-season] .auth-form h2,
+html[data-season] .auth-form label,
+html[data-season] .group-panel-title,
+html[data-season] .community-members-heading,
+html[data-season] .post-comments h3,
+html[data-season] .collapsible-summary,
+html[data-season] .group-sidebar,
+html[data-season] .group-sidebar h4,
+html[data-season] .yarns-display strong,
+html[data-season] .needles-section h4 {
+  color: var(--preview-burgundy);
+}
+
+html[data-season] input,
+html[data-season] select,
+html[data-season] textarea,
+html[data-season] .auth-form input,
+html[data-season] .profile-edit-form input,
+html[data-season] .search-input,
+html[data-season] .yarn-type,
+html[data-season] .yarn-amount,
+html[data-season] .needle-type,
+html[data-season] .post-composer textarea,
+html[data-season] .post-comment-form input {
+  background-color: var(--preview-surface);
+  border-color: var(--preview-border);
+  color: var(--preview-text);
+}
+
+html[data-season] input:focus,
+html[data-season] select:focus,
+html[data-season] textarea:focus {
+  border-color: var(--preview-lavender);
+  outline-color: var(--preview-lavender);
+}
+
+html[data-season] .nav-btn,
+html[data-season] .filter-chip,
+html[data-season] .group-main-btn,
+html[data-season] .group-nav-btn,
+html[data-season] .new-project-btn {
+  background-color: var(--preview-surface);
+  border-color: var(--preview-burgundy);
+  color: var(--preview-burgundy);
+}
+
+html[data-season] .nav-btn:hover,
+html[data-season] .filter-chip:hover,
+html[data-season] .group-main-btn:hover,
+html[data-season] .group-nav-btn:hover,
+html[data-season] .new-project-btn:hover,
+html[data-season] .lang-btn:hover,
+html[data-season] .profile-mode-btn:hover,
+html[data-season] .member-picker-btn:hover,
+html[data-season] .chat-attach-btn:hover,
+html[data-season] .user-bar-profile-btn:hover,
+html[data-season] .user-bar-logout:hover,
+html[data-season] .dashboard-collapsible[open] .collapsible-summary,
+html[data-season] .chat-bubble-me,
+html[data-season] .community-notification.is-unread {
+  background-color: var(--preview-lavender-soft);
+}
+
+html[data-season] button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle) {
+  background-color: var(--preview-clay);
+  color: #fff;
+}
+
+html[data-season] .nav-btn.active,
+html[data-season] .filter-chip.active,
+html[data-season] .profile-mode-btn.active,
+html[data-season] .group-main-btn.active,
+html[data-season] .group-nav-btn.active,
+html[data-season] .lang-btn.active,
+html[data-season] .current-badge {
+  background-color: var(--preview-clay);
+  border-color: var(--preview-clay);
+  color: #fff;
+}
+
+html[data-season] .project-card-current {
+  border-color: var(--preview-olive) !important;
+  box-shadow: 0 0 0 2px var(--preview-lavender-soft), 0 4px 12px rgba(81, 52, 61, 0.08) !important;
+}
+
+html[data-season] .current-project-option,
+html[data-season] .member-picker-btn,
+html[data-season] #community-notifications-button,
+html[data-season] .chat-attach-btn,
+html[data-season] .round-reset,
+html[data-season] .reject-btn,
+html[data-season] .danger-link {
+  color: var(--preview-burgundy);
+}
+
+html[data-season] .current-project-option.active,
+html[data-season] .current-project-option:hover,
+html[data-season] .password-toggle,
+html[data-season] .password-toggle:hover {
+  background-color: var(--preview-clay) !important;
+  border-color: var(--preview-clay) !important;
+  color: #fff !important;
+}
+
+html[data-season] .auth-title,
+html[data-season] .eyebrow,
+html[data-season] .subtitle,
+html[data-season] .secondary-subtitle,
+html[data-season] .auth-link,
+html[data-season] .chat-link,
+html[data-season] .yarn-remove-btn {
+  color: var(--preview-rose);
+}
+
+html[data-season] .auth-hint,
+html[data-season] .pending-email,
+html[data-season] .community-post time,
+html[data-season] .post-comment time,
+html[data-season] .post-mention-hint {
+  color: var(--preview-muted);
+}
+
+html[data-season] .project-card,
+html[data-season] .project-card.featured {
+  background: var(--preview-surface);
+  border-color: var(--preview-lavender);
+  box-shadow: 0 10px 28px rgba(81, 52, 61, 0.08);
+}
+
+html[data-season] .project-card-current {
+  border-color: var(--preview-olive) !important;
+}
+
+html[data-season] .current-badge,
+html[data-season] .round-btn {
+  background: var(--preview-clay);
+  color: #fff;
+}
+
+html[data-season] .status-badge {
+  background: var(--preview-peach-soft);
+  color: var(--preview-burgundy);
+}
+
+html[data-season] .round-counter {
+  background: var(--preview-surface-muted);
+  border-color: var(--preview-border);
+}
+
+html[data-season] .round-display,
+html[data-season] .rating,
+html[data-season] .difficulty,
+html[data-season] .difficulty-display,
+html[data-season] .difficulty-label,
+html[data-season] .pattern,
+html[data-season] .amount-used,
+html[data-season] .pattern-meta,
+html[data-season] .round-label,
+html[data-season] .user-bar-name {
+  color: var(--preview-text);
+}
+
+html[data-season] .rating-display,
+html[data-season] .pattern-meta a {
+  color: var(--preview-burgundy);
+}
+
+html[data-season] .auth-error,
+html[data-season] .post-error,
+html[data-season] .post-comment-error {
+  background: var(--preview-peach-soft);
+  border-color: var(--preview-border);
+  color: var(--preview-burgundy);
+}
+
+html[data-season] .profile-success,
+html[data-season] .highfive-label {
+  background: var(--preview-surface-muted);
+  border-color: var(--preview-border);
+  color: var(--preview-burgundy);
+}
+
+html[data-season] .hero-upload-btn,
+html[data-season] .yarn-remove-btn {
+  background: var(--preview-rose);
+  color: #fff;
+}
+
+html[data-season] .yarn-remove-btn:hover,
+html[data-season] .hero-upload-btn:hover {
+  background: var(--preview-burgundy);
+}
+
+html[data-season] .current-project-selector-label,
+html[data-season] .project-count,
+html[data-season] .empty-state {
+  color: var(--preview-burgundy);
+}
+
+html[data-season] .auth-btn,
+html[data-season] .add-row-btn,
+html[data-season] .round-btn:not(.round-reset),
+html[data-season] .edit-btn,
+html[data-season] .delete-btn {
+  background: var(--preview-clay) !important;
+  color: #fff !important;
+}
+
+html[data-season] .auth-btn:hover,
+html[data-season] .add-row-btn:hover,
+html[data-season] .round-btn:not(.round-reset):hover,
+html[data-season] .edit-btn:hover,
+html[data-season] .delete-btn:hover {
+  background: var(--preview-clay-hover) !important;
 }

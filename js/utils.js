@@ -81,7 +81,7 @@ function renderStars(rating) {
 function renderHearts(difficulty) {
   const icons = [];
   for (let i = 1; i <= 5; i++) {
-    icons.push(`<span class="difficulty-icon${i <= difficulty ? '' : ' is-empty'}">🧶</span>`);
+    icons.push(`<span class="difficulty-icon${i <= difficulty ? '' : ' is-empty'}"><span class="yarn-ball-icon">🧶</span></span>`);
   }
   return `<span class="difficulty-icons" aria-label="Difficulty ${difficulty} of 5">${icons.join('')}</span>`;
 }

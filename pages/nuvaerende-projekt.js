@@ -14,9 +14,9 @@ function addYarnRow(typeVal = '', colorVal = '', amountVal = '') {
   entry.className = 'yarn-entry';
   entry.innerHTML = `
     <input type="text" class="yarn-type" placeholder="${translations[currentLanguage].yarnTypePlaceholder || 'Yarn type'}" value="${typeVal}" />
-    <input type="text" class="yarn-color" placeholder="Colour" value="${colorVal}" />
+    <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="${translations[currentLanguage].yarnColorPlaceholder}" value="${colorVal}" />
     <input type="text" class="yarn-amount" placeholder="${translations[currentLanguage].yarnAmountPlaceholder || 'Amount used'}" value="${amountVal}" />
-    <button type="button" class="yarn-remove-btn" title="Remove row">✕</button>
+    <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="${translations[currentLanguage].removeYarnButton}">✕</button>
   `;
   entry.querySelector('.yarn-remove-btn').addEventListener('click', () => {
     if (yarnRowsContainer.querySelectorAll('.yarn-entry').length > 1) entry.remove();
@@ -75,9 +75,48 @@ function populateFormWithProject(project) {
 }
 
 // ── Vis nuværende projekt ─────────────────────────────────────────────────
+function selectCurrentProject(projectId) {
+  if (!projects.some((project) => project.id === projectId)) return;
+
+  const selectedAt = Math.max(
+    Date.now(),
+    ...projects.map((project) => Number(project.lastViewedAt) || 0)
+  ) + 1;
+  projects = projects.map((project) => ({
+    ...project,
+    lastViewedAt: project.id === projectId ? selectedAt : project.lastViewedAt
+  }));
+
+  saveProjects({ showBusy: false });
+  renderProjects();
+  updateHeroImage();
+}
+
+function renderCurrentProjectSelector(orderedProjects, currentProjectId) {
+  const wrapper = document.getElementById('current-project-selector-wrapper');
+  const selector = document.getElementById('current-project-selector');
+  if (!wrapper || !selector) return;
+
+  wrapper.hidden = orderedProjects.length < 2;
+  selector.setAttribute('aria-label', translations[currentLanguage].currentProjectPickerLabel);
+  selector.innerHTML = '';
+
+  orderedProjects.forEach((project) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'current-project-option';
+    button.classList.toggle('active', project.id === currentProjectId);
+    button.setAttribute('aria-pressed', project.id === currentProjectId ? 'true' : 'false');
+    button.textContent = project.name;
+    button.addEventListener('click', () => selectCurrentProject(project.id));
+    selector.appendChild(button);
+  });
+}
+
 function renderCurrentProject() {
   const orderedProjects = getOrderedProjects();
   const currentProject = orderedProjects.length > 0 ? orderedProjects[0] : null;
+  renderCurrentProjectSelector(orderedProjects, currentProject?.id);
 
   if (!currentProject) {
     currentProjectCard.innerHTML = `<p style="color: #a35d70; text-align: center;">${translations[currentLanguage].emptyState}</p>`;
@@ -124,9 +163,9 @@ function renderCurrentProject() {
     <div class="round-counter current-project-round-counter" data-project-id="${escapeHTML(currentProject.id)}">
       <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
       <span class="round-display">${getRounds(currentProject.id)}</span>
-      <span class="round-label">omgange</span>
+      <span class="round-label">${translations[currentLanguage].roundsLabel}</span>
       <button type="button" class="round-btn round-plus" data-project-id="${escapeHTML(currentProject.id)}">+</button>
-      <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(currentProject.id)}" title="Nulstil">↺</button>
+      <button type="button" class="round-btn round-reset" data-project-id="${escapeHTML(currentProject.id)}" title="${translations[currentLanguage].resetRoundsButton}">↺</button>
     </div>
   `;
   currentProjectCard.innerHTML = '';
@@ -148,7 +187,7 @@ function renderCurrentProject() {
 
   card.querySelector('.round-reset').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (confirm('Nulstil omgangstælleren til 0?')) {
+    if (confirm(translations[currentLanguage].resetRoundsConfirm)) {
       projectRounds[currentProject.id] = 0;
       saveRounds();
       card.querySelector('.round-display').textContent = 0;

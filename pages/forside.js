@@ -22,6 +22,11 @@ function applyLanguage(lang) {
     el.placeholder = translations[currentLanguage][key] || el.placeholder;
   });
 
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-title');
+    el.title = translations[currentLanguage][key] || el.title;
+  });
+
   langButtons.forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
   });

@@ -5,7 +5,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knitting My Day Away</title>
-    <link rel="stylesheet" href="styles-v16.css?v=20260807-27" />
+    <script>
+      (function () {
+        const month = new Date().getMonth();
+        const season = month >= 2 && month <= 4 ? 'spring' : month >= 5 && month <= 7 ? 'summer' : month >= 8 && month <= 10 ? 'autumn' : 'winter';
+        document.documentElement.setAttribute('data-season', season);
+      })();
+    </script>
+    <link rel="stylesheet" href="styles-v16.css?v=20261020-2" />
+    <link rel="stylesheet" href="theme-bordeaux.css?v=20261020-6" />
   </head>
   <body>
     <div id="busy-overlay" class="busy-overlay" aria-hidden="true">
@@ -28,7 +36,7 @@
         <span class="firework fw-c"></span>
         <span class="firework-center">✦</span>
       </div>
-      <span class="highfive-label">Færdigt projekt!</span>
+      <span class="highfive-label" data-i18n="highfiveLabel">Project finished!</span>
     </div>
 
     <!-- Fixed overlay bar — always on top regardless of scroll -->
@@ -172,17 +180,21 @@
 
       <div class="navigation-buttons">
         <button type="button" class="nav-btn active" data-section="current-project" data-i18n="currentProjectHeading">Current project</button>
-        <button type="button" class="nav-btn" data-section="previous-projects" data-i18n="projectsHeading">Other projects</button>
+        <button type="button" class="nav-btn" data-section="previous-projects" data-i18n="projectsHeading">My projects</button>
         <button type="button" class="nav-btn" data-section="groups-chats" data-i18n="groupsHeading">Groups and Chats</button>
       </div>
 
       <div class="section-views">
         <section id="current-project" class="section-view active">
+          <div id="current-project-selector-wrapper" class="current-project-selector-wrapper" hidden>
+            <p class="current-project-selector-label" data-i18n="currentProjectPickerLabel">Choose current project</p>
+            <div id="current-project-selector" class="current-project-selector" role="group" aria-label="Choose current project"></div>
+          </div>
           <div id="current-project-card" class="project-card-container"></div>
           <form id="project-form" class="add-project-form">
             <div class="form-heading-row">
               <h3 id="form-heading" data-i18n="addProjectHeading">Add a project</h3>
-              <button type="button" id="new-project-btn" class="new-project-btn" title="Clear form for a new project">➕ Nyt projekt</button>
+              <button type="button" id="new-project-btn" class="new-project-btn" data-i18n="newProjectButton" data-i18n-title="clearFormTitle">➕ New project</button>
             </div>
             <label>
               <span data-i18n="projectNameLabel">Project name</span>
@@ -197,12 +209,12 @@
               <div id="yarn-rows-container">
                 <div class="yarn-entry">
                   <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
-                  <input type="text" class="yarn-color" placeholder="Colour" />
+                  <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="Colour" />
                   <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount used" />
-                  <button type="button" class="yarn-remove-btn" title="Remove row">✕</button>
+                  <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="Remove row">✕</button>
                 </div>
               </div>
-              <button type="button" id="add-yarn-btn" class="add-row-btn">+ Tilføj garn</button>
+              <button type="button" id="add-yarn-btn" class="add-row-btn" data-i18n="addYarnButton">+ Add yarn</button>
             </div>
             <div class="needles-section">
               <h4 data-i18n="needleLabel">Knitting needles</h4>
@@ -238,11 +250,11 @@
             <label>
               <span data-i18n="difficultyLabel">Difficulty</span>
               <div id="project-difficulty" class="heart-rating" role="radiogroup" aria-label="Difficulty">
-                <button type="button" class="heart-btn" data-value="1" aria-label="Difficulty 1">🧶</button>
-                <button type="button" class="heart-btn" data-value="2" aria-label="Difficulty 2">🧶</button>
-                <button type="button" class="heart-btn" data-value="3" aria-label="Difficulty 3">🧶</button>
-                <button type="button" class="heart-btn" data-value="4" aria-label="Difficulty 4">🧶</button>
-                <button type="button" class="heart-btn" data-value="5" aria-label="Difficulty 5">🧶</button>
+                <button type="button" class="heart-btn" data-value="1" aria-label="Difficulty 1"><span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="heart-btn" data-value="2" aria-label="Difficulty 2"><span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="heart-btn" data-value="3" aria-label="Difficulty 3"><span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="heart-btn" data-value="4" aria-label="Difficulty 4"><span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="heart-btn" data-value="5" aria-label="Difficulty 5"><span class="yarn-ball-icon">🧶</span></button>
               </div>
               <input type="hidden" id="project-difficulty-value" value="0" />
             </label>
@@ -291,11 +303,11 @@
               <span data-i18n="difficultyFilterLabel">Difficulty</span>
               <div id="difficulty-filter" class="filter-hearts" role="radiogroup" aria-label="Filter by difficulty">
                 <button type="button" class="filter-heart-btn" data-difficulty="all" aria-label="All difficulties" data-i18n="difficultyFilterAll">All</button>
-                <button type="button" class="filter-heart-btn" data-difficulty="1" aria-label="Difficulty 1">1x 🧶</button>
-                <button type="button" class="filter-heart-btn" data-difficulty="2" aria-label="Difficulty 2">2x 🧶</button>
-                <button type="button" class="filter-heart-btn" data-difficulty="3" aria-label="Difficulty 3">3x 🧶</button>
-                <button type="button" class="filter-heart-btn" data-difficulty="4" aria-label="Difficulty 4">4x 🧶</button>
-                <button type="button" class="filter-heart-btn" data-difficulty="5" aria-label="Difficulty 5">5x 🧶</button>
+                <button type="button" class="filter-heart-btn" data-difficulty="1" aria-label="Difficulty 1">1x <span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="filter-heart-btn" data-difficulty="2" aria-label="Difficulty 2">2x <span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="filter-heart-btn" data-difficulty="3" aria-label="Difficulty 3">3x <span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="filter-heart-btn" data-difficulty="4" aria-label="Difficulty 4">4x <span class="yarn-ball-icon">🧶</span></button>
+                <button type="button" class="filter-heart-btn" data-difficulty="5" aria-label="Difficulty 5">5x <span class="yarn-ball-icon">🧶</span></button>
               </div>
             </label>
           </div>
@@ -415,9 +427,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20260819-1"></script>
+    <script src="js/config.js?v=20261020-2"></script>
     <script src="js/dom.js?v=20260819-1"></script>
-    <script src="js/utils.js?v=20260819-1"></script>
+    <script src="js/utils.js?v=20261020-1"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260819-1"></script>
     <script src="data/billeder.js?v=20260819-1"></script>
@@ -427,9 +439,9 @@
     <script src="data/members.js?v=20260819-1"></script>
     <script src="data/auth.js?v=20260819-1"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20260819-1"></script>
-    <script src="pages/andre-projekter.js?v=20260819-1"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20260819-1"></script>
+    <script src="pages/forside.js?v=20261020-2"></script>
+    <script src="pages/andre-projekter.js?v=20261020-2"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20261020-2"></script>
     <script src="pages/grupper.js?v=20260819-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260819-1"></script>
