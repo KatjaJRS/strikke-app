@@ -3131,3 +3131,13 @@ button:hover {
   .nav-btn { min-width: 0; padding: 10px 6px; font-size: 0.85rem; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
   .yarn-type, .yarn-color, .yarn-amount, .needle-type { min-width: 0; padding: 10px 8px; font-size: 0.85rem; text-overflow: ellipsis; }
 }
+
+.card-img-gallery { display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 80px; }
+.card-img-gallery .card-img-square { flex: 1 1 auto; height: auto; min-height: 80px; }
+.card-thumbs { display: flex; gap: 6px; flex-wrap: wrap; }
+.card-thumb { width: 38px; height: 38px; object-fit: cover; border-radius: 8px; border: 2px solid transparent; cursor: pointer; opacity: 0.75; }
+.card-thumb.active, .card-thumb:hover { opacity: 1; border-color: var(--theme-accent, #713b4b); }
+.project-images-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.project-image-thumb { position: relative; width: 72px; height: 72px; }
+.project-image-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid #f2b0c0; }
+.project-image-remove { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; padding: 0; border-radius: 50%; line-height: 1; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; }

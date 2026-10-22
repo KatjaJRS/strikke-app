@@ -70,12 +70,16 @@ async function migrateLegacyImagesToStorage() {
 
   let projectsChanged = false;
   for (const project of projects) {
-    if (typeof project.image === 'string' && project.image.startsWith('data:')) {
-      const url = await uploadImageDataURL(project.image, 'projects');
-      if (url && url !== project.image) {
-        project.image = url;
-        projectsChanged = true;
-      }
+    const images = getProjectImages(project);
+    if (!images.some((src) => src.startsWith('data:'))) continue;
+    const uploaded = [];
+    for (const src of images) {
+      uploaded.push(src.startsWith('data:') ? await uploadImageDataURL(src, 'projects') : src);
+    }
+    if (uploaded.some((src, i) => src !== images[i])) {
+      project.images = uploaded;
+      project.image = uploaded[0] || '';
+      projectsChanged = true;
     }
   }
   if (projectsChanged) await saveProjects({ showBusy: false });

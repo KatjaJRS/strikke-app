@@ -70,7 +70,7 @@ function renderProjects() {
         <div class="card-notes">
           ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
         </div>
-        ${project.image ? `<img class="card-img-square" src="${project.image}" alt="${escapeHTML(project.name)}" />` : '<div class="card-img-placeholder"></div>'}
+        ${renderProjectGallery(project)}
       </div>
     `;
 
@@ -90,6 +90,7 @@ function renderProjects() {
       nameInput.focus();
     }
 
+    bindProjectGallery(card);
     card.addEventListener('click', openProjectForEditing);
 
     card.querySelector('.edit-btn').addEventListener('click', (e) => {

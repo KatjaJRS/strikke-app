@@ -9,6 +9,58 @@ function createProjectId(project, index) {
   return `legacy-${base}`;
 }
 
+// ── Flere billeder pr. projekt ───────────────────────────────────────────
+// Kolonnen "image" er tekst. Ét billede gemmes som almindelig URL, flere
+// gemmes som JSON-liste, så der ikke kræves ændringer i databasen.
+function parseProjectImages(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  const text = String(value || '').trim();
+  if (!text) return [];
+  if (text.startsWith('[')) {
+    try {
+      const list = JSON.parse(text);
+      if (Array.isArray(list)) return list.filter((item) => typeof item === 'string' && item);
+    } catch {}
+  }
+  return [text];
+}
+
+function serializeProjectImages(images) {
+  const list = parseProjectImages(images);
+  if (list.length === 0) return '';
+  return list.length === 1 ? list[0] : JSON.stringify(list);
+}
+
+function getProjectImages(project) {
+  if (Array.isArray(project?.images) && project.images.length > 0) return project.images;
+  return parseProjectImages(project?.image);
+}
+
+function withProjectImages(project, images) {
+  const list = parseProjectImages(images);
+  return { ...project, images: list, image: list[0] || '' };
+}
+
+function renderProjectGallery(project) {
+  const images = getProjectImages(project);
+  if (images.length === 0) return '<div class="card-img-placeholder"></div>';
+  const alt = escapeHTML(project.name);
+  const thumbs = images.length > 1
+    ? `<div class="card-thumbs">${images.map((src, i) => `<img class="card-thumb${i === 0 ? ' active' : ''}" src="${escapeHTML(src)}" alt="${alt} ${i + 1}" loading="lazy" />`).join('')}</div>`
+    : '';
+  return `<div class="card-img-gallery"><img class="card-img-square" src="${escapeHTML(images[0])}" alt="${alt}" />${thumbs}</div>`;
+}
+
+function bindProjectGallery(card) {
+  const main = card.querySelector('.card-img-gallery .card-img-square');
+  card.querySelectorAll('.card-thumb').forEach((thumb) => {
+    thumb.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (main) main.src = thumb.src;
+      card.querySelectorAll('.card-thumb').forEach((t) => t.classList.toggle('active', t === thumb));
+    });
+  });
+}
 function normalizeProjects() {
   projects = projects.map((project, index) => {
     const yarns = (project.yarns || []).slice(0, 3);
@@ -31,7 +83,7 @@ function normalizeProjects() {
         color: yarn.color || '',
         amount: yarn.amount || '',
       })),
-      image: project.image || '',
+      ...(() => { const list = getProjectImages(project); return { images: list, image: list[0] || '' }; })(),
     };
   });
 }
@@ -49,7 +101,7 @@ function projectToRow(project) {
     yarns: project.yarns || [],
     rating: project.rating || 0,
     difficulty: project.difficulty || 0,
-    image: project.image || '',
+    image: serializeProjectImages(getProjectImages(project)),
     last_viewed_at: project.lastViewedAt || 0
   };
 }
@@ -66,7 +118,8 @@ function rowToProject(row) {
     yarns: row.yarns || [],
     rating: row.rating || 0,
     difficulty: row.difficulty || 0,
-    image: row.image || '',
+    images: parseProjectImages(row.image),
+    image: parseProjectImages(row.image)[0] || '',
     lastViewedAt: row.last_viewed_at || 0
   };
 }

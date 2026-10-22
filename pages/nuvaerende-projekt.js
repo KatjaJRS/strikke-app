@@ -42,10 +42,44 @@ document.querySelectorAll('#yarn-rows-container input').forEach(inp => inp.addEv
 }));
 addYarnBtn.addEventListener('click', () => addYarnRow());
 
+// ── Billeder i formularen ─────────────────────────────────────────────────
+let pendingProjectImages = [];
+
+function getFormImages() {
+  const project = currentEditingProjectId ? projects.find(p => p.id === currentEditingProjectId) : null;
+  return project ? getProjectImages(project) : pendingProjectImages;
+}
+
+function renderFormImages() {
+  const container = document.getElementById('project-images-preview');
+  if (!container) return;
+  const images = getFormImages();
+  container.innerHTML = images.map((src, i) => `
+    <div class="project-image-thumb">
+      <img src="${escapeHTML(src)}" alt="${i + 1}" />
+      <button type="button" class="project-image-remove" data-index="${i}" aria-label="${escapeHTML(translations[currentLanguage].removeImageButton)}">✕</button>
+    </div>`).join('');
+}
+
+async function setFormImages(images) {
+  if (currentEditingProjectId) {
+    projects = projects.map(p => p.id === currentEditingProjectId ? withProjectImages(p, images) : p);
+    renderFormImages();
+    await saveProjects({ showBusy: false });
+    renderProjects();
+    updateHeroImage();
+  } else {
+    pendingProjectImages = images;
+    renderFormImages();
+  }
+}
+
 // ── Populer formular med eksisterende projekt ─────────────────────────────
 function populateFormWithProject(project) {
   if (!project) return;
   currentEditingProjectId = project.id;
+  pendingProjectImages = [];
+  renderFormImages();
   const formHeading = document.getElementById('form-heading');
   if (formHeading) formHeading.textContent = translations[currentLanguage].addProjectHeading || 'Add a project';
 
@@ -158,7 +192,7 @@ function renderCurrentProject() {
       <div class="card-notes">
         ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
       </div>
-      ${currentProject.image ? `<img class="card-img-square" src="${currentProject.image}" alt="${escapeHTML(currentProject.name)}" />` : '<div class="card-img-placeholder"></div>'}
+      ${renderProjectGallery(currentProject)}
     </div>
     <div class="round-counter current-project-round-counter" data-project-id="${escapeHTML(currentProject.id)}">
       <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
@@ -170,6 +204,8 @@ function renderCurrentProject() {
   `;
   currentProjectCard.innerHTML = '';
   currentProjectCard.appendChild(card);
+
+  bindProjectGallery(card);
 
   card.querySelector('.round-minus').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -210,6 +246,9 @@ function clearFormForNew() {
   yarnRowsContainer.innerHTML = '';
   addYarnRow();
   needleInputs.forEach(n => n.value = '');
+  pendingProjectImages = [];
+  if (imageInput) imageInput.value = '';
+  renderFormImages();
   clearDraft();
 }
 
@@ -356,13 +395,31 @@ if (newProjectBtn) {
 // Gem straks når der vælges et nyt foto til et eksisterende projekt.
 if (imageInput) {
   imageInput.addEventListener('change', async () => {
-    if (!currentEditingProjectId || !imageInput.files[0]) return;
-    const image = await storeImageFile(imageInput.files[0], 'projects');
-    if (!image) return;
-    projects = projects.map(p => p.id === currentEditingProjectId ? { ...p, image } : p);
-    await saveProjects({ showBusy: false });
-    renderProjects();
-    updateHeroImage();
+    const files = Array.from(imageInput.files || []);
+    if (files.length === 0) return;
+    const uploaded = [];
+    for (const file of files) {
+      try {
+        const url = await storeImageFile(file, 'projects');
+        if (url) uploaded.push(url);
+      } catch (error) {
+        console.error('Could not prepare project image:', error);
+        showSyncToast(translations[currentLanguage].imageUploadFailed);
+      }
+    }
+    imageInput.value = '';
+    if (uploaded.length === 0) return;
+    await setFormImages([...getFormImages(), ...uploaded]);
+  });
+}
+
+const projectImagesPreview = document.getElementById('project-images-preview');
+if (projectImagesPreview) {
+  projectImagesPreview.addEventListener('click', async (event) => {
+    const button = event.target.closest('.project-image-remove');
+    if (!button) return;
+    const index = Number(button.dataset.index);
+    await setFormImages(getFormImages().filter((_, i) => i !== index));
   });
 }
 
@@ -385,7 +442,7 @@ form.addEventListener('submit', async (event) => {
 
   if (!name || !pattern) return;
 
-  const image = await storeImageFile(imageInput.files[0], 'projects');
+  const newImages = pendingProjectImages;
   let becameFinished = false;
 
   if (currentEditingProjectId) {
@@ -395,7 +452,7 @@ form.addEventListener('submit', async (event) => {
     projects = projects.map(p => p.id === currentEditingProjectId ? {
       ...p, name, pattern, status: statusInput.value, notes, patternLink,
       needles, rating, difficulty, yarns,
-      ...(image ? { image } : {}),
+      ...(newImages.length ? withProjectImages({}, [...getProjectImages(p), ...newImages]) : {}),
     } : p);
   } else {
     // Tjek om projektnavn allerede eksisterer
@@ -406,7 +463,7 @@ form.addEventListener('submit', async (event) => {
       projects = projects.map(p => p.id === existingByName.id ? {
         ...p, name, pattern, status: statusInput.value, notes, patternLink,
         needles, rating, difficulty, yarns,
-        ...(image ? { image } : {}),
+        ...(newImages.length ? withProjectImages({}, [...getProjectImages(p), ...newImages]) : {}),
       } : p);
     } else {
       // Nyt projekt
@@ -414,7 +471,7 @@ form.addEventListener('submit', async (event) => {
       projects.unshift({
         id: `project-${Date.now()}`,
         name, pattern, status: statusInput.value, notes, patternLink,
-        needles, rating, difficulty, yarns, image,
+        needles, rating, difficulty, yarns, images: newImages, image: newImages[0] || '',
         lastViewedAt: Date.now(),
       });
     }

@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261022-1" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261022-2" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -268,7 +268,8 @@
             </label>
             <label>
               <span data-i18n="imageLabel">Project photo</span>
-              <input id="project-image" type="file" accept="image/*" />
+              <input id="project-image" type="file" accept="image/*" multiple />
+              <div id="project-images-preview" class="project-images-preview"></div>
             </label>
             <button type="submit" data-i18n="saveNoteButton">Gem projekt</button>
           </form>
@@ -427,21 +428,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261021-1"></script>
+    <script src="js/config.js?v=20261022-2"></script>
     <script src="js/dom.js?v=20260819-1"></script>
     <script src="js/utils.js?v=20261020-1"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260819-1"></script>
-    <script src="data/billeder.js?v=20260819-1"></script>
-    <script src="data/projekter-data.js?v=20260819-1"></script>
+    <script src="data/billeder.js?v=20261022-2"></script>
+    <script src="data/projekter-data.js?v=20261022-2"></script>
     <script src="data/grupper-data.js?v=20260819-1"></script>
     <script src="data/profil.js?v=20260819-1"></script>
     <script src="data/members.js?v=20260819-1"></script>
     <script src="data/auth.js?v=20260819-1"></script>
     <!-- Sidelayout og UI -->
     <script src="pages/forside.js?v=20261020-2"></script>
-    <script src="pages/andre-projekter.js?v=20261020-2"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20261020-2"></script>
+    <script src="pages/andre-projekter.js?v=20261022-2"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20261022-2"></script>
     <script src="pages/grupper.js?v=20260819-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260819-1"></script>
