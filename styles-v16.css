@@ -1072,6 +1072,7 @@ label {
 }
 
 .yarn-type,
+.yarn-color,
 .yarn-amount {
   width: 100%;
   border: 1px solid #f2b0c0;
@@ -1084,11 +1085,13 @@ label {
 }
 
 .yarn-type::placeholder,
+.yarn-color::placeholder,
 .yarn-amount::placeholder {
   color: #c7a0b0;
 }
 
 .yarn-type:focus,
+.yarn-color:focus,
 .yarn-amount:focus {
   outline: none;
   border-color: #e35c86;
@@ -3126,5 +3129,5 @@ button:hover {
 @media (max-width: 640px) {
   .navigation-buttons { gap: 6px; }
   .nav-btn { min-width: 0; padding: 10px 6px; font-size: 0.85rem; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
-  .yarn-type, .yarn-amount, .needle-type { min-width: 0; padding: 10px 8px; font-size: 0.85rem; text-overflow: ellipsis; }
+  .yarn-type, .yarn-color, .yarn-amount, .needle-type { min-width: 0; padding: 10px 8px; font-size: 0.85rem; text-overflow: ellipsis; }
 }
