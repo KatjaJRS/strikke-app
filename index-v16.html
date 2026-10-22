@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261020-2" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261021-1" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261020-6" />
   </head>
   <body>
@@ -210,7 +210,7 @@
                 <div class="yarn-entry">
                   <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
                   <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="Colour" />
-                  <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount used" />
+                  <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount" />
                   <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="Remove row">✕</button>
                 </div>
               </div>
@@ -219,13 +219,13 @@
             <div class="needles-section">
               <h4 data-i18n="needleLabel">Knitting needles</h4>
               <div class="needle-entry">
-                <input id="needle-1-type" type="text" class="needle-type" placeholder="Needle type" />
+                <input id="needle-1-type" type="text" class="needle-type" data-i18n-placeholder="needleTypePlaceholder" placeholder="Needle type" />
               </div>
               <div class="needle-entry">
-                <input id="needle-2-type" type="text" class="needle-type" placeholder="Needle type" />
+                <input id="needle-2-type" type="text" class="needle-type" data-i18n-placeholder="needleTypePlaceholder" placeholder="Needle type" />
               </div>
               <div class="needle-entry">
-                <input id="needle-3-type" type="text" class="needle-type" placeholder="Needle type" />
+                <input id="needle-3-type" type="text" class="needle-type" data-i18n-placeholder="needleTypePlaceholder" placeholder="Needle type" />
               </div>
             </div>
             <label>
@@ -427,7 +427,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261020-2"></script>
+    <script src="js/config.js?v=20261021-1"></script>
     <script src="js/dom.js?v=20260819-1"></script>
     <script src="js/utils.js?v=20261020-1"></script>
     <!-- Data: Supabase-kald og logik -->
