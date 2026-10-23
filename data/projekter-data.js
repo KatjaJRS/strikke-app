@@ -9,6 +9,50 @@ function createProjectId(project, index) {
   return `legacy-${base}`;
 }
 
+// ── Delte projekter ──────────────────────────────────────────────────────
+async function loadSharedProjectsForUser(userId) {
+  if (!userId) return [];
+  if (userId === currentUser?.id) return projects.filter((project) => project.shared);
+  const { data, error } = await sb
+    .from('projects')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_shared', true);
+  if (error) throw error;
+  return (data || []).map(rowToProject).map((project) => ({
+    ...project,
+    images: parseProjectImages(project.image),
+  }));
+}
+
+async function setProjectShared(projectId, shared) {
+  projects = projects.map((project) => project.id === projectId ? { ...project, shared } : project);
+  const saved = await saveProjects({ showBusy: false });
+  if (!sharedColumnAvailable) {
+    showSyncToast(translations[currentLanguage].shareSetupRequired);
+  }
+  return saved;
+}
+
+function renderShareToggle(project) {
+  return `<label class="share-toggle" data-project-id="${escapeHTML(project.id)}">
+    <input type="checkbox" class="share-checkbox" data-project-id="${escapeHTML(project.id)}" ${project.shared ? 'checked' : ''} />
+    <span>${escapeHTML(translations[currentLanguage].shareProjectLabel)}</span>
+  </label>`;
+}
+
+function bindShareToggle(card, onChange) {
+  card.querySelectorAll('.share-toggle').forEach((label) => {
+    label.addEventListener('click', (event) => event.stopPropagation());
+  });
+  card.querySelectorAll('.share-checkbox').forEach((checkbox) => {
+    checkbox.addEventListener('change', async () => {
+      await setProjectShared(checkbox.dataset.projectId, checkbox.checked);
+      if (onChange) onChange();
+    });
+  });
+}
+
 // ── Flere billeder pr. projekt ───────────────────────────────────────────
 // Kolonnen "image" er tekst. Ét billede gemmes som almindelig URL, flere
 // gemmes som JSON-liste, så der ikke kræves ændringer i databasen.
@@ -78,6 +122,7 @@ function normalizeProjects() {
       patternLink: project.patternLink || '',
       rating: Number(project.rating) || 0,
       difficulty: Number(project.difficulty) || 0,
+      shared: !!project.shared,
       yarns: yarns.map(yarn => ({
         type: yarn.type || '',
         color: yarn.color || '',
@@ -87,6 +132,9 @@ function normalizeProjects() {
     };
   });
 }
+
+// Falder tilbage uden delingsflaget, hvis kolonnen endnu ikke findes i databasen.
+let sharedColumnAvailable = true;
 
 function projectToRow(project) {
   return {
@@ -101,6 +149,7 @@ function projectToRow(project) {
     yarns: project.yarns || [],
     rating: project.rating || 0,
     difficulty: project.difficulty || 0,
+    ...(sharedColumnAvailable ? { is_shared: !!project.shared } : {}),
     image: serializeProjectImages(getProjectImages(project)),
     last_viewed_at: project.lastViewedAt || 0
   };
@@ -118,6 +167,7 @@ function rowToProject(row) {
     yarns: row.yarns || [],
     rating: row.rating || 0,
     difficulty: row.difficulty || 0,
+    shared: !!row.is_shared,
     images: parseProjectImages(row.image),
     image: parseProjectImages(row.image)[0] || '',
     lastViewedAt: row.last_viewed_at || 0
@@ -183,9 +233,15 @@ async function saveProjects(options = {}) {
       }
 
       if (projects.length > 0) {
-        const { error } = await sb
+        let { error } = await sb
           .from('projects')
           .upsert(projects.map(projectToRow), { onConflict: 'id' });
+        if (error && sharedColumnAvailable && String(error.message || '').includes('is_shared')) {
+          sharedColumnAvailable = false;
+          ({ error } = await sb
+            .from('projects')
+            .upsert(projects.map(projectToRow), { onConflict: 'id' }));
+        }
         if (error) throw error;
       }
 

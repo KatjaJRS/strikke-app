@@ -54,6 +54,7 @@ function renderProjects() {
             ${needlesDisplay}
           </div>
           <div class="card-actions-stack">
+            
             <div class="card-buttons">
               <button class="edit-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].editButton}</button>
               <button class="delete-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].deleteButton}</button>
@@ -91,6 +92,7 @@ function renderProjects() {
     }
 
     bindProjectGallery(card);
+    bindShareToggle(card);
     card.addEventListener('click', openProjectForEditing);
 
     card.querySelector('.edit-btn').addEventListener('click', (e) => {

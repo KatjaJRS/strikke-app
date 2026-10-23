@@ -194,6 +194,7 @@ function renderCurrentProject() {
       </div>
       ${renderProjectGallery(currentProject)}
     </div>
+    
     <div class="round-counter current-project-round-counter" data-project-id="${escapeHTML(currentProject.id)}">
       <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
       <span class="round-display">${getRounds(currentProject.id)}</span>
@@ -206,6 +207,7 @@ function renderCurrentProject() {
   currentProjectCard.appendChild(card);
 
   bindProjectGallery(card);
+  bindShareToggle(card, renderProjects);
 
   card.querySelector('.round-minus').addEventListener('click', (e) => {
     e.stopPropagation();

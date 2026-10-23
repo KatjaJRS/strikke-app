@@ -75,6 +75,7 @@ function renderCommunityMembers() {
     if (name && !membersByName.has(name.toLowerCase())) membersByName.set(name.toLowerCase(), profile);
   });
   membersByName.set(String(myProfileName || '').trim().toLowerCase(), {
+    id: currentUser?.id || '',
     name: myProfileName,
     profile_pic: myProfilePic
   });
@@ -86,11 +87,78 @@ function renderCommunityMembers() {
   allMembersList.innerHTML = members.length
     ? members.map((member) => `
       <li class="community-member">
-        ${getAvatarHTML(member.name, member.profile_pic || '')}
-        <span>${escapeHTML(member.name)}</span>
+        ${member.id
+          ? `<button type="button" class="community-member-btn" data-user-id="${escapeHTML(member.id)}" data-name="${escapeHTML(member.name)}" title="${escapeHTML(translations[currentLanguage].viewProfileHint)}">
+              ${getAvatarHTML(member.name, member.profile_pic || '')}
+              <span class="community-member-name">${escapeHTML(member.name)}</span>
+            </button>`
+          : `${getAvatarHTML(member.name, member.profile_pic || '')}
+              <span class="community-member-name">${escapeHTML(member.name)}</span>`}
       </li>
     `).join('')
     : `<li class="community-empty-members">${translations[currentLanguage].noCommunityMembers}</li>`;
+
+  allMembersList.querySelectorAll('.community-member-btn').forEach((button) => {
+    button.addEventListener('click', () => openMemberProjects(button.dataset.userId, button.dataset.name));
+  });
+}
+
+// ── Medlemmers delte projekter ───────────────────────────────────────────
+function getMemberProjectsModal() {
+  let modal = document.getElementById('member-projects-modal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'member-projects-modal';
+  modal.className = 'member-projects-modal hidden';
+  modal.innerHTML = `
+    <div class="member-projects-dialog" role="dialog" aria-modal="true" aria-labelledby="member-projects-title">
+      <button type="button" class="member-projects-close" aria-label="Close">✕</button>
+      <h2 id="member-projects-title"></h2>
+      <div id="member-projects-body"></div>
+    </div>`;
+  document.body.appendChild(modal);
+  const close = () => modal.classList.add('hidden');
+  modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+  modal.querySelector('.member-projects-close').addEventListener('click', close);
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') close(); });
+  return modal;
+}
+
+function renderMemberProjectCard(project) {
+  const t = translations[currentLanguage];
+  const rating = project.rating > 0 ? `<span class="stars">${renderStars(project.rating)}</span>` : '';
+  return `
+    <article class="member-project-card">
+      <div class="member-project-info">
+        <div class="title-stars-row"><h3>${escapeHTML(project.name)}</h3>${rating}</div>
+        <span class="status-badge">${escapeHTML(translateStatus(project.status))}</span>
+        ${project.difficulty ? renderHearts(project.difficulty) : ''}
+        ${renderYarns(project.yarns || [])}
+        ${renderNeedles(project.needles)}
+        ${project.notes ? `<p><strong>${escapeHTML(t.notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
+      </div>
+      ${renderProjectGallery(project)}
+    </article>`;
+}
+
+async function openMemberProjects(userId, name) {
+  const modal = getMemberProjectsModal();
+  const t = translations[currentLanguage];
+  const title = modal.querySelector('#member-projects-title');
+  const body = modal.querySelector('#member-projects-body');
+  title.textContent = `${name} – ${t.sharedProjectsTitle}`;
+  body.innerHTML = '<p class="chat-empty">…</p>';
+  modal.classList.remove('hidden');
+  try {
+    const shared = await loadSharedProjectsForUser(userId);
+    body.innerHTML = shared.length
+      ? shared.map(renderMemberProjectCard).join('')
+      : `<p class="chat-empty">${escapeHTML(t.noSharedProjects)}</p>`;
+    body.querySelectorAll('.member-project-card').forEach(bindProjectGallery);
+  } catch (error) {
+    console.error('Could not load shared projects:', error);
+    body.innerHTML = `<p class="post-error" role="alert">${escapeHTML(t.sharedProjectsLoadFailed)}</p>`;
+  }
 }
 
 function renderCommunityFeed() {
