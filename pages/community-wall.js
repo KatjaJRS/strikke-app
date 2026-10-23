@@ -19,6 +19,7 @@ const communityImagePreview = document.getElementById('chat-image-preview');
 const communityImageClearBtn = document.getElementById('chat-image-clear-btn');
 let editingPostContext = null;
 let pendingPostImage = '';
+const openCommentPosts = new Set();
 
 function formatCommunityDate(timestamp) {
   return new Date(timestamp).toLocaleString(currentLanguage === 'da' ? 'da-DK' : 'en-GB', {
@@ -219,8 +220,11 @@ function renderCommunityFeed() {
         ${imageHTML}
         ${linkHTML}
         ${ownActions}
-        <section class="post-comments">
-          <h3>${translations[currentLanguage].commentsHeading} <span>(${comments.length})</span></h3>
+        <button type="button" class="comment-toggle" data-post-id="${escapeHTML(post.id)}" aria-expanded="${openCommentPosts.has(post.id)}" aria-label="${escapeHTML(translations[currentLanguage].commentsHeading)}">
+          <span class="comment-bubble" aria-hidden="true">💬</span>
+          <span class="comment-count">${comments.length}</span>
+        </button>
+        <section class="post-comments${openCommentPosts.has(post.id) ? '' : ' hidden'}">
           <ul class="post-comment-list">${commentsHTML}</ul>
           <form class="post-comment-form" data-post-id="${escapeHTML(post.id)}">
             <label class="sr-only" for="comment-${escapeHTML(post.id)}">${translations[currentLanguage].commentLabel}</label>
@@ -235,6 +239,16 @@ function renderCommunityFeed() {
 
   communityFeed.querySelectorAll('.post-comment-form').forEach((commentForm) => {
     commentForm.addEventListener('submit', submitPostComment);
+  });
+  communityFeed.querySelectorAll('.comment-toggle').forEach((button) => {
+    button.addEventListener('click', () => {
+      const postId = button.dataset.postId;
+      const isOpen = !openCommentPosts.has(postId);
+      if (isOpen) openCommentPosts.add(postId); else openCommentPosts.delete(postId);
+      button.setAttribute('aria-expanded', String(isOpen));
+      button.nextElementSibling.classList.toggle('hidden', !isOpen);
+      if (isOpen) button.nextElementSibling.querySelector('input')?.focus();
+    });
   });
   communityFeed.querySelectorAll('.post-edit-btn').forEach((button) => {
     button.addEventListener('click', () => editOwnPost(button.dataset.postId));
@@ -329,6 +343,7 @@ async function submitPostComment(event) {
   submitButton.disabled = true;
   try {
     const savedComment = await savePostComment(commentForm.dataset.postId, text);
+    openCommentPosts.add(commentForm.dataset.postId);
     groups = groups.map((group) => ({
       ...group,
       messages: group.messages.map((post) => post.id === commentForm.dataset.postId
@@ -339,6 +354,7 @@ async function submitPostComment(event) {
   } catch (error) {
     console.error('Could not save comment. Check the post_comments table and RLS policies:', error);
     postCommentsLoadError = error;
+    openCommentPosts.add(commentForm.dataset.postId);
     renderGroups();
     const refreshedError = communityFeed.querySelector(
       `.community-post[data-post-id="${CSS.escape(commentForm.dataset.postId)}"] .post-comment-error`
@@ -431,3 +447,37 @@ setInterval(async () => {
   await refreshCommunityData();
   renderGroups();
 }, 45000);
+
+// ── Del et projekt som opslag på fællesskabsvæggen ──────────────────────
+async function shareProjectToCommunity(projectId) {
+  const project = projects.find((item) => item.id === projectId);
+  const t = translations[currentLanguage];
+  if (!project || !currentUser) return;
+  if (!confirm(t.shareToCommunityConfirm.replace('{name}', project.name))) return;
+
+  const lines = [`🧶 ${project.name}`, translateStatus(project.status)];
+  const yarns = (project.yarns || []).filter((yarn) => yarn.type)
+    .map((yarn) => [yarn.type, yarn.color].filter(Boolean).join(' – ')).join(', ');
+  if (yarns) lines.push(`${t.yarnsDisplayLabel}: ${yarns}`);
+  const needles = (project.needles || []).filter(Boolean).join(', ');
+  if (needles) lines.push(`${t.needlesDisplayLabel}: ${needles}`);
+  if (project.notes) lines.push(project.notes);
+
+  const post = {
+    id: `post-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    authorId: currentUser.id,
+    sender: myProfileName,
+    text: lines.join('\n'),
+    image: getProjectImages(project)[0] || '',
+    createdAt: Date.now(),
+    comments: []
+  };
+  const saved = await saveNewMessage(COMMUNITY_GROUP_ID, post);
+  if (!saved) {
+    showSyncToast(t.postSaveFailed);
+    return;
+  }
+  showSyncToast(t.shareToCommunityDone, 'success');
+  await refreshCommunityData();
+  renderGroups();
+}

@@ -38,6 +38,8 @@ function applyLanguage(lang) {
 }
 
 function switchSection(sectionId) {
+  // Forsidebilledet fylder meget, så det skjules, når man går i gang med at bruge appen.
+  document.querySelector('.app-shell > .hero')?.classList.add('hero-collapsed');
   sectionViews.forEach((section) => section.classList.remove('active'));
   const activeSection = document.getElementById(sectionId);
   if (activeSection) activeSection.classList.add('active');

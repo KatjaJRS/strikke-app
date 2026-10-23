@@ -38,12 +38,20 @@ function renderShareToggle(project) {
   return `<label class="share-toggle" data-project-id="${escapeHTML(project.id)}">
     <input type="checkbox" class="share-checkbox" data-project-id="${escapeHTML(project.id)}" ${project.shared ? 'checked' : ''} />
     <span>${escapeHTML(translations[currentLanguage].shareProjectLabel)}</span>
-  </label>`;
+  </label>
+  <button type="button" class="share-post-btn" data-project-id="${escapeHTML(project.id)}">💬 ${escapeHTML(translations[currentLanguage].shareToCommunityButton)}</button>`;
 }
 
 function bindShareToggle(card, onChange) {
   card.querySelectorAll('.share-toggle').forEach((label) => {
     label.addEventListener('click', (event) => event.stopPropagation());
+  });
+  card.querySelectorAll('.share-post-btn').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      button.disabled = true;
+      try { await shareProjectToCommunity(button.dataset.projectId); } finally { button.disabled = false; }
+    });
   });
   card.querySelectorAll('.share-checkbox').forEach((checkbox) => {
     checkbox.addEventListener('change', async () => {

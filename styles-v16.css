@@ -3160,3 +3160,10 @@ button:hover {
 .member-project-card:first-of-type { border-top: 0; }
 .member-project-card h3 { margin: 0; }
 @media (max-width: 640px) { .member-project-card { grid-template-columns: 1fr; } }
+.hero.hero-collapsed { display: none; }
+.share-post-btn { margin: 6px 0 6px 8px; padding: 6px 12px; font-size: 0.85rem; border-radius: 999px; }
+.comment-toggle { display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 6px 12px; border-radius: 999px; background: transparent; color: var(--theme-accent, #713b4b); border: 1px solid rgba(113, 59, 75, 0.35); box-shadow: none; font-weight: 600; cursor: pointer; }
+.comment-toggle:hover, .comment-toggle[aria-expanded="true"] { background: rgba(113, 59, 75, 0.1); }
+.comment-count { min-width: 1ch; }
+.post-comments.hidden { display: none; }
+.post-comments { margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(113, 59, 75, 0.05); }

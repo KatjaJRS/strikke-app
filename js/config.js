@@ -175,7 +175,9 @@ const translations = {
     yarnAmountPlaceholder: 'Amount',
     needleTypePlaceholder: 'Needle type',
     removeImageButton: 'Remove photo',
-    shareProjectLabel: 'Share with the community',
+    shareProjectLabel: 'Show my projects to members',
+    shareToCommunityButton: 'Post to community wall',
+    shareToCommunityConfirm: 'Post \
     shareSetupRequired: 'Sharing needs a one-time setup in Supabase (supabase/shared-projects.sql).',
     sharedProjectsTitle: 'Shared projects',
     noSharedProjects: 'No shared projects yet.',
@@ -369,7 +371,9 @@ const translations = {
     yarnAmountPlaceholder: 'Mængde',
     needleTypePlaceholder: 'Pindetype',
     removeImageButton: 'Fjern billede',
-    shareProjectLabel: 'Del med fællesskabet',
+    shareProjectLabel: 'Vis for medlemmer',
+    shareToCommunityButton: 'Del på fællesskabsvæggen',
+    shareToCommunityConfirm: 'Del \
     shareSetupRequired: 'Deling kræver en engangsopsætning i Supabase (supabase/shared-projects.sql).',
     sharedProjectsTitle: 'Delte projekter',
     noSharedProjects: 'Ingen delte projekter endnu.',
