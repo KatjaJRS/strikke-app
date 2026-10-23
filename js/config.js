@@ -177,7 +177,8 @@ const translations = {
     removeImageButton: 'Remove photo',
     shareProjectLabel: 'Show my projects to members',
     shareToCommunityButton: 'Post to community wall',
-    shareToCommunityConfirm: 'Post \
+    shareToCommunityConfirm: 'Post "{name}" on the community wall?',
+    shareToCommunityDone: 'Project posted on the community wall!',
     shareSetupRequired: 'Sharing needs a one-time setup in Supabase (supabase/shared-projects.sql).',
     sharedProjectsTitle: 'Shared projects',
     noSharedProjects: 'No shared projects yet.',
@@ -373,7 +374,8 @@ const translations = {
     removeImageButton: 'Fjern billede',
     shareProjectLabel: 'Vis for medlemmer',
     shareToCommunityButton: 'Del på fællesskabsvæggen',
-    shareToCommunityConfirm: 'Del \
+    shareToCommunityConfirm: 'Del "{name}" på fællesskabsvæggen?',
+    shareToCommunityDone: 'Projektet er delt på fællesskabsvæggen!',
     shareSetupRequired: 'Deling kræver en engangsopsætning i Supabase (supabase/shared-projects.sql).',
     sharedProjectsTitle: 'Delte projekter',
     noSharedProjects: 'Ingen delte projekter endnu.',

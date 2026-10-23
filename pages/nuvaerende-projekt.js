@@ -195,6 +195,7 @@ function renderCurrentProject() {
       ${renderProjectGallery(currentProject)}
     </div>
     
+    ${renderShareToggle(currentProject)}
     <div class="round-counter current-project-round-counter" data-project-id="${escapeHTML(currentProject.id)}">
       <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
       <span class="round-display">${getRounds(currentProject.id)}</span>

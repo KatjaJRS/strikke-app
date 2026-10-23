@@ -55,6 +55,7 @@ function renderProjects() {
           </div>
           <div class="card-actions-stack">
             
+            ${renderShareToggle(project)}
             <div class="card-buttons">
               <button class="edit-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].editButton}</button>
               <button class="delete-btn" data-project-id="${escapeHTML(project.id)}">${translations[currentLanguage].deleteButton}</button>
