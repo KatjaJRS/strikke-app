@@ -3167,3 +3167,30 @@ button:hover {
 .comment-count { min-width: 1ch; }
 .post-comments.hidden { display: none; }
 .post-comments { margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(113, 59, 75, 0.05); }
+/* ── Kompakt fællesskab ── */
+.community-post { padding: 12px 14px; }
+.community-post-text { margin: 8px 0 4px; line-height: 1.45; }
+.community-post-text.clamped { display: -webkit-box; -webkit-line-clamp: 4; line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.read-more-btn { padding: 0; margin: 0 0 6px; background: none; border: 0; box-shadow: none; color: var(--theme-accent, #713b4b); font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+.community-post-image { max-height: 180px; max-width: 240px; margin: 8px 0; cursor: zoom-in; object-fit: cover; }
+.community-post-image.enlarged { max-width: 100%; max-height: 520px; object-fit: contain; cursor: zoom-out; }
+.community-post .chat-actions { margin: 4px 0; }
+.post-comments { margin-top: 8px; padding: 8px 10px; }
+.post-composer.collapsed textarea { height: 44px; min-height: 44px; resize: none; overflow: hidden; }
+.post-composer.collapsed .post-mention-hint, .post-composer.collapsed .post-composer-actions { display: none; }
+.groups-workspace { grid-template-columns: minmax(200px, 250px) minmax(0, 1fr); }
+.community-sidebar .all-members-list { gap: 4px; }
+.community-member .avatar { width: 28px; height: 28px; }
+.members-toggle { display: none; width: 100%; margin: 0; justify-content: space-between; }
+@media (max-width: 980px) {
+  .community-sidebar { position: static; max-height: none; padding: 10px; }
+  .community-members-heading { display: none; }
+  .members-toggle { display: flex; }
+  .community-sidebar .all-members-list { display: none; margin-top: 8px; max-height: 40vh; overflow-y: auto; }
+  .community-sidebar .all-members-list.members-open { display: grid; }
+}
+@media (max-width: 980px) {
+  .groups-workspace { grid-template-columns: minmax(0, 1fr); }
+}
+.members-toggle { background: #fff; color: var(--theme-accent, #713b4b); border: 1px solid rgba(113, 59, 75, 0.35); font-weight: 600; box-shadow: none; }
+.members-toggle:hover { background: rgba(113, 59, 75, 0.08); }

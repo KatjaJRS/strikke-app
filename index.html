@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261023-2" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261023-5" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -327,6 +327,7 @@
                 <ul id="pending-requests-list" class="pending-requests-list"></ul>
               </div>
               <h2 class="community-members-heading" data-i18n="allMembersHeading">All members</h2>
+              <button type="button" id="members-toggle" class="members-toggle" aria-expanded="false"><span id="members-toggle-label"></span> <span id="members-toggle-count"></span></button>
               <ul id="all-members-list" class="group-members all-members-list"></ul>
             </aside>
 
@@ -342,9 +343,9 @@
                     <div id="community-notifications" class="community-notifications-panel hidden" aria-live="polite"></div>
                   </div>
                 </div>
-                <form id="chat-form" class="post-composer">
+                <form id="chat-form" class="post-composer collapsed">
                   <label class="sr-only" for="chat-message" data-i18n="postTextLabel">Write a post</label>
-                  <textarea id="chat-message" rows="3" data-i18n-placeholder="postPlaceholder" placeholder="What are you knitting?"></textarea>
+                  <textarea id="chat-message" rows="1" data-i18n-placeholder="postPlaceholder" placeholder="What are you knitting?"></textarea>
                   <p class="post-mention-hint" data-i18n="mentionHint">Use @name to mention a member.</p>
                   <div id="chat-image-preview-row" class="chat-image-preview-row hidden">
                     <img id="chat-image-preview" src="" alt="Image preview" />
@@ -383,7 +384,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261023-3"></script>
+    <script src="js/config.js?v=20261023-4"></script>
     <script src="js/dom.js?v=20261008-1"></script>
     <script src="js/utils.js?v=20261020-1"></script>
     <!-- Data: Supabase-kald og logik -->
@@ -398,7 +399,7 @@
     <script src="pages/forside.js?v=20261023-2"></script>
     <script src="pages/andre-projekter.js?v=20261023-3"></script>
     <script src="pages/nuvaerende-projekt.js?v=20261023-3"></script>
-    <script src="pages/community-wall.js?v=20261023-2"></script>
+    <script src="pages/community-wall.js?v=20261023-5"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>
   </body>

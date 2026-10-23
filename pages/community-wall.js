@@ -20,6 +20,7 @@ const communityImageClearBtn = document.getElementById('chat-image-clear-btn');
 let editingPostContext = null;
 let pendingPostImage = '';
 const openCommentPosts = new Set();
+const expandedPosts = new Set();
 
 function formatCommunityDate(timestamp) {
   return new Date(timestamp).toLocaleString(currentLanguage === 'da' ? 'da-DK' : 'en-GB', {
@@ -84,6 +85,11 @@ function renderCommunityMembers() {
   const members = [...membersByName.values()]
     .filter((profile) => String(profile.name || '').trim())
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+  const membersCount = document.getElementById('members-toggle-count');
+  const membersLabel = document.getElementById('members-toggle-label');
+  if (membersCount) membersCount.textContent = `(${members.length})`;
+  if (membersLabel) membersLabel.textContent = translations[currentLanguage].allMembersHeading;
 
   allMembersList.innerHTML = members.length
     ? members.map((member) => `
@@ -216,7 +222,7 @@ function renderCommunityFeed() {
             <time>${escapeHTML(formatCommunityDate(post.createdAt))}</time>
           </div>
         </header>
-        ${post.text ? `<p class="community-post-text">${escapeHTML(post.text)}</p>` : ''}
+        ${post.text ? `<p class="community-post-text clamped" data-post-id="${escapeHTML(post.id)}">${escapeHTML(post.text)}</p>` : ''}
         ${imageHTML}
         ${linkHTML}
         ${ownActions}
@@ -239,6 +245,29 @@ function renderCommunityFeed() {
 
   communityFeed.querySelectorAll('.post-comment-form').forEach((commentForm) => {
     commentForm.addEventListener('submit', submitPostComment);
+  });
+  communityFeed.querySelectorAll('.community-post-text').forEach((paragraph) => {
+    const postId = paragraph.dataset.postId;
+    if (expandedPosts.has(postId)) paragraph.classList.remove('clamped');
+    if (!expandedPosts.has(postId) && paragraph.scrollHeight <= paragraph.clientHeight + 1) return;
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'read-more-btn';
+    const setLabel = () => {
+      more.textContent = paragraph.classList.contains('clamped')
+        ? translations[currentLanguage].readMore
+        : translations[currentLanguage].readLess;
+    };
+    setLabel();
+    more.addEventListener('click', () => {
+      const clamped = paragraph.classList.toggle('clamped');
+      if (clamped) expandedPosts.delete(postId); else expandedPosts.add(postId);
+      setLabel();
+    });
+    paragraph.after(more);
+  });
+  communityFeed.querySelectorAll('.community-post-image').forEach((image) => {
+    image.addEventListener('click', () => image.classList.toggle('enlarged'));
   });
   communityFeed.querySelectorAll('.comment-toggle').forEach((button) => {
     button.addEventListener('click', () => {
@@ -481,3 +510,25 @@ async function shareProjectToCommunity(projectId) {
   await refreshCommunityData();
   renderGroups();
 }
+
+// ── Kompakt layout: medlemsliste og skriveboks ──────────────────────────
+(function setupCompactCommunity() {
+  const toggle = document.getElementById('members-toggle');
+  const list = document.getElementById('all-members-list');
+  if (toggle && list) {
+    toggle.addEventListener('click', () => {
+      const open = list.classList.toggle('members-open');
+      toggle.setAttribute('aria-expanded', String(open));
+    });
+  }
+  const composer = document.getElementById('chat-form');
+  if (composer) {
+    composer.addEventListener('focusin', () => composer.classList.remove('collapsed'));
+    composer.addEventListener('focusout', () => {
+      setTimeout(() => {
+        const hasContent = communityPostInput.value.trim() || pendingPostImage;
+        if (!composer.contains(document.activeElement) && !hasContent) composer.classList.add('collapsed');
+      }, 0);
+    });
+  }
+})();
