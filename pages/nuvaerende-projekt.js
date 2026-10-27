@@ -6,16 +6,18 @@ function getYarnInputs() {
     type: entry.querySelector('.yarn-type'),
     color: entry.querySelector('.yarn-color'),
     amount: entry.querySelector('.yarn-amount'),
+    details: entry.querySelector('.yarn-details'),
   }));
 }
 
-function addYarnRow(typeVal = '', colorVal = '', amountVal = '') {
+function addYarnRow(typeVal = '', colorVal = '', amountVal = '', detailsVal = '') {
   const entry = document.createElement('div');
   entry.className = 'yarn-entry';
   entry.innerHTML = `
-    <input type="text" class="yarn-type" placeholder="${translations[currentLanguage].yarnTypePlaceholder || 'Yarn type'}" value="${typeVal}" />
-    <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="${translations[currentLanguage].yarnColorPlaceholder}" value="${colorVal}" />
-    <input type="text" class="yarn-amount" placeholder="${translations[currentLanguage].yarnAmountPlaceholder || 'Amount used'}" value="${amountVal}" />
+    <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnTypePlaceholder || 'Yarn type')}" value="${escapeHTML(typeVal)}" />
+    <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnColorPlaceholder)}" value="${escapeHTML(colorVal)}" />
+    <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnAmountPlaceholder || 'Amount used')}" value="${escapeHTML(amountVal)}" />
+    <input type="text" class="yarn-details" data-i18n-placeholder="scanYarnDetailsLabel" placeholder="${escapeHTML(translations[currentLanguage].scanYarnDetailsLabel)}" value="${escapeHTML(detailsVal)}" />
     <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="${translations[currentLanguage].removeYarnButton}">✕</button>
   `;
   entry.querySelector('.yarn-remove-btn').addEventListener('click', () => {
@@ -41,6 +43,137 @@ document.querySelectorAll('#yarn-rows-container input').forEach(inp => inp.addEv
   autoSaveCurrentProject();
 }));
 addYarnBtn.addEventListener('click', () => addYarnRow());
+
+// ── Scan garnbanderole med lokal OCR ─────────────────────────────────────
+const scanYarnButton = document.getElementById('scan-yarn-btn');
+const scanYarnInput = document.getElementById('scan-yarn-input');
+const scanYarnStatus = document.getElementById('scan-yarn-status');
+const scanYarnReview = document.getElementById('scan-yarn-review');
+const scanYarnAddButton = document.getElementById('scan-yarn-add-btn');
+let tesseractScriptPromise = null;
+
+function setYarnScanStatus(message, visible = true) {
+  if (!scanYarnStatus) return;
+  scanYarnStatus.textContent = message;
+  scanYarnStatus.classList.toggle('hidden', !visible);
+}
+
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (tesseractScriptPromise) return tesseractScriptPromise;
+
+  tesseractScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    script.async = true;
+    script.onload = () => window.Tesseract
+      ? resolve(window.Tesseract)
+      : reject(new Error('OCR library loaded without its API.'));
+    script.onerror = () => reject(new Error('Could not load the OCR library.'));
+    document.head.appendChild(script);
+  }).catch((error) => {
+    tesseractScriptPromise = null;
+    throw error;
+  });
+  return tesseractScriptPromise;
+}
+
+function extractYarnLabelSuggestions(text) {
+  const lines = String(text || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const amountPattern = /\b\d+(?:[.,]\d+)?\s?(?:g(?:ram)?s?|m(?:eter|etre)?s?)\b/i;
+  const amountTokensPattern = /\b\d+(?:[.,]\d+)?\s?(?:g(?:ram)?s?|m(?:eter|metre)?s?)\b/gi;
+  const colorPattern = /\b(?:colou?r|farve|farge|shade)\s*(?:no\.?|nr\.?|#|:)?\s*([a-z0-9-]+)/i;
+  const amountLine = lines.find((line) => amountPattern.test(line)) || '';
+  const colorLine = lines.find((line) => colorPattern.test(line)) || '';
+  const amountSuggestions = amountLine.match(amountTokensPattern) || [];
+  const typeLine = lines.find((line) =>
+    line !== amountLine &&
+    line !== colorLine &&
+    !/\b(?:machine wash|hand wash|made in|100%|wool|cotton|acrylic|polyamide|polyester|nylon|merino|yarns?|garn|fibres?|fibers?|composition|material|care|washing)\b/i.test(line) &&
+    line.length > 2
+  ) || lines.find((line) => line !== amountLine && line !== colorLine) || '';
+  const remainingLines = lines
+    .filter((line) => line !== typeLine)
+    .map((line) => line
+      .replace(amountTokensPattern, '')
+      .replace(colorPattern, '')
+      .replace(/[|,;:=\-–—]+/g, ' ')
+      .trim())
+    .filter(Boolean);
+
+  return {
+    type: typeLine,
+    color: colorLine ? (colorLine.match(colorPattern)?.[1] || colorLine) : '',
+    amount: amountSuggestions.join(' / ') || amountLine,
+    details: remainingLines.join(' · '),
+  };
+}
+
+if (scanYarnButton && scanYarnInput) {
+  scanYarnButton.addEventListener('click', () => scanYarnInput.click());
+  scanYarnInput.addEventListener('change', async () => {
+    const file = scanYarnInput.files?.[0];
+    if (!file) return;
+
+    scanYarnButton.disabled = true;
+    scanYarnReview.classList.add('hidden');
+    setYarnScanStatus(translations[currentLanguage].scanYarnProcessing);
+    let worker;
+    try {
+      const Tesseract = await loadTesseract();
+      worker = await Tesseract.createWorker('eng+dan', 1, {
+        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+        corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
+        langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+        logger: (progress) => {
+          if (progress.status === 'recognizing text' && Number.isFinite(progress.progress)) {
+            const percent = Math.round(progress.progress * 100);
+            setYarnScanStatus(`${translations[currentLanguage].scanYarnProcessing} ${percent}%`);
+          }
+        },
+      });
+      const { data } = await worker.recognize(file);
+      if (!data.text.trim()) {
+        setYarnScanStatus(translations[currentLanguage].scanYarnNoText);
+        return;
+      }
+
+      const suggestions = extractYarnLabelSuggestions(data.text);
+      document.getElementById('scan-yarn-type').value = suggestions.type;
+      document.getElementById('scan-yarn-color').value = suggestions.color;
+      document.getElementById('scan-yarn-amount').value = suggestions.amount;
+      document.getElementById('scan-yarn-details').value = suggestions.details;
+      scanYarnReview.classList.remove('hidden');
+      setYarnScanStatus(translations[currentLanguage].scanYarnReady);
+    } catch (error) {
+      console.error('Could not scan yarn label:', error);
+      setYarnScanStatus(translations[currentLanguage].scanYarnFailed);
+    } finally {
+      if (worker) {
+        try {
+          await worker.terminate();
+        } catch (error) {
+          console.error('Could not stop the yarn label OCR worker:', error);
+        }
+      }
+      scanYarnButton.disabled = false;
+      scanYarnInput.value = '';
+    }
+  });
+
+  scanYarnAddButton.addEventListener('click', () => {
+    addYarnRow(
+      document.getElementById('scan-yarn-type').value.trim(),
+      document.getElementById('scan-yarn-color').value.trim(),
+      document.getElementById('scan-yarn-amount').value.trim(),
+      document.getElementById('scan-yarn-details').value.trim()
+    );
+    autoSaveDraft();
+    autoSaveCurrentProject();
+    scanYarnReview.classList.add('hidden');
+    setYarnScanStatus('', false);
+  });
+}
 
 // ── Billeder i formularen ─────────────────────────────────────────────────
 let pendingProjectImages = [];
@@ -100,9 +233,9 @@ function populateFormWithProject(project) {
 
   const yarns = project.yarns || [];
   yarnRowsContainer.innerHTML = '';
-  const yarnList = yarns.filter(y => y.type || y.color || y.amount);
+  const yarnList = yarns.filter(y => y.type || y.color || y.amount || y.details);
   if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
-  yarnList.forEach(yarn => addYarnRow(yarn.type || '', yarn.color || '', yarn.amount || ''));
+  yarnList.forEach(yarn => addYarnRow(yarn.type || '', yarn.color || '', yarn.amount || '', yarn.details || ''));
 
   const needles = project.needles || [];
   needleInputs.forEach((needle, index) => { needle.value = needles[index] || ''; });
@@ -275,7 +408,12 @@ function autoSaveDraft() {
     status: statusInput.value,
     rating: ratingValueInput.value,
     difficulty: difficultyValueInput.value,
-    yarns: getYarnInputs().map(y => ({ type: y.type.value, color: y.color.value, amount: y.amount.value })),
+    yarns: getYarnInputs().map(y => ({
+      type: y.type.value,
+      color: y.color.value,
+      amount: y.amount.value,
+      details: y.details.value,
+    })),
     needles: needleInputs.map(n => n.value),
   };
   localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -306,9 +444,9 @@ function restoreDraft() {
     });
 
     yarnRowsContainer.innerHTML = '';
-    const yarnList = (draft.yarns || []).filter(y => y.type || y.color || y.amount);
+    const yarnList = (draft.yarns || []).filter(y => y.type || y.color || y.amount || y.details);
     if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
-    yarnList.forEach(y => addYarnRow(y.type, y.color, y.amount));
+    yarnList.forEach(y => addYarnRow(y.type, y.color, y.amount, y.details || ''));
     (draft.needles || []).forEach((val, i) => { if (needleInputs[i]) needleInputs[i].value = val; });
   } catch (e) {}
 }
@@ -335,7 +473,8 @@ async function commitCurrentProjectEdits() {
     yarns: getYarnInputs().map(y => ({
       type: y.type.value.trim(),
       color: y.color.value.trim(),
-      amount: y.amount.value.trim()
+      amount: y.amount.value.trim(),
+      details: y.details.value.trim(),
     })),
   };
   const becameFinished = shouldCelebrateFinishTransition(project.status, updatedProject.status);
@@ -453,6 +592,7 @@ form.addEventListener('submit', async (event) => {
     type: yarn.type.value.trim(),
     color: yarn.color.value.trim(),
     amount: yarn.amount.value.trim(),
+    details: yarn.details.value.trim(),
   }));
 
   if (!name || !pattern) return;

@@ -1026,9 +1026,68 @@ label {
 
 .yarn-entry {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 8px;
   align-items: center;
+}
+
+.yarn-entry .yarn-details {
+  grid-column: 1 / 4;
+}
+
+.yarn-scan-tools {
+  display: grid;
+  gap: 10px;
+}
+
+.yarn-scan-btn,
+#scan-yarn-add-btn {
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #7a9fd1;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.yarn-scan-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.yarn-scan-status {
+  color: #594234;
+  font-size: 0.9rem;
+}
+
+.yarn-scan-review {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #c6d5ea;
+  border-radius: 10px;
+  background: #f5f8fc;
+}
+
+.yarn-scan-review p {
+  line-height: 1.5;
+}
+
+.yarn-scan-review label {
+  gap: 5px;
+}
+
+.yarn-scan-review input,
+.yarn-scan-review textarea {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #d5c7be;
+  border-radius: 7px;
+  font: inherit;
 }
 
 .yarn-remove-btn {
@@ -2649,6 +2708,25 @@ button:hover {
 }
 
 @media (max-width: 640px) {
+  .yarn-entry {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .yarn-entry input,
+  .yarn-entry .yarn-details {
+    grid-column: 1;
+  }
+
+  .yarn-entry .yarn-remove-btn {
+    grid-column: 2;
+    grid-row: 1 / 5;
+  }
+
+  .yarn-scan-btn,
+  #scan-yarn-add-btn {
+    width: 100%;
+  }
+
   .groups-left-nav {
     grid-template-columns: 1fr;
   }

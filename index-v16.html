@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261027-2" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261027-3" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -216,10 +216,36 @@
                   <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
                   <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="Colour" />
                   <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount" />
+                  <input type="text" class="yarn-details" data-i18n-placeholder="scanYarnDetailsLabel" placeholder="Other label information" />
                   <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="Remove row">✕</button>
                 </div>
               </div>
               <button type="button" id="add-yarn-btn" class="add-row-btn" data-i18n="addYarnButton">+ Add yarn</button>
+              <div class="yarn-scan-tools">
+                <button type="button" id="scan-yarn-btn" class="yarn-scan-btn" data-i18n="scanYarnButton">Scan yarn label</button>
+                <input id="scan-yarn-input" type="file" accept="image/*" capture="environment" class="hidden-file-input" />
+                <p id="scan-yarn-status" class="yarn-scan-status hidden" role="status" aria-live="polite"></p>
+                <div id="scan-yarn-review" class="yarn-scan-review hidden">
+                  <p data-i18n="scanYarnReviewHint">Check and edit the details before adding them.</p>
+                  <label>
+                    <span data-i18n="yarnTypePlaceholder">Yarn type</span>
+                    <input id="scan-yarn-type" type="text" />
+                  </label>
+                  <label>
+                    <span data-i18n="yarnColorPlaceholder">Colour</span>
+                    <input id="scan-yarn-color" type="text" />
+                  </label>
+                  <label>
+                    <span data-i18n="yarnAmountPlaceholder">Amount</span>
+                    <input id="scan-yarn-amount" type="text" />
+                  </label>
+                  <label>
+                    <span data-i18n="scanYarnDetailsLabel">Other label information</span>
+                    <textarea id="scan-yarn-details" rows="3"></textarea>
+                  </label>
+                  <button type="button" id="scan-yarn-add-btn" data-i18n="scanYarnAddButton">Add yarn</button>
+                </div>
+              </div>
             </div>
             <div class="needles-section">
               <h4 data-i18n="needleLabel">Knitting needles</h4>
@@ -433,13 +459,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261027-2"></script>
+    <script src="js/config.js?v=20261027-3"></script>
     <script src="js/dom.js?v=20260819-1"></script>
-    <script src="js/utils.js?v=20261020-1"></script>
+    <script src="js/utils.js?v=20261027-2"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260819-1"></script>
     <script src="data/billeder.js?v=20261022-2"></script>
-    <script src="data/projekter-data.js?v=20261023-2"></script>
+    <script src="data/projekter-data.js?v=20261027-3"></script>
     <script src="data/grupper-data.js?v=20260819-1"></script>
     <script src="data/profil.js?v=20260819-1"></script>
     <script src="data/members.js?v=20260819-1"></script>
@@ -447,7 +473,7 @@
     <!-- Sidelayout og UI -->
     <script src="pages/forside.js?v=20261027-2"></script>
     <script src="pages/andre-projekter.js?v=20261023-3"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20261023-3"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20261027-3"></script>
     <script src="pages/grupper.js?v=20260819-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260819-1"></script>

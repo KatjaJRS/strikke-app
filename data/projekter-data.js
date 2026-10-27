@@ -135,6 +135,7 @@ function normalizeProjects() {
         type: yarn.type || '',
         color: yarn.color || '',
         amount: yarn.amount || '',
+        details: yarn.details || '',
       })),
       ...(() => { const list = getProjectImages(project); return { images: list, image: list[0] || '' }; })(),
     };
@@ -411,4 +412,3 @@ function ensureProjectSyncHeartbeat() {
     await refreshProjectsFromCloud();
   });
 }
-

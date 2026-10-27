@@ -97,9 +97,10 @@ function translateStatus(status) {
 }
 
 function renderYarns(yarns) {
-  const yarnsList = yarns.filter(y => y.type).map(y => {
+  const yarnsList = yarns.filter(y => y.type || y.color || y.amount || y.details).map(y => {
     const colorDot = y.color ? `<span class="color-swatch" style="background-color: ${escapeHTML(y.color)};"></span>` : '';
-    return `${colorDot}${escapeHTML(y.type)}${y.amount ? ` - ${escapeHTML(y.amount)}` : ''}`;
+    const details = y.details ? ` (${escapeHTML(y.details)})` : '';
+    return `${colorDot}${y.type ? escapeHTML(y.type) : ''}${y.amount ? ` - ${escapeHTML(y.amount)}` : ''}${details}`;
   }).join(' ');
   return yarnsList ? `<p><strong>${translations[currentLanguage].yarnsDisplayLabel}:</strong> ${yarnsList}</p>` : '';
 }
