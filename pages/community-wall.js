@@ -21,6 +21,7 @@ let editingPostContext = null;
 let pendingPostImage = '';
 const openCommentPosts = new Set();
 const expandedPosts = new Set();
+const notifiedMembershipRequestIds = new Set();
 
 function formatCommunityDate(timestamp) {
   return new Date(timestamp).toLocaleString(currentLanguage === 'da' ? 'da-DK' : 'en-GB', {
@@ -45,6 +46,13 @@ function renderCommunityMembers() {
   const pendingList = document.getElementById('pending-requests-list');
   if (pendingList && canSeeRequests) {
     const visibleRequests = membershipRequests.filter((request) => !reviewedMembershipRequestIds.has(request.id));
+    const pendingCount = visibleRequests.length;
+    const pendingBadge = document.getElementById('pending-request-count');
+    if (pendingBadge) {
+      pendingBadge.textContent = pendingCount ? String(pendingCount) : '';
+      pendingBadge.classList.toggle('hidden', pendingCount === 0);
+      pendingBadge.setAttribute('aria-label', `${pendingCount} ${translations[currentLanguage].newMembershipRequests}`);
+    }
     pendingList.innerHTML = visibleRequests.length
       ? visibleRequests.map((request) => `
         <li class="pending-request-item">
@@ -108,6 +116,37 @@ function renderCommunityMembers() {
   allMembersList.querySelectorAll('.community-member-btn').forEach((button) => {
     button.addEventListener('click', () => openMemberProjects(button.dataset.userId, button.dataset.name));
   });
+}
+
+function showMembershipRequestNotice(request) {
+  if (!isAdminUser() || !request?.id || notifiedMembershipRequestIds.has(request.id)) return;
+  notifiedMembershipRequestIds.add(request.id);
+
+  const notice = document.createElement('div');
+  notice.className = 'membership-request-notice';
+  notice.setAttribute('role', 'status');
+  notice.setAttribute('aria-live', 'polite');
+  const message = document.createElement('span');
+  message.textContent = `${request.name || translations[currentLanguage].communityMemberFallback} — ${translations[currentLanguage].newMembershipRequestNotification}`;
+  const reviewButton = document.createElement('button');
+  reviewButton.type = 'button';
+  reviewButton.className = 'membership-request-review';
+  reviewButton.textContent = translations[currentLanguage].reviewMembershipRequests;
+  reviewButton.addEventListener('click', () => {
+    notice.remove();
+    switchSection('groups-chats');
+    setProfileMode('admin');
+    document.getElementById('admin-membership-requests-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  const dismissButton = document.createElement('button');
+  dismissButton.type = 'button';
+  dismissButton.className = 'membership-request-dismiss';
+  dismissButton.setAttribute('aria-label', translations[currentLanguage].dismissMembershipRequestNotification);
+  dismissButton.textContent = '×';
+  dismissButton.addEventListener('click', () => notice.remove());
+  notice.append(message, reviewButton, dismissButton);
+  document.body.appendChild(notice);
+  setTimeout(() => notice.remove(), 12000);
 }
 
 // ── Medlemmers delte projekter ───────────────────────────────────────────
@@ -187,6 +226,9 @@ function renderCommunityFeed() {
   communityFeed.innerHTML = commentSetupNotice + posts.map((post) => {
     const sender = post.sender || translations[currentLanguage].communityMemberFallback;
     const isMine = isOwnMessage(post);
+    const projectTitleMatch = String(post.text || '').match(/^🧶 (.+)$/);
+    const projectTitle = projectTitleMatch?.[1] || '';
+    const postBody = projectTitle ? post.text.slice(projectTitleMatch[0].length).trimStart() : post.text;
     const comments = Array.isArray(post.comments) ? post.comments : [];
     const commentsHTML = comments.map((comment) => `
       <li class="post-comment">
@@ -222,7 +264,8 @@ function renderCommunityFeed() {
             <time>${escapeHTML(formatCommunityDate(post.createdAt))}</time>
           </div>
         </header>
-        ${post.text ? `<p class="community-post-text clamped" data-post-id="${escapeHTML(post.id)}">${escapeHTML(post.text)}</p>` : ''}
+        ${projectTitle ? `<h3 class="community-project-title">🧶 ${escapeHTML(projectTitle)}</h3>` : ''}
+        ${postBody ? `<p class="community-post-text clamped" data-post-id="${escapeHTML(post.id)}">${escapeHTML(postBody)}</p>` : ''}
         ${imageHTML}
         ${linkHTML}
         ${ownActions}

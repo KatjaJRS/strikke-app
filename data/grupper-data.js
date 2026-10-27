@@ -307,6 +307,13 @@ function scheduleCommunityRefresh() {
   }, wait);
 }
 
+function handleMembershipRequestChange(payload) {
+  scheduleCommunityRefresh();
+  if (payload.eventType === 'INSERT' && isAdminUser() && typeof showMembershipRequestNotice === 'function') {
+    showMembershipRequestNotice(payload.new);
+  }
+}
+
 function ensureCommunityRealtimeSync() {
   if (communityRealtimeChannel || !sb?.channel) return;
 
@@ -316,7 +323,7 @@ function ensureCommunityRealtimeSync() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, scheduleCommunityRefresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: POST_COMMENTS_TABLE }, scheduleCommunityRefresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: POST_NOTIFICATIONS_TABLE }, scheduleCommunityRefresh)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_requests' }, scheduleCommunityRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_requests' }, handleMembershipRequestChange)
     .subscribe();
 }
 

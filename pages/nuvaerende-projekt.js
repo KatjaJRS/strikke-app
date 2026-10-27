@@ -81,7 +81,7 @@ function populateFormWithProject(project) {
   pendingProjectImages = [];
   renderFormImages();
   const formHeading = document.getElementById('form-heading');
-  if (formHeading) formHeading.textContent = translations[currentLanguage].addProjectHeading || 'Add a project';
+  if (formHeading) formHeading.textContent = translations[currentLanguage].editProjectHeading;
 
   nameInput.value = project.name || '';
   patternInput.value = project.pattern || '';
@@ -109,8 +109,10 @@ function populateFormWithProject(project) {
 }
 
 // ── Vis nuværende projekt ─────────────────────────────────────────────────
-function selectCurrentProject(projectId) {
+async function selectCurrentProject(projectId) {
   if (!projects.some((project) => project.id === projectId)) return;
+  if (currentEditingProjectId && currentEditingProjectId !== projectId) await commitCurrentProjectEdits();
+  currentEditingProjectId = projectId;
 
   const selectedAt = Math.max(
     Date.now(),
@@ -196,6 +198,7 @@ function renderCurrentProject() {
     </div>
     
     ${renderShareToggle(currentProject)}
+    <button type="button" class="current-project-edit-btn">${translations[currentLanguage].currentProjectEditButton}</button>
     <div class="round-counter current-project-round-counter" data-project-id="${escapeHTML(currentProject.id)}">
       <button type="button" class="round-btn round-minus" data-project-id="${escapeHTML(currentProject.id)}">−</button>
       <span class="round-display">${getRounds(currentProject.id)}</span>
@@ -209,6 +212,11 @@ function renderCurrentProject() {
 
   bindProjectGallery(card);
   bindShareToggle(card, renderProjects);
+  card.querySelector('.current-project-edit-btn').addEventListener('click', async () => {
+    if (currentEditingProjectId && currentEditingProjectId !== currentProject.id) await commitCurrentProjectEdits();
+    populateFormWithProject(currentProject);
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   card.querySelector('.round-minus').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -237,6 +245,8 @@ function renderCurrentProject() {
 // ── Ryd formular til nyt projekt ──────────────────────────────────────────
 function clearFormForNew() {
   currentEditingProjectId = null;
+  const formHeading = document.getElementById('form-heading');
+  if (formHeading) formHeading.textContent = translations[currentLanguage].addProjectHeading;
   nameInput.value = '';
   patternInput.value = '';
   notesInput.value = '';
@@ -412,6 +422,7 @@ if (imageInput) {
     }
     imageInput.value = '';
     if (uploaded.length === 0) return;
+    if (currentEditingProjectId) await commitCurrentProjectEdits();
     await setFormImages([...getFormImages(), ...uploaded]);
   });
 }
@@ -421,6 +432,7 @@ if (projectImagesPreview) {
   projectImagesPreview.addEventListener('click', async (event) => {
     const button = event.target.closest('.project-image-remove');
     if (!button) return;
+    if (currentEditingProjectId) await commitCurrentProjectEdits();
     const index = Number(button.dataset.index);
     await setFormImages(getFormImages().filter((_, i) => i !== index));
   });

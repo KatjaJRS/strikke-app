@@ -76,7 +76,8 @@ function renderProjects() {
       </div>
     `;
 
-    function openProjectForEditing() {
+    async function openProjectForEditing() {
+      if (currentEditingProjectId && currentEditingProjectId !== project.id) await commitCurrentProjectEdits();
       currentEditingProjectId = project.id;
       projects = projects.map((p) => ({
         ...p,
