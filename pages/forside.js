@@ -134,16 +134,32 @@ if (heroImage) {
   });
 }
 
-const heroImageInput = document.getElementById('hero-image-input');
-if (heroImageInput) {
-  heroImageInput.addEventListener('change', async () => {
-    const file = heroImageInput.files[0];
-    if (!file) return;
+async function saveHeroImageFromInput(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  try {
     const dataUrl = await storeImageFile(file, 'hero');
-    if (!dataUrl) return;
-    heroImage.src = dataUrl;
+    if (!dataUrl) throw new Error('The selected front page image could not be read.');
+    if (heroImage) heroImage.src = dataUrl;
     localStorage.setItem(HERO_IMAGE_KEY, dataUrl);
     queueSettingsSync();
-    heroImageInput.value = '';
-  });
+  } catch (error) {
+    console.error('Could not save the front page image:', error);
+    showSyncToast(translations[currentLanguage].imageUploadFailed);
+  } finally {
+    input.value = '';
+  }
+}
+
+const heroImageInput = document.getElementById('hero-image-input');
+const profileHeroImageInput = document.getElementById('profile-hero-image-input');
+const profileHeroImageButton = document.getElementById('profile-hero-image-btn');
+
+if (heroImageInput) {
+  heroImageInput.addEventListener('change', () => saveHeroImageFromInput(heroImageInput));
+}
+
+if (profileHeroImageButton && profileHeroImageInput) {
+  profileHeroImageButton.addEventListener('click', () => profileHeroImageInput.click());
+  profileHeroImageInput.addEventListener('change', () => saveHeroImageFromInput(profileHeroImageInput));
 }

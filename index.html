@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261027-1" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261027-2" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -128,6 +128,11 @@
             <span data-i18n="profilePicLabel">Profile picture</span>
             <input id="profile-modal-pic-input" type="file" accept="image/*" class="hidden-file-input" />
             <button type="button" id="profile-modal-pic-btn" class="auth-btn" style="margin-top:6px" data-i18n="profilePicButton">Upload photo</button>
+          </label>
+          <label class="profile-hero-image-label">
+            <span data-i18n="profileHeroImageLabel">Front page image</span>
+            <input id="profile-hero-image-input" type="file" accept="image/*" class="hidden-file-input" />
+            <button type="button" id="profile-hero-image-btn" class="auth-btn" data-i18n="profileHeroImageButton">Change front page image</button>
           </label>
         </div>
         <form id="profile-edit-form" class="profile-edit-form">
@@ -387,7 +392,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261027-1"></script>
+    <script src="js/config.js?v=20261027-2"></script>
     <script src="js/dom.js?v=20261008-1"></script>
     <script src="js/utils.js?v=20261020-1"></script>
     <!-- Data: Supabase-kald og logik -->
@@ -399,7 +404,7 @@
     <script src="data/members.js?v=20261008-1"></script>
     <script src="data/auth.js?v=20260821-10"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20261023-2"></script>
+    <script src="pages/forside.js?v=20261027-2"></script>
     <script src="pages/andre-projekter.js?v=20261027-1"></script>
     <script src="pages/nuvaerende-projekt.js?v=20261027-1"></script>
     <script src="pages/community-wall.js?v=20261027-1"></script>
