@@ -133,6 +133,7 @@ function normalizeProjects() {
       shared: !!project.shared,
       yarns: yarns.map(yarn => ({
         type: yarn.type || '',
+        group: yarn.group || '',
         color: yarn.color || '',
         amount: yarn.amount || '',
         details: yarn.details || '',

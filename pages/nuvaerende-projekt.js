@@ -4,17 +4,19 @@
 function getYarnInputs() {
   return Array.from(yarnRowsContainer.querySelectorAll('.yarn-entry')).map(entry => ({
     type: entry.querySelector('.yarn-type'),
+    group: entry.querySelector('.yarn-group'),
     color: entry.querySelector('.yarn-color'),
     amount: entry.querySelector('.yarn-amount'),
     details: entry.querySelector('.yarn-details'),
   }));
 }
 
-function addYarnRow(typeVal = '', colorVal = '', amountVal = '', detailsVal = '') {
+function addYarnRow(typeVal = '', groupVal = '', colorVal = '', amountVal = '', detailsVal = '') {
   const entry = document.createElement('div');
   entry.className = 'yarn-entry';
   entry.innerHTML = `
     <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnTypePlaceholder || 'Yarn type')}" value="${escapeHTML(typeVal)}" />
+    <input type="text" class="yarn-group" data-i18n-placeholder="yarnGroupPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnGroupPlaceholder)}" value="${escapeHTML(groupVal)}" />
     <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnColorPlaceholder)}" value="${escapeHTML(colorVal)}" />
     <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnAmountPlaceholder || 'Amount used')}" value="${escapeHTML(amountVal)}" />
     <input type="text" class="yarn-details" data-i18n-placeholder="scanYarnDetailsLabel" placeholder="${escapeHTML(translations[currentLanguage].scanYarnDetailsLabel)}" value="${escapeHTML(detailsVal)}" />
@@ -118,6 +120,32 @@ if (scanYarnButton && scanYarnInput) {
     scanYarnButton.disabled = true;
     scanYarnReview.classList.add('hidden');
     setYarnScanStatus(translations[currentLanguage].scanYarnProcessing);
+
+    // AI læser banderolen først; lokal OCR bruges kun hvis AI ikke er tilgængelig.
+    try {
+      const image = await readImageAsDataURL(file);
+      const { data: ai, error } = await sb.functions.invoke('scan-yarn-label', { body: { image } });
+      if (error || !ai || ai.error) throw error || new Error(ai?.error || 'No AI answer');
+      if (![ai.type, ai.group, ai.color, ai.amount, ai.details].some(Boolean)) {
+        setYarnScanStatus(translations[currentLanguage].scanYarnNoText);
+        scanYarnButton.disabled = false;
+        scanYarnInput.value = '';
+        return;
+      }
+      document.getElementById('scan-yarn-type').value = ai.type || '';
+      document.getElementById('scan-yarn-group').value = ai.group || '';
+      document.getElementById('scan-yarn-color').value = ai.color || '';
+      document.getElementById('scan-yarn-amount').value = ai.amount || '';
+      document.getElementById('scan-yarn-details').value = ai.details || '';
+      scanYarnReview.classList.remove('hidden');
+      setYarnScanStatus(translations[currentLanguage].scanYarnReady);
+      scanYarnButton.disabled = false;
+      scanYarnInput.value = '';
+      return;
+    } catch (error) {
+      console.warn('AI label scan unavailable, using local OCR:', error);
+    }
+
     let worker;
     try {
       const Tesseract = await loadTesseract();
@@ -140,6 +168,7 @@ if (scanYarnButton && scanYarnInput) {
 
       const suggestions = extractYarnLabelSuggestions(data.text);
       document.getElementById('scan-yarn-type').value = suggestions.type;
+      document.getElementById('scan-yarn-group').value = '';
       document.getElementById('scan-yarn-color').value = suggestions.color;
       document.getElementById('scan-yarn-amount').value = suggestions.amount;
       document.getElementById('scan-yarn-details').value = suggestions.details;
@@ -164,6 +193,7 @@ if (scanYarnButton && scanYarnInput) {
   scanYarnAddButton.addEventListener('click', () => {
     addYarnRow(
       document.getElementById('scan-yarn-type').value.trim(),
+      document.getElementById('scan-yarn-group').value.trim(),
       document.getElementById('scan-yarn-color').value.trim(),
       document.getElementById('scan-yarn-amount').value.trim(),
       document.getElementById('scan-yarn-details').value.trim()
@@ -233,9 +263,9 @@ function populateFormWithProject(project) {
 
   const yarns = project.yarns || [];
   yarnRowsContainer.innerHTML = '';
-  const yarnList = yarns.filter(y => y.type || y.color || y.amount || y.details);
+  const yarnList = yarns.filter(y => y.type || y.group || y.color || y.amount || y.details);
   if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
-  yarnList.forEach(yarn => addYarnRow(yarn.type || '', yarn.color || '', yarn.amount || '', yarn.details || ''));
+  yarnList.forEach(yarn => addYarnRow(yarn.type || '', yarn.group || '', yarn.color || '', yarn.amount || '', yarn.details || ''));
 
   const needles = project.needles || [];
   needleInputs.forEach((needle, index) => { needle.value = needles[index] || ''; });
@@ -410,6 +440,7 @@ function autoSaveDraft() {
     difficulty: difficultyValueInput.value,
     yarns: getYarnInputs().map(y => ({
       type: y.type.value,
+      group: y.group.value,
       color: y.color.value,
       amount: y.amount.value,
       details: y.details.value,
@@ -444,9 +475,9 @@ function restoreDraft() {
     });
 
     yarnRowsContainer.innerHTML = '';
-    const yarnList = (draft.yarns || []).filter(y => y.type || y.color || y.amount || y.details);
+    const yarnList = (draft.yarns || []).filter(y => y.type || y.group || y.color || y.amount || y.details);
     if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
-    yarnList.forEach(y => addYarnRow(y.type, y.color, y.amount, y.details || ''));
+    yarnList.forEach(y => addYarnRow(y.type, y.group || '', y.color, y.amount, y.details || ''));
     (draft.needles || []).forEach((val, i) => { if (needleInputs[i]) needleInputs[i].value = val; });
   } catch (e) {}
 }
@@ -472,6 +503,7 @@ async function commitCurrentProjectEdits() {
     needles: needleInputs.map(n => n.value.trim()).filter(Boolean),
     yarns: getYarnInputs().map(y => ({
       type: y.type.value.trim(),
+      group: y.group.value.trim(),
       color: y.color.value.trim(),
       amount: y.amount.value.trim(),
       details: y.details.value.trim(),
@@ -590,6 +622,7 @@ form.addEventListener('submit', async (event) => {
   const difficulty = Number(difficultyValueInput.value) || 0;
   const yarns = getYarnInputs().map(yarn => ({
     type: yarn.type.value.trim(),
+    group: yarn.group.value.trim(),
     color: yarn.color.value.trim(),
     amount: yarn.amount.value.trim(),
     details: yarn.details.value.trim(),

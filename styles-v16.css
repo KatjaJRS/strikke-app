@@ -1026,13 +1026,13 @@ label {
 
 .yarn-entry {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
   gap: 8px;
   align-items: center;
 }
 
 .yarn-entry .yarn-details {
-  grid-column: 1 / 4;
+  grid-column: 1 / 5;
 }
 
 .yarn-scan-tools {
@@ -2719,7 +2719,7 @@ button:hover {
 
   .yarn-entry .yarn-remove-btn {
     grid-column: 2;
-    grid-row: 1 / 5;
+    grid-row: 1 / 6;
   }
 
   .yarn-scan-btn,

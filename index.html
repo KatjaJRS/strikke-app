@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261027-3" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261028-2" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -214,6 +214,7 @@
               <div id="yarn-rows-container">
                 <div class="yarn-entry">
                   <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
+                  <input type="text" class="yarn-group" data-i18n-placeholder="yarnGroupPlaceholder" placeholder="Yarn group" />
                   <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="Colour" />
                   <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount" />
                   <input type="text" class="yarn-details" data-i18n-placeholder="scanYarnDetailsLabel" placeholder="Other label information" />
@@ -223,13 +224,17 @@
               <button type="button" id="add-yarn-btn" class="add-row-btn" data-i18n="addYarnButton">+ Add yarn</button>
               <div class="yarn-scan-tools">
                 <button type="button" id="scan-yarn-btn" class="yarn-scan-btn" data-i18n="scanYarnButton">Scan yarn label</button>
-                <input id="scan-yarn-input" type="file" accept="image/*" capture="environment" class="hidden-file-input" />
+                <input id="scan-yarn-input" type="file" accept="image/*" class="hidden-file-input" />
                 <p id="scan-yarn-status" class="yarn-scan-status hidden" role="status" aria-live="polite"></p>
                 <div id="scan-yarn-review" class="yarn-scan-review hidden">
                   <p data-i18n="scanYarnReviewHint">Check and edit the details before adding them.</p>
                   <label>
                     <span data-i18n="yarnTypePlaceholder">Yarn type</span>
                     <input id="scan-yarn-type" type="text" />
+                  </label>
+                  <label>
+                    <span data-i18n="yarnGroupPlaceholder">Yarn group</span>
+                    <input id="scan-yarn-group" type="text" />
                   </label>
                   <label>
                     <span data-i18n="yarnColorPlaceholder">Colour</span>
@@ -418,13 +423,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261027-3"></script>
+    <script src="js/config.js?v=20261028-2"></script>
     <script src="js/dom.js?v=20261008-1"></script>
-    <script src="js/utils.js?v=20261027-2"></script>
+    <script src="js/utils.js?v=20261028-2"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260821-1"></script>
     <script src="data/billeder.js?v=20261022-2"></script>
-    <script src="data/projekter-data.js?v=20261027-3"></script>
+    <script src="data/projekter-data.js?v=20261028-2"></script>
     <script src="data/grupper-data.js?v=20261027-1"></script>
     <script src="data/profil.js?v=20260821-12"></script>
     <script src="data/members.js?v=20261008-1"></script>
@@ -432,7 +437,7 @@
     <!-- Sidelayout og UI -->
     <script src="pages/forside.js?v=20261027-2"></script>
     <script src="pages/andre-projekter.js?v=20261027-1"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20261027-3"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20261028-2"></script>
     <script src="pages/community-wall.js?v=20261027-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>
