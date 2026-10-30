@@ -44,7 +44,10 @@ function switchSection(sectionId) {
   const activeSection = document.getElementById(sectionId);
   if (activeSection) activeSection.classList.add('active');
   navButtons.forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.section === sectionId);
+    const isActive = btn.dataset.section === sectionId;
+    btn.classList.toggle('active', isActive);
+    if (isActive) btn.setAttribute('aria-current', 'page');
+    else btn.removeAttribute('aria-current');
   });
 }
 
@@ -59,7 +62,15 @@ langButtons.forEach((button) => {
 // ── Navigationsknapper ────────────────────────────────────────────────────
 navButtons.forEach((button) => {
   button.addEventListener('click', async () => {
+    if (button.dataset.action === 'new-project') {
+      if (typeof commitCurrentProjectEdits === 'function') await commitCurrentProjectEdits();
+      if (typeof clearFormForNew === 'function') clearFormForNew();
+    }
     switchSection(button.dataset.section);
+    if (button.dataset.action === 'new-project') {
+      document.getElementById('project-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nameInput.focus();
+    }
     if (button.dataset.section === 'groups-chats') {
       markGroupsAsRead();
       if (currentUser) {

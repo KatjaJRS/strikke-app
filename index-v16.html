@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261028-1" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261030-4" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -183,11 +183,11 @@
         </p>
       </section>
 
-      <div class="navigation-buttons">
-        <button type="button" class="nav-btn active" data-section="current-project" data-i18n="currentProjectHeading">Current project</button>
+      <nav class="navigation-buttons" aria-label="Main navigation">
+        <button type="button" class="nav-btn active" aria-current="page" data-section="current-project" data-action="new-project" data-i18n="navNewProject">New project</button>
         <button type="button" class="nav-btn" data-section="previous-projects" data-i18n="projectsHeading">My projects</button>
-        <button type="button" class="nav-btn" data-section="groups-chats" data-i18n="groupsHeading">Groups and Chats</button>
-      </div>
+        <button type="button" class="nav-btn" data-section="groups-chats" data-i18n="navCommunity">Chat &amp; Community</button>
+      </nav>
 
       <div class="section-views">
         <section id="current-project" class="section-view active">
@@ -225,6 +225,7 @@
               <div class="yarn-scan-tools">
                 <button type="button" id="scan-yarn-btn" class="yarn-scan-btn" data-i18n="scanYarnButton">Scan yarn label</button>
                 <input id="scan-yarn-input" type="file" accept="image/*" class="hidden-file-input" />
+                <p class="scan-yarn-privacy-hint" data-i18n="scanYarnPrivacyHint">The selected photo is sent to Google Gemini to read the label.</p>
                 <p id="scan-yarn-status" class="yarn-scan-status hidden" role="status" aria-live="polite"></p>
                 <div id="scan-yarn-review" class="yarn-scan-review hidden">
                   <p data-i18n="scanYarnReviewHint">Check and edit the details before adding them.</p>
@@ -302,6 +303,11 @@
               <span data-i18n="patternLinkLabel">Pattern link or file</span>
               <input id="pattern-link" type="text" data-i18n-placeholder="patternLinkPlaceholder" placeholder="https://... or file name" />
             </label>
+            <div class="pattern-file-field">
+              <button type="button" id="pattern-file-button" class="pattern-file-button" data-i18n="patternFileButton">Choose pattern file</button>
+              <input id="pattern-file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" class="hidden-file-input" />
+              <span id="pattern-file-name" class="pattern-file-name" role="status" aria-live="polite"></span>
+            </div>
             <label>
               <span data-i18n="imageLabel">Project photo</span>
               <input id="project-image" type="file" accept="image/*" multiple />
@@ -464,21 +470,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261028-1"></script>
+    <script src="js/config.js?v=20261030-4"></script>
     <script src="js/dom.js?v=20260819-1"></script>
     <script src="js/utils.js?v=20261028-1"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260819-1"></script>
     <script src="data/billeder.js?v=20261022-2"></script>
-    <script src="data/projekter-data.js?v=20261028-1"></script>
+    <script src="data/projekter-data.js?v=20261030-4"></script>
     <script src="data/grupper-data.js?v=20260819-1"></script>
     <script src="data/profil.js?v=20260819-1"></script>
     <script src="data/members.js?v=20260819-1"></script>
     <script src="data/auth.js?v=20260819-1"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20261027-2"></script>
-    <script src="pages/andre-projekter.js?v=20261023-3"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20261028-1"></script>
+    <script src="pages/forside.js?v=20261030-4"></script>
+    <script src="pages/andre-projekter.js?v=20261030-4"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20261030-4"></script>
     <script src="pages/grupper.js?v=20260819-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260819-1"></script>

@@ -30,6 +30,7 @@ function renderProjects() {
       ? `<p class="difficulty"><strong>${translations[currentLanguage].difficultyDisplayLabel}:</strong> ${renderHearts(project.difficulty)}</p>` : '';
     const needlesDisplay = renderNeedles(project.needles || []);
     const yarnsDisplay = renderYarns(project.yarns || []);
+    const patternDisplay = renderProjectPatternLink(project);
     const translatedStatus = translateStatus(project.status);
     const currentLabel = isCurrent
       ? `<div class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</div>`
@@ -71,6 +72,7 @@ function renderProjects() {
         </div>
         <div class="card-notes">
           ${project.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
+          ${patternDisplay}
         </div>
         ${renderProjectGallery(project)}
       </div>
@@ -94,6 +96,7 @@ function renderProjects() {
     }
 
     bindProjectGallery(card);
+    bindProjectPatternLinks(card);
     bindShareToggle(card);
     card.addEventListener('click', openProjectForEditing);
 

@@ -46,13 +46,22 @@ document.querySelectorAll('#yarn-rows-container input').forEach(inp => inp.addEv
 }));
 addYarnBtn.addEventListener('click', () => addYarnRow());
 
-// ── Scan garnbanderole med lokal OCR ─────────────────────────────────────
+// ── Scan garnbanderole med AI ─────────────────────────────────────────────
 const scanYarnButton = document.getElementById('scan-yarn-btn');
 const scanYarnInput = document.getElementById('scan-yarn-input');
 const scanYarnStatus = document.getElementById('scan-yarn-status');
 const scanYarnReview = document.getElementById('scan-yarn-review');
 const scanYarnAddButton = document.getElementById('scan-yarn-add-btn');
-let tesseractScriptPromise = null;
+const patternFileInput = document.getElementById('pattern-file-input');
+const patternFileName = document.getElementById('pattern-file-name');
+const patternFileContentTypes = {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+};
+let pendingPatternFile = null;
 
 function setYarnScanStatus(message, visible = true) {
   if (!scanYarnStatus) return;
@@ -60,55 +69,32 @@ function setYarnScanStatus(message, visible = true) {
   scanYarnStatus.classList.toggle('hidden', !visible);
 }
 
-function loadTesseract() {
-  if (window.Tesseract) return Promise.resolve(window.Tesseract);
-  if (tesseractScriptPromise) return tesseractScriptPromise;
+document.getElementById('pattern-file-button')?.addEventListener('click', () => patternFileInput?.click());
 
-  tesseractScriptPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-    script.async = true;
-    script.onload = () => window.Tesseract
-      ? resolve(window.Tesseract)
-      : reject(new Error('OCR library loaded without its API.'));
-    script.onerror = () => reject(new Error('Could not load the OCR library.'));
-    document.head.appendChild(script);
-  }).catch((error) => {
-    tesseractScriptPromise = null;
-    throw error;
+function readCompressedYarnImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read the selected image.'));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error('This image format is not supported by this browser.'));
+      image.onload = () => {
+        const scale = Math.min(1, 1400 / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) {
+          reject(new Error('Could not prepare the selected image.'));
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      image.src = String(reader.result || '');
+    };
+    reader.readAsDataURL(file);
   });
-  return tesseractScriptPromise;
-}
-
-function extractYarnLabelSuggestions(text) {
-  const lines = String(text || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  const amountPattern = /\b\d+(?:[.,]\d+)?\s?(?:g(?:ram)?s?|m(?:eter|etre)?s?)\b/i;
-  const amountTokensPattern = /\b\d+(?:[.,]\d+)?\s?(?:g(?:ram)?s?|m(?:eter|metre)?s?)\b/gi;
-  const colorPattern = /\b(?:colou?r|farve|farge|shade)\s*(?:no\.?|nr\.?|#|:)?\s*([a-z0-9-]+)/i;
-  const amountLine = lines.find((line) => amountPattern.test(line)) || '';
-  const colorLine = lines.find((line) => colorPattern.test(line)) || '';
-  const amountSuggestions = amountLine.match(amountTokensPattern) || [];
-  const typeLine = lines.find((line) =>
-    line !== amountLine &&
-    line !== colorLine &&
-    !/\b(?:machine wash|hand wash|made in|100%|wool|cotton|acrylic|polyamide|polyester|nylon|merino|yarns?|garn|fibres?|fibers?|composition|material|care|washing)\b/i.test(line) &&
-    line.length > 2
-  ) || lines.find((line) => line !== amountLine && line !== colorLine) || '';
-  const remainingLines = lines
-    .filter((line) => line !== typeLine)
-    .map((line) => line
-      .replace(amountTokensPattern, '')
-      .replace(colorPattern, '')
-      .replace(/[|,;:=\-–—]+/g, ' ')
-      .trim())
-    .filter(Boolean);
-
-  return {
-    type: typeLine,
-    color: colorLine ? (colorLine.match(colorPattern)?.[1] || colorLine) : '',
-    amount: amountSuggestions.join(' / ') || amountLine,
-    details: remainingLines.join(' · '),
-  };
 }
 
 if (scanYarnButton && scanYarnInput) {
@@ -121,70 +107,40 @@ if (scanYarnButton && scanYarnInput) {
     scanYarnReview.classList.add('hidden');
     setYarnScanStatus(translations[currentLanguage].scanYarnProcessing);
 
-    // AI læser banderolen først; lokal OCR bruges kun hvis AI ikke er tilgængelig.
     try {
-      const image = await readImageAsDataURL(file);
+      const image = await readCompressedYarnImage(file);
       const { data: ai, error } = await sb.functions.invoke('scan-yarn-label', { body: { image } });
-      if (error || !ai || ai.error) throw error || new Error(ai?.error || 'No AI answer');
-      if (![ai.type, ai.group, ai.color, ai.amount, ai.details].some(Boolean)) {
-        setYarnScanStatus(translations[currentLanguage].scanYarnNoText);
-        scanYarnButton.disabled = false;
-        scanYarnInput.value = '';
-        return;
+      if (error) throw error;
+      if (!ai || typeof ai !== 'object' ||
+          !['type', 'group', 'color', 'amount', 'details'].every((key) => typeof ai[key] === 'string')) {
+        throw new Error('The AI returned an invalid answer.');
       }
-      document.getElementById('scan-yarn-type').value = ai.type || '';
-      document.getElementById('scan-yarn-group').value = ai.group || '';
-      document.getElementById('scan-yarn-color').value = ai.color || '';
-      document.getElementById('scan-yarn-amount').value = ai.amount || '';
-      document.getElementById('scan-yarn-details').value = ai.details || '';
-      scanYarnReview.classList.remove('hidden');
-      setYarnScanStatus(translations[currentLanguage].scanYarnReady);
-      scanYarnButton.disabled = false;
-      scanYarnInput.value = '';
-      return;
-    } catch (error) {
-      console.warn('AI label scan unavailable, using local OCR:', error);
-    }
-
-    let worker;
-    try {
-      const Tesseract = await loadTesseract();
-      worker = await Tesseract.createWorker('eng+dan', 1, {
-        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-        corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
-        langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-        logger: (progress) => {
-          if (progress.status === 'recognizing text' && Number.isFinite(progress.progress)) {
-            const percent = Math.round(progress.progress * 100);
-            setYarnScanStatus(`${translations[currentLanguage].scanYarnProcessing} ${percent}%`);
-          }
-        },
-      });
-      const { data } = await worker.recognize(file);
-      if (!data.text.trim()) {
+      const suggestions = Object.fromEntries(
+        ['type', 'group', 'color', 'amount', 'details'].map((key) => [key, ai[key].trim()])
+      );
+      if (!Object.values(suggestions).some(Boolean)) {
         setYarnScanStatus(translations[currentLanguage].scanYarnNoText);
-        return;
+      } else {
+        document.getElementById('scan-yarn-type').value = suggestions.type;
+        document.getElementById('scan-yarn-group').value = suggestions.group;
+        document.getElementById('scan-yarn-color').value = suggestions.color;
+        document.getElementById('scan-yarn-amount').value = suggestions.amount;
+        document.getElementById('scan-yarn-details').value = suggestions.details;
+        scanYarnReview.classList.remove('hidden');
+        setYarnScanStatus(translations[currentLanguage].scanYarnReady);
       }
-
-      const suggestions = extractYarnLabelSuggestions(data.text);
-      document.getElementById('scan-yarn-type').value = suggestions.type;
-      document.getElementById('scan-yarn-group').value = '';
-      document.getElementById('scan-yarn-color').value = suggestions.color;
-      document.getElementById('scan-yarn-amount').value = suggestions.amount;
-      document.getElementById('scan-yarn-details').value = suggestions.details;
-      scanYarnReview.classList.remove('hidden');
-      setYarnScanStatus(translations[currentLanguage].scanYarnReady);
     } catch (error) {
       console.error('Could not scan yarn label:', error);
-      setYarnScanStatus(translations[currentLanguage].scanYarnFailed);
+      const status = Number(error?.context?.status || error?.status);
+      const message = status === 401
+        ? translations[currentLanguage].scanYarnAuthRequired
+        : status === 404
+          ? translations[currentLanguage].scanYarnFunctionMissing
+          : status >= 500
+            ? translations[currentLanguage].scanYarnServiceUnavailable
+            : translations[currentLanguage].scanYarnFailed;
+      setYarnScanStatus(message);
     } finally {
-      if (worker) {
-        try {
-          await worker.terminate();
-        } catch (error) {
-          console.error('Could not stop the yarn label OCR worker:', error);
-        }
-      }
       scanYarnButton.disabled = false;
       scanYarnInput.value = '';
     }
@@ -203,6 +159,43 @@ if (scanYarnButton && scanYarnInput) {
     scanYarnReview.classList.add('hidden');
     setYarnScanStatus('', false);
   });
+}
+
+if (patternFileInput && patternFileName) {
+  patternFileInput.addEventListener('change', () => {
+    const file = patternFileInput.files?.[0] || null;
+    if (!file) return;
+    const extension = file.name.split('.').pop()?.toLowerCase() || '';
+    if (file.size > 20 * 1024 * 1024 || !patternFileContentTypes[extension] ||
+        (file.type && file.type !== 'application/octet-stream' &&
+          patternFileContentTypes[extension] !== file.type)) {
+      showSyncToast(translations[currentLanguage].patternFileInvalid);
+      patternFileInput.value = '';
+      pendingPatternFile = null;
+      patternFileName.textContent = '';
+      return;
+    }
+    pendingPatternFile = file;
+    patternFileName.textContent = file.name;
+  });
+}
+
+async function uploadPatternFile(projectId) {
+  if (!pendingPatternFile) return '';
+  if (!currentUser) throw new Error('You must be signed in to upload a pattern file.');
+
+  const extension = pendingPatternFile.name.split('.').pop()?.toLowerCase() || '';
+  const safeName = pendingPatternFile.name.replace(/[^\w.-]+/g, '_').slice(-100) || `pattern.${extension}`;
+  const path = `${currentUser.id}/${projectId}/${crypto.randomUUID()}-${safeName}`;
+  const { error } = await sb.storage.from(PATTERN_STORAGE_BUCKET).upload(path, pendingPatternFile, {
+    cacheControl: '3600',
+    contentType: pendingPatternFile.type && pendingPatternFile.type !== 'application/octet-stream'
+      ? pendingPatternFile.type
+      : patternFileContentTypes[extension],
+    upsert: false,
+  });
+  if (error) throw error;
+  return `${PATTERN_STORAGE_PREFIX}${path}`;
 }
 
 // ── Billeder i formularen ─────────────────────────────────────────────────
@@ -249,7 +242,8 @@ function populateFormWithProject(project) {
   nameInput.value = project.name || '';
   patternInput.value = project.pattern || '';
   notesInput.value = project.notes || '';
-  patternLinkInput.value = project.patternLink || '';
+  patternLinkInput.value = String(project.patternLink || '').startsWith(PATTERN_STORAGE_PREFIX) ? '' : project.patternLink || '';
+  patternFileName.textContent = getPatternFileName(project.patternLink);
   statusInput.value = project.status || 'Planning';
   ratingValueInput.value = project.rating || 0;
   difficultyValueInput.value = project.difficulty || 0;
@@ -332,6 +326,7 @@ function renderCurrentProject() {
     ? `<p class="difficulty"><strong>${translations[currentLanguage].difficultyDisplayLabel}:</strong> ${renderHearts(currentProject.difficulty)}</p>` : '';
   const needlesDisplay = renderNeedles(currentProject.needles || []);
   const yarnsDisplay = renderYarns(currentProject.yarns || []);
+  const patternDisplay = renderProjectPatternLink(currentProject);
   const translatedStatus = translateStatus(currentProject.status);
   const currentLabel = `<div class="current-badge">✏️ ${translations[currentLanguage].currentProjectHeading}</div>`;
 
@@ -356,6 +351,7 @@ function renderCurrentProject() {
       </div>
       <div class="card-notes">
         ${currentProject.notes ? `<p><strong>${escapeHTML(translations[currentLanguage].notesLabel)}:</strong> ${escapeHTML(currentProject.notes)}</p>` : ''}
+        ${patternDisplay}
       </div>
       ${renderProjectGallery(currentProject)}
     </div>
@@ -374,6 +370,7 @@ function renderCurrentProject() {
   currentProjectCard.appendChild(card);
 
   bindProjectGallery(card);
+  bindProjectPatternLinks(card);
   bindShareToggle(card, renderProjects);
   card.querySelector('.current-project-edit-btn').addEventListener('click', async () => {
     if (currentEditingProjectId && currentEditingProjectId !== currentProject.id) await commitCurrentProjectEdits();
@@ -414,6 +411,9 @@ function clearFormForNew() {
   patternInput.value = '';
   notesInput.value = '';
   patternLinkInput.value = '';
+  pendingPatternFile = null;
+  patternFileInput.value = '';
+  patternFileName.textContent = '';
   statusInput.value = 'Planning';
   ratingValueInput.value = 0;
   difficultyValueInput.value = 0;
@@ -616,7 +616,7 @@ form.addEventListener('submit', async (event) => {
   const name = nameInput.value.trim();
   const pattern = patternInput.value.trim();
   const notes = notesInput.value.trim();
-  const patternLink = patternLinkInput.value.trim();
+  let patternLink = patternLinkInput.value.trim();
   const needles = needleInputs.map(needle => needle.value.trim()).filter(Boolean);
   const rating = Number(ratingValueInput.value) || 0;
   const difficulty = Number(difficultyValueInput.value) || 0;
@@ -630,12 +630,29 @@ form.addEventListener('submit', async (event) => {
 
   if (!name || !pattern) return;
 
+  const existingByName = currentEditingProjectId
+    ? null
+    : projects.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
+  const projectId = currentEditingProjectId || existingByName?.id || `project-${Date.now()}`;
+  const previousProject = projects.find(project => project.id === projectId);
+  if (!pendingPatternFile && !patternLink && String(previousProject?.patternLink || '').startsWith(PATTERN_STORAGE_PREFIX)) {
+    patternLink = previousProject.patternLink;
+  }
+  if (pendingPatternFile) {
+    try {
+      patternLink = await uploadPatternFile(projectId);
+    } catch (error) {
+      console.error('Could not upload pattern file:', error);
+      showSyncToast(translations[currentLanguage].patternFileUploadFailed);
+      return;
+    }
+  }
+
   const newImages = pendingProjectImages;
   let becameFinished = false;
 
   if (currentEditingProjectId) {
     // Opdater eksisterende projekt
-    const previousProject = projects.find(p => p.id === currentEditingProjectId);
     becameFinished = !!previousProject && shouldCelebrateFinishTransition(previousProject.status, statusInput.value);
     projects = projects.map(p => p.id === currentEditingProjectId ? {
       ...p, name, pattern, status: statusInput.value, notes, patternLink,
@@ -643,8 +660,6 @@ form.addEventListener('submit', async (event) => {
       ...(newImages.length ? withProjectImages({}, [...getProjectImages(p), ...newImages]) : {}),
     } : p);
   } else {
-    // Tjek om projektnavn allerede eksisterer
-    const existingByName = projects.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
     if (existingByName) {
       becameFinished = shouldCelebrateFinishTransition(existingByName.status, statusInput.value);
       currentEditingProjectId = existingByName.id;
@@ -657,7 +672,7 @@ form.addEventListener('submit', async (event) => {
       // Nyt projekt
       becameFinished = false;
       projects.unshift({
-        id: `project-${Date.now()}`,
+        id: projectId,
         name, pattern, status: statusInput.value, notes, patternLink,
         needles, rating, difficulty, yarns, images: newImages, image: newImages[0] || '',
         lastViewedAt: Date.now(),

@@ -62,6 +62,54 @@ function bindShareToggle(card, onChange) {
 }
 
 // ── Flere billeder pr. projekt ───────────────────────────────────────────
+const PATTERN_STORAGE_BUCKET = 'project-patterns';
+const PATTERN_STORAGE_PREFIX = 'storage://';
+
+function getPatternFileName(patternLink) {
+  const value = String(patternLink || '');
+  if (!value.startsWith(PATTERN_STORAGE_PREFIX)) return '';
+  const name = value.slice(PATTERN_STORAGE_PREFIX.length).split('/').pop() || '';
+  return name.replace(/^[a-f0-9-]{36}-/i, '');
+}
+
+function renderProjectPatternLink(project) {
+  const value = String(project.patternLink || '').trim();
+  if (!value) return '';
+
+  if (value.startsWith(PATTERN_STORAGE_PREFIX)) {
+    const path = value.slice(PATTERN_STORAGE_PREFIX.length);
+    const label = getPatternFileName(value) || translations[currentLanguage].patternFileOpen;
+    return `<p class="project-pattern-link"><strong>${escapeHTML(translations[currentLanguage].patternLinkLabel)}:</strong>
+      <a class="project-storage-file-link" href="#" data-storage-path="${escapeHTML(path)}">${escapeHTML(label)}</a></p>`;
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return `<p class="project-pattern-link"><strong>${escapeHTML(translations[currentLanguage].patternLinkLabel)}:</strong>
+      <a href="${escapeHTML(value)}" target="_blank" rel="noopener noreferrer">${escapeHTML(value)}</a></p>`;
+  }
+
+  return `<p class="project-pattern-link"><strong>${escapeHTML(translations[currentLanguage].patternLinkLabel)}:</strong> ${escapeHTML(value)}</p>`;
+}
+
+function bindProjectPatternLinks(container) {
+  container.querySelectorAll('.project-storage-file-link').forEach(async (link) => {
+    link.addEventListener('click', (event) => event.stopPropagation());
+    const { data, error } = await sb.storage
+      .from(PATTERN_STORAGE_BUCKET)
+      .createSignedUrl(link.dataset.storagePath, 3600);
+    if (error || !data?.signedUrl) {
+      console.error('Could not create a signed pattern-file URL:', error || 'No signed URL returned.');
+      link.textContent = translations[currentLanguage].patternFileNotAvailable;
+      link.removeAttribute('href');
+      link.setAttribute('aria-disabled', 'true');
+      return;
+    }
+    link.href = data.signedUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+  });
+}
+
 // Kolonnen "image" er tekst. Ét billede gemmes som almindelig URL, flere
 // gemmes som JSON-liste, så der ikke kræves ændringer i databasen.
 function parseProjectImages(value) {

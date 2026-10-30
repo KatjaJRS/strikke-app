@@ -47,14 +47,14 @@ Deno.serve(async (req) => {
     return json({ error: 'Invalid or too large image' }, 400);
   }
 
-  const prompt = 'Du læser en garnbanderole (etiket) fra et nøgle garn. Udtræk oplysningerne ' +
-    'præcist som de står, og gæt ikke. Efterlad et felt tomt, hvis det ikke fremgår. ' +
-    'type: garnets navn/mærke og evt. kvalitet. group: garngruppen/vægtklassen ' +
-    '(fx fingering, DK, worsted, chunky, eller gruppe 1-6) hvis den står. ' +
-    'color: farvenavn og/eller farvenummer samt partinummer hvis det står. ' +
-    'amount: vægt og løbelængde, fx "50 g / 175 m". ' +
-    'details: øvrige nyttige oplysninger, fx fiberindhold, anbefalet pindestørrelse, ' +
-    'strikkefasthed og vaskeanvisning, kort og adskilt med " · ". Svar på dansk.';
+  const prompt = `Læs teksten på billedet af garnbanderolen. Svar kun med de fem felter i JSON-skemaet.
+Vigtigt: Placér kun hver oplysning i feltet, der beskriver den. Udled eller opfind ikke oplysninger.
+- type: garnets produktnavn og mærke, fx "Drops Merino Extra Fine". Medtag ikke farve, gram, meter eller fiberprocenter her.
+- group: den angivne garnvægt-/garngruppe, fx fingering, sport, DK, worsted, chunky eller en nummereret gruppe. Lad feltet være tomt, hvis gruppen ikke står på etiketten.
+- color: kun farvenavn og farve-/partinummer. Lad feltet være tomt, hvis det ikke kan læses.
+- amount: kun vægt og løbelængde, fx "50 g / 175 m". Lad feltet være tomt, hvis det ikke kan læses.
+- details: fiberindhold, anbefalet pindestørrelse, strikkefasthed og vaskeanvisning, kort adskilt med " · ".
+Bevar tal og enheder nøjagtigt som på etiketten. Skriv oplysninger på dansk, men behold produktnavne og officielle farvenavne som trykt.`;
 
   const geminiResponse = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
@@ -69,7 +69,8 @@ Deno.serve(async (req) => {
           ],
         }],
         generationConfig: {
-          temperature: 0,
+          temperature: 0.1,
+          maxOutputTokens: 512,
           responseMimeType: 'application/json',
           responseSchema: {
             type: 'OBJECT',
