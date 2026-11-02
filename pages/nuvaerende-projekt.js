@@ -56,6 +56,10 @@ const yarnCameraModal = document.getElementById('yarn-camera-modal');
 const yarnCameraVideo = document.getElementById('yarn-camera-video');
 const yarnCameraError = document.getElementById('yarn-camera-error');
 const yarnCameraCaptureButton = document.getElementById('yarn-camera-capture');
+const yarnCameraDoneButton = document.getElementById('yarn-camera-done');
+const yarnCameraThumbs = document.getElementById('yarn-camera-thumbs');
+const MAX_YARN_PHOTOS = 4;
+let yarnCameraPhotos = [];
 let yarnCameraStream = null;
 const patternFileInput = document.getElementById('pattern-file-input');
 const patternFileName = document.getElementById('pattern-file-name');
@@ -79,6 +83,41 @@ function setYarnCameraError(message) {
   yarnCameraError.classList.toggle('hidden', !message);
 }
 
+function renderYarnCameraPhotos() {
+  yarnCameraThumbs.replaceChildren();
+  yarnCameraPhotos.forEach((photo, index) => {
+    const item = document.createElement('div');
+    item.className = 'yarn-camera-thumb';
+    const img = document.createElement('img');
+    img.src = photo.url;
+    img.alt = '';
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = '✕';
+    remove.setAttribute('aria-label', translations[currentLanguage].removeImageButton);
+    remove.addEventListener('click', () => {
+      URL.revokeObjectURL(photo.url);
+      yarnCameraPhotos.splice(index, 1);
+      renderYarnCameraPhotos();
+    });
+    item.append(img, remove);
+    yarnCameraThumbs.append(item);
+  });
+  const count = yarnCameraPhotos.length;
+  yarnCameraThumbs.classList.toggle('hidden', count === 0);
+  yarnCameraDoneButton.classList.toggle('hidden', count === 0);
+  yarnCameraDoneButton.textContent = translations[currentLanguage].scanYarnCameraDone.replace('{n}', count);
+  if (yarnCameraStream) yarnCameraCaptureButton.disabled = count >= MAX_YARN_PHOTOS;
+  if (count >= MAX_YARN_PHOTOS) setYarnCameraError(translations[currentLanguage].scanYarnCameraMax.replace('{n}', MAX_YARN_PHOTOS));
+  else setYarnCameraError('');
+}
+
+function clearYarnCameraPhotos() {
+  yarnCameraPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
+  yarnCameraPhotos = [];
+  renderYarnCameraPhotos();
+}
+
 function closeYarnCamera() {
   if (yarnCameraStream) {
     yarnCameraStream.getTracks().forEach((track) => track.stop());
@@ -87,6 +126,11 @@ function closeYarnCamera() {
   if (yarnCameraVideo) yarnCameraVideo.srcObject = null;
   yarnCameraModal?.classList.add('hidden');
   scanYarnButton?.focus();
+}
+
+function cancelYarnCamera() {
+  closeYarnCamera();
+  clearYarnCameraPhotos();
 }
 
 document.getElementById('pattern-file-button')?.addEventListener('click', () => patternFileInput?.click());
@@ -99,7 +143,7 @@ function readCompressedYarnImage(file) {
       const image = new Image();
       image.onerror = () => reject(new Error('This image format is not supported by this browser.'));
       image.onload = () => {
-        const scale = Math.min(1, 1400 / Math.max(image.width, image.height));
+        const scale = Math.min(1, 1800 / Math.max(image.width, image.height));
         const canvas = document.createElement('canvas');
         canvas.width = Math.max(1, Math.round(image.width * scale));
         canvas.height = Math.max(1, Math.round(image.height * scale));
@@ -109,7 +153,7 @@ function readCompressedYarnImage(file) {
           return;
         }
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
+        resolve(canvas.toDataURL('image/jpeg', 0.88));
       };
       image.src = String(reader.result || '');
     };
@@ -117,15 +161,16 @@ function readCompressedYarnImage(file) {
   });
 }
 
-async function processYarnLabelImage(file) {
-  if (!file) return;
+async function processYarnLabelImage(files) {
+  const selectedFiles = Array.from(files || []).filter(Boolean).slice(0, MAX_YARN_PHOTOS);
+  if (!selectedFiles.length) return;
   scanYarnButton.disabled = true;
   scanYarnReview.classList.add('hidden');
   setYarnScanStatus(translations[currentLanguage].scanYarnProcessing);
 
   try {
-    const image = await readCompressedYarnImage(file);
-    const { data: ai, error } = await sb.functions.invoke('scan-yarn-label', { body: { image } });
+    const images = await Promise.all(selectedFiles.map(readCompressedYarnImage));
+    const { data: ai, error } = await sb.functions.invoke('scan-yarn-label', { body: { images } });
     if (error) throw error;
     if (!ai || typeof ai !== 'object' ||
         !['type', 'group', 'color', 'amount', 'details'].every((key) => typeof ai[key] === 'string')) {
@@ -181,6 +226,7 @@ async function processYarnLabelImage(file) {
 async function openYarnCamera() {
   yarnCameraModal.classList.remove('hidden');
   yarnCameraCaptureButton.disabled = true;
+  renderYarnCameraPhotos();
   setYarnCameraError('');
   if (!navigator.mediaDevices?.getUserMedia) {
     setYarnCameraError(translations[currentLanguage].scanYarnCameraUnsupported);
@@ -190,7 +236,7 @@ async function openYarnCamera() {
   try {
     yarnCameraStream = await navigator.mediaDevices.getUserMedia({
       audio: false,
-      video: { facingMode: { ideal: 'environment' } },
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
     });
     yarnCameraVideo.srcObject = yarnCameraStream;
     await yarnCameraVideo.play();
@@ -212,24 +258,24 @@ async function openYarnCamera() {
 
 if (scanYarnButton && scanYarnInput && yarnCameraModal && yarnCameraVideo) {
   scanYarnButton.addEventListener('click', openYarnCamera);
-  scanYarnInput.addEventListener('change', () => processYarnLabelImage(scanYarnInput.files?.[0]));
-  document.getElementById('yarn-camera-cancel').addEventListener('click', closeYarnCamera);
+  scanYarnInput.addEventListener('change', () => processYarnLabelImage(scanYarnInput.files));
+  document.getElementById('yarn-camera-cancel').addEventListener('click', cancelYarnCamera);
   document.getElementById('yarn-camera-choose-file').addEventListener('click', () => {
-    closeYarnCamera();
+    cancelYarnCamera();
     scanYarnInput.click();
   });
   yarnCameraModal.addEventListener('click', (event) => {
-    if (event.target === yarnCameraModal) closeYarnCamera();
+    if (event.target === yarnCameraModal) cancelYarnCamera();
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !yarnCameraModal.classList.contains('hidden')) closeYarnCamera();
+    if (event.key === 'Escape' && !yarnCameraModal.classList.contains('hidden')) cancelYarnCamera();
   });
   yarnCameraCaptureButton.addEventListener('click', async () => {
     if (!yarnCameraVideo.videoWidth || !yarnCameraVideo.videoHeight) {
       setYarnCameraError(translations[currentLanguage].scanYarnCameraUnavailable);
       return;
     }
-    const scale = Math.min(1, 1400 / Math.max(yarnCameraVideo.videoWidth, yarnCameraVideo.videoHeight));
+    const scale = Math.min(1, 1800 / Math.max(yarnCameraVideo.videoWidth, yarnCameraVideo.videoHeight));
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(yarnCameraVideo.videoWidth * scale);
     canvas.height = Math.round(yarnCameraVideo.videoHeight * scale);
@@ -239,14 +285,20 @@ if (scanYarnButton && scanYarnInput && yarnCameraModal && yarnCameraVideo) {
       return;
     }
     context.drawImage(yarnCameraVideo, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.88));
     if (!blob) {
       setYarnCameraError(translations[currentLanguage].scanYarnCameraUnavailable);
       return;
     }
-    const photo = new File([blob], 'yarn-label.jpg', { type: 'image/jpeg' });
+    const file = new File([blob], `yarn-label-${yarnCameraPhotos.length + 1}.jpg`, { type: 'image/jpeg' });
+    yarnCameraPhotos.push({ file, url: URL.createObjectURL(blob) });
+    renderYarnCameraPhotos();
+  });
+  yarnCameraDoneButton.addEventListener('click', async () => {
+    const files = yarnCameraPhotos.map((photo) => photo.file);
     closeYarnCamera();
-    await processYarnLabelImage(photo);
+    clearYarnCameraPhotos();
+    await processYarnLabelImage(files);
   });
 
   scanYarnAddButton.addEventListener('click', () => {

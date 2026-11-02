@@ -3280,6 +3280,12 @@ button:hover {
 .yarn-camera-card { display: grid; gap: 12px; width: min(560px, 100%); max-height: 90vh; overflow-y: auto; padding: 16px; border: 1px solid #f3b5c8; border-radius: 18px; background: #fff9fb; }
 .yarn-camera-card h3 { margin: 0; color: #7a2742; }
 .yarn-camera-card video { display: block; width: 100%; max-height: 62vh; min-height: 200px; border-radius: 12px; background: #1b1014; object-fit: contain; }
+.yarn-camera-tips { margin: 0; color: #6b4455; font-size: 0.9rem; line-height: 1.4; }
+.yarn-camera-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.yarn-camera-thumbs.hidden, #yarn-camera-done.hidden { display: none; }
+.yarn-camera-thumb { position: relative; width: 64px; height: 64px; }
+.yarn-camera-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid #f2b0c0; }
+.yarn-camera-thumb button { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; padding: 0; border-radius: 50%; line-height: 1; font-size: 0.75rem; }
 .yarn-camera-error { margin: 0; color: #9c263d; font-size: 0.92rem; }
 .yarn-camera-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .yarn-camera-actions button { flex: 1 1 140px; min-height: 44px; }

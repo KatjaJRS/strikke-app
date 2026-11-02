@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261030-5" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261102-2" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -224,7 +224,7 @@
               <button type="button" id="add-yarn-btn" class="add-row-btn" data-i18n="addYarnButton">+ Add yarn</button>
               <div class="yarn-scan-tools">
                 <button type="button" id="scan-yarn-btn" class="yarn-scan-btn" data-i18n="scanYarnButton">Scan yarn label</button>
-                <input id="scan-yarn-input" type="file" accept="image/*" class="hidden-file-input" />
+                <input id="scan-yarn-input" type="file" accept="image/*" multiple class="hidden-file-input" />
                 <p class="scan-yarn-privacy-hint" data-i18n="scanYarnPrivacyHint">The selected photo is sent to Google Gemini to read the label.</p>
                 <p id="scan-yarn-status" class="yarn-scan-status hidden" role="status" aria-live="polite"></p>
                 <div id="scan-yarn-review" class="yarn-scan-review hidden">
@@ -255,10 +255,13 @@
               <div id="yarn-camera-modal" class="yarn-camera-modal hidden" role="dialog" aria-modal="true" aria-labelledby="yarn-camera-title">
                 <div class="yarn-camera-card">
                   <h3 id="yarn-camera-title" data-i18n="scanYarnCameraTitle">Take a photo of the yarn label</h3>
+                  <p class="yarn-camera-tips" data-i18n="scanYarnCameraTips">Fill the frame with the label, hold the phone flat above it, use good light, and tap the screen to focus. For long labels, take several photos.</p>
                   <video id="yarn-camera-video" autoplay playsinline muted></video>
+                  <div id="yarn-camera-thumbs" class="yarn-camera-thumbs hidden"></div>
                   <p id="yarn-camera-error" class="yarn-camera-error hidden" role="alert"></p>
                   <div class="yarn-camera-actions">
                     <button type="button" id="yarn-camera-capture" data-i18n="scanYarnCameraCapture">Take photo</button>
+                    <button type="button" id="yarn-camera-done" class="hidden"></button>
                     <button type="button" id="yarn-camera-choose-file" data-i18n="scanYarnChoosePhoto">Choose an existing photo</button>
                     <button type="button" id="yarn-camera-cancel" data-i18n="scanYarnCameraCancel">Cancel</button>
                   </div>
@@ -441,7 +444,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261102-1"></script>
+    <script src="js/config.js?v=20261102-2"></script>
     <script src="js/dom.js?v=20261008-1"></script>
     <script src="js/utils.js?v=20261028-2"></script>
     <!-- Data: Supabase-kald og logik -->
@@ -455,7 +458,7 @@
     <!-- Sidelayout og UI -->
     <script src="pages/forside.js?v=20261030-4"></script>
     <script src="pages/andre-projekter.js?v=20261030-4"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20261102-1"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20261102-2"></script>
     <script src="pages/community-wall.js?v=20261027-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>

@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const MAX_IMAGE_CHARS = 6_000_000;
+const MAX_IMAGE_CHARS = 3_000_000;
+const MAX_IMAGES = 4;
 const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash'];
 
 function json(body: unknown, status = 200) {
@@ -35,19 +36,28 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get('GEMINI_API_KEY');
   if (!apiKey) return json({ error: 'AI is not configured' }, 500);
 
-  let image = '';
+  let images: unknown = [];
   try {
-    ({ image } = await req.json());
+    const body = await req.json();
+    images = Array.isArray(body?.images) ? body.images : [body?.image];
   } catch {
     return json({ error: 'Invalid request' }, 400);
   }
 
-  const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(image || '');
-  if (!match || image.length > MAX_IMAGE_CHARS) {
-    return json({ error: 'Invalid or too large image' }, 400);
+  const imageParts = [];
+  const imageList = images as unknown[];
+  if (imageList.length < 1 || imageList.length > MAX_IMAGES) {
+    return json({ error: 'Invalid number of images' }, 400);
+  }
+  for (const image of imageList) {
+    const match = typeof image === 'string' && image.length <= MAX_IMAGE_CHARS
+      ? /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(image)
+      : null;
+    if (!match) return json({ error: 'Invalid or too large image' }, 400);
+    imageParts.push({ inline_data: { mime_type: match[1], data: match[2] } });
   }
 
-  const prompt = `Læs teksten på billedet af garnbanderolen. Svar kun med de fem felter i JSON-skemaet.
+  const prompt = `Læs teksten på billedet${imageParts.length > 1 ? 'erne' : ''} af garnbanderolen. ${imageParts.length > 1 ? 'Billederne viser den samme banderole fra forskellige dele eller sider; kombinér oplysningerne fra alle billeder. ' : ''}Svar kun med de fem felter i JSON-skemaet.
 Vigtigt: Placér kun hver oplysning i feltet, der beskriver den. Udled eller opfind ikke oplysninger.
 - type: garnets produktnavn og mærke, fx "Drops Merino Extra Fine". Medtag ikke farve, gram, meter eller fiberprocenter her.
 - group: den angivne garnvægt-/garngruppe, fx fingering, sport, DK, worsted, chunky eller en nummereret gruppe. Lad feltet være tomt, hvis gruppen ikke står på etiketten.
@@ -60,7 +70,7 @@ Bevar tal og enheder nøjagtigt som på etiketten. Skriv oplysninger på dansk, 
     contents: [{
       parts: [
         { text: prompt },
-        { inline_data: { mime_type: match[1], data: match[2] } },
+        ...imageParts,
       ],
     }],
     generationConfig: {
