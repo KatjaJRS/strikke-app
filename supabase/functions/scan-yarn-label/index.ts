@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const MAX_IMAGE_CHARS = 6_000_000;
-const MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
+const MODEL = 'gemini-3.8-flash';
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -89,7 +89,24 @@ Bevar tal og enheder nøjagtigt som på etiketten. Skriv oplysninger på dansk, 
   );
 
   if (!geminiResponse.ok) {
-    console.error('Gemini request failed with status', geminiResponse.status);
+    let errorMessage = '';
+    try {
+      const errorBody = await geminiResponse.json();
+      errorMessage = String(errorBody?.error?.message || '').slice(0, 300);
+    } catch (error) {
+      console.error('Could not read Gemini error response:', error);
+    }
+    console.error('Gemini request failed:', {
+      status: geminiResponse.status,
+      message: errorMessage,
+      model: MODEL,
+    });
+    if (geminiResponse.status === 404) {
+      return json({ error: 'GEMINI_MODEL_NOT_FOUND' }, 502);
+    }
+    if (geminiResponse.status === 429) {
+      return json({ error: 'GEMINI_RATE_LIMITED' }, 503);
+    }
     return json({ error: 'AI request failed' }, 502);
   }
 

@@ -148,13 +148,27 @@ async function processYarnLabelImage(file) {
   } catch (error) {
     console.error('Could not scan yarn label:', error);
     const status = Number(error?.context?.status || error?.status);
-    const message = status === 401
-      ? translations[currentLanguage].scanYarnAuthRequired
-      : status === 404
-        ? translations[currentLanguage].scanYarnFunctionMissing
-        : status >= 500
-          ? translations[currentLanguage].scanYarnServiceUnavailable
-          : translations[currentLanguage].scanYarnFailed;
+    let errorCode = '';
+    if (error?.context instanceof Response) {
+      try {
+        const responseBody = await error.context.clone().json();
+        errorCode = String(responseBody?.error || '');
+      } catch (readError) {
+        console.error('Could not read yarn scanner error response:', readError);
+      }
+    }
+    let message = translations[currentLanguage].scanYarnFailed;
+    if (errorCode === 'GEMINI_MODEL_NOT_FOUND') {
+      message = translations[currentLanguage].scanYarnModelNotFound;
+    } else if (errorCode === 'GEMINI_RATE_LIMITED') {
+      message = translations[currentLanguage].scanYarnRateLimited;
+    } else if (status === 401) {
+      message = translations[currentLanguage].scanYarnAuthRequired;
+    } else if (status === 404) {
+      message = translations[currentLanguage].scanYarnFunctionMissing;
+    } else if (status >= 500) {
+      message = translations[currentLanguage].scanYarnServiceUnavailable;
+    }
     setYarnScanStatus(message);
   } finally {
     scanYarnButton.disabled = false;
