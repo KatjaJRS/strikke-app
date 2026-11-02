@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const MAX_IMAGE_CHARS = 6_000_000;
-const MODEL = 'gemini-3.8-flash';
+const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash'];
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -56,57 +56,65 @@ Vigtigt: Placér kun hver oplysning i feltet, der beskriver den. Udled eller opf
 - details: fiberindhold, anbefalet pindestørrelse, strikkefasthed og vaskeanvisning, kort adskilt med " · ".
 Bevar tal og enheder nøjagtigt som på etiketten. Skriv oplysninger på dansk, men behold produktnavne og officielle farvenavne som trykt.`;
 
-  const geminiResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: prompt },
-            { inline_data: { mime_type: match[1], data: match[2] } },
-          ],
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 512,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: 'OBJECT',
-            properties: {
-              type: { type: 'STRING' },
-              group: { type: 'STRING' },
-              color: { type: 'STRING' },
-              amount: { type: 'STRING' },
-              details: { type: 'STRING' },
-            },
-            required: ['type', 'group', 'color', 'amount', 'details'],
-          },
+  const requestBody = JSON.stringify({
+    contents: [{
+      parts: [
+        { text: prompt },
+        { inline_data: { mime_type: match[1], data: match[2] } },
+      ],
+    }],
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 512,
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: 'OBJECT',
+        properties: {
+          type: { type: 'STRING' },
+          group: { type: 'STRING' },
+          color: { type: 'STRING' },
+          amount: { type: 'STRING' },
+          details: { type: 'STRING' },
         },
-      }),
+        required: ['type', 'group', 'color', 'amount', 'details'],
+      },
     },
-  );
+  });
 
-  if (!geminiResponse.ok) {
-    let errorMessage = '';
-    try {
-      const errorBody = await geminiResponse.json();
-      errorMessage = String(errorBody?.error?.message || '').slice(0, 300);
-    } catch (error) {
-      console.error('Could not read Gemini error response:', error);
+  // Ved midlertidig overbelastning prøves modellen igen, derefter næste model.
+  let geminiResponse: Response | null = null;
+  let lastStatus = 0;
+  for (const model of MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 1500));
+      geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: requestBody,
+        },
+      );
+      if (geminiResponse.ok) break;
+
+      lastStatus = geminiResponse.status;
+      let errorMessage = '';
+      try {
+        const errorBody = await geminiResponse.json();
+        errorMessage = String(errorBody?.error?.message || '').slice(0, 300);
+      } catch (error) {
+        console.error('Could not read Gemini error response:', error);
+      }
+      console.error('Gemini request failed:', { status: lastStatus, message: errorMessage, model });
+      if (![429, 500, 503, 504].includes(lastStatus)) break;
     }
-    console.error('Gemini request failed:', {
-      status: geminiResponse.status,
-      message: errorMessage,
-      model: MODEL,
-    });
-    if (geminiResponse.status === 404) {
-      return json({ error: 'GEMINI_MODEL_NOT_FOUND' }, 502);
-    }
-    if (geminiResponse.status === 429) {
-      return json({ error: 'GEMINI_RATE_LIMITED' }, 503);
-    }
+    if (geminiResponse?.ok || ![404, 429, 500, 503, 504].includes(lastStatus)) break;
+  }
+
+  if (!geminiResponse || !geminiResponse.ok) {
+    if (lastStatus === 404) return json({ error: 'GEMINI_MODEL_NOT_FOUND' }, 502);
+    if (lastStatus === 429) return json({ error: 'GEMINI_RATE_LIMITED' }, 503);
+    if (lastStatus === 503 || lastStatus === 504) return json({ error: 'GEMINI_BUSY' }, 503);
     return json({ error: 'AI request failed' }, 502);
   }
 

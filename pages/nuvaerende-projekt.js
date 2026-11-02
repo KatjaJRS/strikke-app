@@ -160,6 +160,8 @@ async function processYarnLabelImage(file) {
     let message = translations[currentLanguage].scanYarnFailed;
     if (errorCode === 'GEMINI_MODEL_NOT_FOUND') {
       message = translations[currentLanguage].scanYarnModelNotFound;
+    } else if (errorCode === 'GEMINI_BUSY') {
+      message = translations[currentLanguage].scanYarnBusy;
     } else if (errorCode === 'GEMINI_RATE_LIMITED') {
       message = translations[currentLanguage].scanYarnRateLimited;
     } else if (status === 401) {
