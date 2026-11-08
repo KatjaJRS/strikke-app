@@ -444,7 +444,7 @@ function renderCurrentProject() {
     return;
   }
 
-  if (currentEditingProjectId !== null && currentProject.id === currentEditingProjectId) {
+  if (pendingYarnPhotoUploads === 0 && currentEditingProjectId !== null && currentProject.id === currentEditingProjectId) {
     populateFormWithProject(currentProject);
   }
 
@@ -813,7 +813,13 @@ form.addEventListener('submit', async (event) => {
     }
   }
 
-  await saveProjects();
+  const saved = await saveProjects();
+  if (!saved) {
+    currentEditingProjectId = projectId;
+    pendingProjectImages = [];
+    pendingPatternFile = null;
+    return;
+  }
   if (becameFinished) showHighfiveCelebration();
   renderProjects();
   updateHeroImage();
