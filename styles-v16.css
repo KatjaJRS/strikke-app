@@ -2554,6 +2554,8 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  filter: grayscale(1);
+  opacity: 0.6;
 }
 
 .star-btn:hover,
@@ -2564,9 +2566,17 @@ button:hover {
 
 .star-btn.active,
 .heart-btn.active {
-  border-color: #e35c86;
-  background: #e35c86;
+  border-color: #713b4b;
+  background: #713b4b;
   color: white;
+  filter: none;
+  opacity: 1;
+}
+
+.star-btn:focus-visible,
+.heart-btn:focus-visible {
+  outline: 3px solid #713b4b;
+  outline-offset: 3px;
 }
 
 .filter-controls {

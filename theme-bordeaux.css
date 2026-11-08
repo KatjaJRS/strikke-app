@@ -196,11 +196,11 @@ textarea:focus,
   outline-color: #63776b;
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.password-toggle) {
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.password-toggle):not(.star-btn):not(.heart-btn) {
   background: #63776b;
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.password-toggle):hover {
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.password-toggle):not(.star-btn):not(.heart-btn):hover {
   background: #53665a;
 }
 
@@ -639,12 +639,12 @@ textarea:focus,
   outline-color: var(--preview-lavender);
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle),
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle):not(.star-btn):not(.heart-btn),
 .add-row-btn {
   background: var(--preview-clay);
 }
 
-button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle):hover,
+button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle):not(.star-btn):not(.heart-btn):hover,
 .add-row-btn:hover {
   background: var(--preview-clay-hover);
 }
@@ -936,7 +936,7 @@ html[data-season] .community-notification.is-unread {
   background-color: var(--preview-lavender-soft);
 }
 
-html[data-season] button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle) {
+html[data-season] button:not(.auth-link):not(.lang-btn):not(.profile-mode-btn):not(.nav-btn):not(.filter-chip):not(.group-nav-btn):not(.chat-attach-btn):not(.new-project-btn):not(.member-picker-btn):not(.community-notification):not(.reject-btn):not(.danger-link):not(.round-reset):not(.user-bar-profile-btn):not(.user-bar-logout):not(.yarn-remove-btn):not(.current-project-option):not(.password-toggle):not(.star-btn):not(.heart-btn) {
   background-color: var(--preview-clay);
   color: #fff;
 }
