@@ -63,6 +63,7 @@ langButtons.forEach((button) => {
 navButtons.forEach((button) => {
   button.addEventListener('click', async () => {
     if (button.dataset.action === 'new-project') {
+      if (typeof confirmStartNewProject === 'function' && !confirmStartNewProject()) return;
       if (typeof commitCurrentProjectEdits === 'function') await commitCurrentProjectEdits();
       if (typeof clearFormForNew === 'function') clearFormForNew();
     }

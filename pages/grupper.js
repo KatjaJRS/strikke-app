@@ -554,6 +554,7 @@ chatImageInput.addEventListener('change', async () => {
 });
 
 chatImageClearBtn.addEventListener('click', () => {
+  if (!confirm(translations[currentLanguage].confirmRemoveAttachment)) return;
   pendingChatImage = '';
   chatImageInput.value = '';
   chatImagePreviewRow.classList.add('hidden');

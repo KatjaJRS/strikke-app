@@ -48,6 +48,7 @@ async function acceptMember(id) {
 }
 
 async function rejectMember(id) {
+  if (!confirm(translations[currentLanguage].confirmRejectMember)) return;
   await sb.from('membership_requests').delete().eq('id', id);
   membershipRequests = membershipRequests.filter((request) => request.id !== id);
   reviewedMembershipRequestIds.add(id);

@@ -39,6 +39,7 @@ function addYarnRow(typeVal = '', groupVal = '', colorVal = '', amountVal = '', 
     <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="${translations[currentLanguage].removeYarnButton}">✕</button>
   `;
   entry.querySelector('.yarn-remove-btn').addEventListener('click', () => {
+    if (!confirm(translations[currentLanguage].confirmRemoveYarn)) return;
     entry.remove();
     if (!yarnRowsContainer.querySelector('.yarn-entry')) addYarnRow();
     autoSaveDraft();
@@ -79,6 +80,7 @@ function addNeedleRow(value = '') {
   remove.textContent = '✕';
   remove.setAttribute('aria-label', translations[currentLanguage].removeNeedleButton);
   remove.addEventListener('click', () => {
+    if (!confirm(translations[currentLanguage].confirmRemoveNeedle)) return;
     needleInputs.splice(needleInputs.indexOf(input), 1);
     row.remove();
     autoSaveDraft();
@@ -115,6 +117,7 @@ async function renderYarnPhotoPreview(entry) {
     remove.textContent = '✕';
     remove.setAttribute('aria-label', translations[currentLanguage].removeImageButton);
     remove.addEventListener('click', () => {
+      if (!confirm(translations[currentLanguage].confirmRemoveYarnPhoto)) return;
       entry.yarnPhotos = entry.yarnPhotos.filter(photo => photo !== path);
       renderYarnPhotoPreview(entry);
       autoSaveDraft();
@@ -533,6 +536,24 @@ function renderCurrentProject() {
 }
 
 // ── Ryd formular til nyt projekt ──────────────────────────────────────────
+function confirmStartNewProject() {
+  if (pendingYarnPhotoUploads) {
+    alert(translations[currentLanguage].waitForYarnPhotos);
+    return false;
+  }
+  if (currentEditingProjectId) {
+    return !pendingPatternFile || confirm(translations[currentLanguage].confirmDiscardPatternFile);
+  }
+  const hasDraft = nameInput.value.trim() || patternInput.value.trim() || notesInput.value.trim() ||
+    patternLinkInput.value.trim() || statusInput.value !== 'Planning' ||
+    Number(ratingValueInput.value) || Number(difficultyValueInput.value) ||
+    needleInputs.some(input => input.value.trim()) ||
+    getYarnInputs().some(yarn => yarn.type.value.trim() || yarn.group.value.trim() ||
+      yarn.color.value.trim() || yarn.amount.value.trim() || yarn.details.value.trim() || yarn.photos.length) ||
+    pendingProjectImages.length || pendingPatternFile;
+  return !hasDraft || confirm(translations[currentLanguage].confirmDiscardDraft);
+}
+
 function clearFormForNew() {
   currentEditingProjectId = null;
   const formHeading = document.getElementById('form-heading');
@@ -699,15 +720,6 @@ heartButtons.forEach((button) => {
   });
 });
 
-// ── Nyt projekt-knap ──────────────────────────────────────────────────────
-const newProjectBtn = document.getElementById('new-project-btn');
-if (newProjectBtn) {
-  newProjectBtn.addEventListener('click', () => {
-    clearFormForNew();
-    nameInput.focus();
-  });
-}
-
 // Gem straks når der vælges et nyt foto til et eksisterende projekt.
 if (imageInput) {
   imageInput.addEventListener('change', async () => {
@@ -735,6 +747,7 @@ if (projectImagesPreview) {
   projectImagesPreview.addEventListener('click', async (event) => {
     const button = event.target.closest('.project-image-remove');
     if (!button) return;
+    if (!confirm(translations[currentLanguage].confirmRemoveProjectPhoto)) return;
     if (currentEditingProjectId) await commitCurrentProjectEdits();
     const index = Number(button.dataset.index);
     await setFormImages(getFormImages().filter((_, i) => i !== index));

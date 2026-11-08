@@ -132,7 +132,7 @@ function renderProjects() {
 
     card.querySelector('.delete-btn').addEventListener('click', (e) => {
       e.stopPropagation();
-      const confirmDelete = confirm(`Are you sure you want to delete "${escapeHTML(project.name)}"? You can undo this action.`);
+      const confirmDelete = confirm(translations[currentLanguage].confirmDeleteProject.replace('{name}', project.name));
       if (confirmDelete) {
         lastDeletedProject = project;
         if (undoTimeoutId) clearTimeout(undoTimeoutId);

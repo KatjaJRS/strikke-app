@@ -509,6 +509,7 @@ if (communityImageInput) {
 
 if (communityImageClearBtn) {
   communityImageClearBtn.addEventListener('click', () => {
+    if (!confirm(translations[currentLanguage].confirmRemoveAttachment)) return;
     pendingPostImage = '';
     communityImageInput.value = '';
     communityImagePreviewRow.classList.add('hidden');
