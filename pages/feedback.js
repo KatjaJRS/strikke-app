@@ -19,27 +19,14 @@ function renderFeedback() {
   feedbackOpen.setAttribute('aria-label', unread
     ? `${feedbackLabel}: ${unread} ${translations[currentLanguage].feedbackUnread}`
     : feedbackLabel);
-  feedbackOpen.title = unread ? `${unread} ${translations[currentLanguage].feedbackUnread}` : feedbackLabel;
+  feedbackOpen.title = isAdmin && feedbackLoadError
+    ? translations[currentLanguage].feedbackLoadFailed
+    : unread ? `${unread} ${translations[currentLanguage].feedbackUnread}` : feedbackLabel;
   const adminButton = document.getElementById('profile-mode-admin');
-  const communityButton = document.querySelector('.nav-btn[data-section="groups-chats"]');
-  [adminButton, communityButton].forEach(button => {
-    if (button) button.dataset.feedbackUnread = isAdmin && feedbackLoadError ? '?' : unread ? String(unread) : '';
-  });
-  if (communityButton) {
-    communityButton.querySelector('.feedback-nav-badge')?.remove();
-    if (communityButton.dataset.feedbackUnread) {
-      const badge = document.createElement('span');
-      badge.className = 'feedback-nav-badge';
-      badge.textContent = communityButton.dataset.feedbackUnread;
-      badge.setAttribute('aria-hidden', 'true');
-      communityButton.append(badge);
-    }
-  }
   if (adminButton) {
-    adminButton.title = feedbackLoadError && isAdmin ? translations[currentLanguage].feedbackLoadFailed : unread ? `${unread} ${translations[currentLanguage].feedbackUnread}` : 'Admin';
-    adminButton.setAttribute('aria-label', adminButton.title);
+    adminButton.title = 'Admin';
+    adminButton.setAttribute('aria-label', 'Admin');
   }
-  if (typeof updateGroupsBadge === 'function') updateGroupsBadge();
   if (!feedbackSection || !feedbackList) return;
   feedbackSection.classList.toggle('hidden', !canManageAdminProfile());
   if (!canManageAdminProfile()) {
@@ -124,6 +111,14 @@ function startFeedback() {
 }
 
 feedbackOpen.addEventListener('click', () => {
+  if (currentUser && isAdminUser()) {
+    setProfileMode('admin');
+    switchSection('groups-chats');
+    feedbackSection.focus({ preventScroll: true });
+    feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    refreshFeedback();
+    return;
+  }
   feedbackModal.classList.remove('hidden');
   feedbackError.classList.add('hidden');
   feedbackSuccess.classList.add('hidden');
