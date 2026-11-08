@@ -64,6 +64,8 @@ function applyProfileModeUI() {
   const memberBtn = document.getElementById('profile-mode-member');
   const adminBtn = document.getElementById('profile-mode-admin');
   const adminRequestsSection = document.getElementById('admin-membership-requests-section');
+  const adminWorkspace = document.getElementById('admin-workspace');
+  const memberWorkspace = document.querySelector('#groups-chats .groups-workspace');
 
   const isAdmin = isAdminUser();
   const activeMode = isAdmin ? getProfileMode() : 'member';
@@ -72,6 +74,10 @@ function applyProfileModeUI() {
   if (adminToggle) adminToggle.classList.toggle('hidden', !isAdmin);
   if (memberBtn) memberBtn.classList.toggle('active', activeMode === 'member');
   if (adminBtn) adminBtn.classList.toggle('active', activeMode === 'admin');
+  if (memberBtn) memberBtn.setAttribute('aria-pressed', String(activeMode === 'member'));
+  if (adminBtn) adminBtn.setAttribute('aria-pressed', String(activeMode === 'admin'));
+  if (adminWorkspace) adminWorkspace.classList.toggle('hidden', !isAdminMode);
+  if (memberWorkspace && adminWorkspace) memberWorkspace.classList.toggle('hidden', isAdminMode);
 
   if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !isAdminMode);
 

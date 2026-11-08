@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261108-4" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261108-5" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261108-1" />
   </head>
   <body>
@@ -357,23 +357,25 @@
         </section>
 
         <section id="groups-chats" class="section-view">
+          <div id="profile-mode-toggle" class="profile-mode-toggle hidden" aria-label="Profile mode switcher">
+            <button type="button" id="profile-mode-member" class="profile-mode-btn active" data-i18n="profileModeMember">Me</button>
+            <button type="button" id="profile-mode-admin" class="profile-mode-btn">Admin</button>
+          </div>
+          <div id="admin-workspace" class="admin-workspace hidden">
+            <section id="admin-membership-requests-section" class="group-membership-requests hidden">
+              <h2 class="group-panel-title pending-requests-title">
+                <span data-i18n="pendingRequestsHeading">Membership requests</span>
+                <span id="pending-request-count" class="pending-request-count hidden"></span>
+              </h2>
+              <ul id="pending-requests-list" class="pending-requests-list"></ul>
+            </section>
+            <section id="admin-feedback-section" class="admin-feedback-section hidden">
+              <h2 class="group-panel-title" data-i18n="feedbackAdminHeading">Feedback</h2>
+              <div id="admin-feedback-list" aria-live="polite"></div>
+            </section>
+          </div>
           <div class="groups-workspace">
             <aside class="groups-left-nav community-sidebar">
-              <div id="profile-mode-toggle" class="profile-mode-toggle hidden" aria-label="Profile mode switcher">
-                <button type="button" id="profile-mode-member" class="profile-mode-btn active" data-i18n="profileModeMember">Me</button>
-                <button type="button" id="profile-mode-admin" class="profile-mode-btn">Admin</button>
-              </div>
-              <div id="admin-membership-requests-section" class="group-membership-requests hidden">
-                <h4 class="group-panel-title pending-requests-title">
-                  <span data-i18n="pendingRequestsHeading">Membership requests</span>
-                  <span id="pending-request-count" class="pending-request-count hidden"></span>
-                </h4>
-                <ul id="pending-requests-list" class="pending-requests-list"></ul>
-              </div>
-              <section id="admin-feedback-section" class="admin-feedback-section hidden">
-                <h4 data-i18n="feedbackAdminHeading">Feedback</h4>
-                <div id="admin-feedback-list" aria-live="polite"></div>
-              </section>
               <h2 class="community-members-heading" data-i18n="allMembersHeading">All members</h2>
               <button type="button" id="members-toggle" class="members-toggle" aria-expanded="false"><span id="members-toggle-label"></span> <span id="members-toggle-count"></span></button>
               <ul id="all-members-list" class="group-members all-members-list"></ul>
@@ -432,7 +434,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261108-4"></script>
+    <script src="js/config.js?v=20261108-5"></script>
     <script src="js/dom.js?v=20261108-1"></script>
     <script src="js/utils.js?v=20261028-2"></script>
     <!-- Data: Supabase-kald og logik -->
