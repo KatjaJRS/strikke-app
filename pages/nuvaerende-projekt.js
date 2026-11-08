@@ -8,313 +8,269 @@ function getYarnInputs() {
     color: entry.querySelector('.yarn-color'),
     amount: entry.querySelector('.yarn-amount'),
     details: entry.querySelector('.yarn-details'),
+    photos: entry.yarnPhotos || [],
   }));
 }
 
-function addYarnRow(typeVal = '', groupVal = '', colorVal = '', amountVal = '', detailsVal = '') {
+function addYarnRow(typeVal = '', groupVal = '', colorVal = '', amountVal = '', detailsVal = '', photos = []) {
   const entry = document.createElement('div');
   entry.className = 'yarn-entry';
+  entry.yarnPhotos = Array.isArray(photos) ? [...photos] : [];
   entry.innerHTML = `
+    <details class="yarn-details-section" ${typeVal || groupVal || colorVal || amountVal || detailsVal ? 'open' : ''}>
+    <summary data-i18n="yarnWriteDetails">${escapeHTML(translations[currentLanguage].yarnWriteDetails)}</summary>
+    <div class="yarn-details-fields">
     <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnTypePlaceholder || 'Yarn type')}" value="${escapeHTML(typeVal)}" />
     <input type="text" class="yarn-group" data-i18n-placeholder="yarnGroupPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnGroupPlaceholder)}" value="${escapeHTML(groupVal)}" />
     <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnColorPlaceholder)}" value="${escapeHTML(colorVal)}" />
     <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="${escapeHTML(translations[currentLanguage].yarnAmountPlaceholder || 'Amount used')}" value="${escapeHTML(amountVal)}" />
     <input type="text" class="yarn-details" data-i18n-placeholder="scanYarnDetailsLabel" placeholder="${escapeHTML(translations[currentLanguage].scanYarnDetailsLabel)}" value="${escapeHTML(detailsVal)}" />
+    </div></details>
+    <details class="yarn-photo-section" ${entry.yarnPhotos.length ? 'open' : ''}>
+      <summary data-i18n="yarnPhotos">${escapeHTML(translations[currentLanguage].yarnPhotos)}</summary>
+      <div class="yarn-photo-actions">
+        <button type="button" class="yarn-camera-open" data-i18n="yarnTakePhoto">${escapeHTML(translations[currentLanguage].yarnTakePhoto)}</button>
+        <button type="button" class="yarn-photo-choose" data-i18n="yarnChoosePhotos">${escapeHTML(translations[currentLanguage].yarnChoosePhotos)}</button>
+        <input type="file" class="yarn-photo-input hidden-file-input" accept="image/jpeg,image/png,image/webp" multiple />
+      </div>
+      <p class="yarn-photo-privacy" data-i18n="yarnPhotoPrivacy">${escapeHTML(translations[currentLanguage].yarnPhotoPrivacy)}</p>
+      <div class="yarn-photo-preview"></div>
+    </details>
     <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="${translations[currentLanguage].removeYarnButton}">✕</button>
   `;
   entry.querySelector('.yarn-remove-btn').addEventListener('click', () => {
-    if (yarnRowsContainer.querySelectorAll('.yarn-entry').length > 1) entry.remove();
+    entry.remove();
+    if (!yarnRowsContainer.querySelector('.yarn-entry')) addYarnRow();
     autoSaveDraft();
     autoSaveCurrentProject();
   });
-  entry.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
+  entry.querySelectorAll('input[type="text"]').forEach(inp => inp.addEventListener('input', () => {
     autoSaveDraft();
     autoSaveCurrentProject();
   }));
   yarnRowsContainer.appendChild(entry);
+  entry.querySelector('.yarn-photo-choose').addEventListener('click', () => entry.querySelector('.yarn-photo-input').click());
+  entry.querySelector('.yarn-photo-input').addEventListener('change', async (event) => {
+    await uploadYarnPhotos(entry, Array.from(event.target.files || []));
+    event.target.value = '';
+  });
+  entry.querySelector('.yarn-camera-open').addEventListener('click', () => openYarnPhotoCamera(entry));
+  renderYarnPhotoPreview(entry);
 }
 
-// Opstart af første garnrække
-document.querySelector('#yarn-rows-container .yarn-remove-btn').addEventListener('click', function () {
-  if (yarnRowsContainer.querySelectorAll('.yarn-entry').length > 1) this.closest('.yarn-entry').remove();
-  autoSaveDraft();
-  autoSaveCurrentProject();
-});
-document.querySelectorAll('#yarn-rows-container input').forEach(inp => inp.addEventListener('input', () => {
-  autoSaveDraft();
-  autoSaveCurrentProject();
-}));
+yarnRowsContainer.innerHTML = '';
+addYarnRow();
 addYarnBtn.addEventListener('click', () => addYarnRow());
 
-// ── Scan garnbanderole med AI ─────────────────────────────────────────────
-const scanYarnButton = document.getElementById('scan-yarn-btn');
-const scanYarnInput = document.getElementById('scan-yarn-input');
-const scanYarnStatus = document.getElementById('scan-yarn-status');
-const scanYarnReview = document.getElementById('scan-yarn-review');
-const scanYarnAddButton = document.getElementById('scan-yarn-add-btn');
-const yarnCameraModal = document.getElementById('yarn-camera-modal');
-const yarnCameraVideo = document.getElementById('yarn-camera-video');
-const yarnCameraError = document.getElementById('yarn-camera-error');
-const yarnCameraCaptureButton = document.getElementById('yarn-camera-capture');
-const yarnCameraDoneButton = document.getElementById('yarn-camera-done');
-const yarnCameraThumbs = document.getElementById('yarn-camera-thumbs');
-const MAX_YARN_PHOTOS = 4;
-let yarnCameraPhotos = [];
-let yarnCameraStream = null;
-const patternFileInput = document.getElementById('pattern-file-input');
-const patternFileName = document.getElementById('pattern-file-name');
-const patternFileContentTypes = {
-  pdf: 'application/pdf',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-};
-let pendingPatternFile = null;
-
-function setYarnScanStatus(message, visible = true) {
-  if (!scanYarnStatus) return;
-  scanYarnStatus.textContent = message;
-  scanYarnStatus.classList.toggle('hidden', !visible);
+const needleRows = document.getElementById('needle-rows');
+function addNeedleRow(value = '') {
+  const row = document.createElement('div');
+  row.className = 'needle-entry';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'needle-type';
+  input.dataset.i18nPlaceholder = 'needleTypePlaceholder';
+  input.placeholder = translations[currentLanguage].needleTypePlaceholder;
+  input.value = value;
+  input.addEventListener('input', () => { autoSaveDraft(); autoSaveCurrentProject(); });
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'needle-remove-btn';
+  remove.textContent = '✕';
+  remove.setAttribute('aria-label', translations[currentLanguage].removeNeedleButton);
+  remove.addEventListener('click', () => {
+    needleInputs.splice(needleInputs.indexOf(input), 1);
+    row.remove();
+    autoSaveDraft();
+    autoSaveCurrentProject();
+  });
+  row.append(input, remove);
+  needleRows.append(row);
+  needleInputs.push(input);
 }
-
-function setYarnCameraError(message) {
-  yarnCameraError.textContent = message;
-  yarnCameraError.classList.toggle('hidden', !message);
+function setNeedleRows(values) {
+  needleRows.replaceChildren();
+  needleInputs.length = 0;
+  values.filter(Boolean).forEach(addNeedleRow);
 }
+document.getElementById('add-needle-btn').addEventListener('click', () => addNeedleRow());
 
-function renderYarnCameraPhotos() {
-  yarnCameraThumbs.replaceChildren();
-  yarnCameraPhotos.forEach((photo, index) => {
+async function renderYarnPhotoPreview(entry) {
+  const preview = entry.querySelector('.yarn-photo-preview');
+  preview.replaceChildren();
+  for (const path of entry.yarnPhotos) {
     const item = document.createElement('div');
-    item.className = 'yarn-camera-thumb';
-    const img = document.createElement('img');
-    img.src = photo.url;
-    img.alt = '';
+    item.className = 'yarn-photo-item';
+    const link = document.createElement('a');
+    link.className = 'yarn-photo-link';
+    link.dataset.yarnPhotoPath = path;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    const image = document.createElement('img');
+    image.alt = translations[currentLanguage].yarnPhotos;
+    link.append(image);
     const remove = document.createElement('button');
     remove.type = 'button';
+    remove.className = 'project-image-remove';
     remove.textContent = '✕';
     remove.setAttribute('aria-label', translations[currentLanguage].removeImageButton);
     remove.addEventListener('click', () => {
-      URL.revokeObjectURL(photo.url);
-      yarnCameraPhotos.splice(index, 1);
-      renderYarnCameraPhotos();
+      entry.yarnPhotos = entry.yarnPhotos.filter(photo => photo !== path);
+      renderYarnPhotoPreview(entry);
+      autoSaveDraft();
+      autoSaveCurrentProject();
     });
-    item.append(img, remove);
-    yarnCameraThumbs.append(item);
-  });
-  const count = yarnCameraPhotos.length;
-  yarnCameraThumbs.classList.toggle('hidden', count === 0);
-  yarnCameraDoneButton.classList.toggle('hidden', count === 0);
-  yarnCameraDoneButton.textContent = translations[currentLanguage].scanYarnCameraDone.replace('{n}', count);
-  if (yarnCameraStream) yarnCameraCaptureButton.disabled = count >= MAX_YARN_PHOTOS;
-  if (count >= MAX_YARN_PHOTOS) setYarnCameraError(translations[currentLanguage].scanYarnCameraMax.replace('{n}', MAX_YARN_PHOTOS));
-  else setYarnCameraError('');
-}
-
-function clearYarnCameraPhotos() {
-  yarnCameraPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
-  yarnCameraPhotos = [];
-  renderYarnCameraPhotos();
-}
-
-function closeYarnCamera() {
-  if (yarnCameraStream) {
-    yarnCameraStream.getTracks().forEach((track) => track.stop());
-    yarnCameraStream = null;
+    item.append(link, remove);
+    preview.append(item);
   }
-  if (yarnCameraVideo) yarnCameraVideo.srcObject = null;
-  yarnCameraModal?.classList.add('hidden');
-  scanYarnButton?.focus();
+  if (currentUser) bindYarnPhotoLinks(preview);
 }
 
-function cancelYarnCamera() {
-  closeYarnCamera();
-  clearYarnCameraPhotos();
-}
-
-document.getElementById('pattern-file-button')?.addEventListener('click', () => patternFileInput?.click());
-
-function readCompressedYarnImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Could not read the selected image.'));
-    reader.onload = () => {
-      const image = new Image();
-      image.onerror = () => reject(new Error('This image format is not supported by this browser.'));
-      image.onload = () => {
-        const scale = Math.min(1, 1800 / Math.max(image.width, image.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(image.width * scale));
-        canvas.height = Math.max(1, Math.round(image.height * scale));
-        const context = canvas.getContext('2d');
-        if (!context) {
-          reject(new Error('Could not prepare the selected image.'));
-          return;
-        }
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.88));
-      };
-      image.src = String(reader.result || '');
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function processYarnLabelImage(files) {
-  const selectedFiles = Array.from(files || []).filter(Boolean).slice(0, MAX_YARN_PHOTOS);
-  if (!selectedFiles.length) return;
-  scanYarnButton.disabled = true;
-  scanYarnReview.classList.add('hidden');
-  setYarnScanStatus(translations[currentLanguage].scanYarnProcessing);
-
-  try {
-    const images = await Promise.all(selectedFiles.map(readCompressedYarnImage));
-    const { data: ai, error } = await sb.functions.invoke('scan-yarn-label', { body: { images } });
-    if (error) throw error;
-    if (!ai || typeof ai !== 'object' ||
-        !['type', 'group', 'color', 'amount', 'details'].every((key) => typeof ai[key] === 'string')) {
-      throw new Error('The AI returned an invalid answer.');
-    }
-    const suggestions = Object.fromEntries(
-      ['type', 'group', 'color', 'amount', 'details'].map((key) => [key, ai[key].trim()])
-    );
-    if (!Object.values(suggestions).some(Boolean)) {
-      setYarnScanStatus(translations[currentLanguage].scanYarnNoText);
-    } else {
-      document.getElementById('scan-yarn-type').value = suggestions.type;
-      document.getElementById('scan-yarn-group').value = suggestions.group;
-      document.getElementById('scan-yarn-color').value = suggestions.color;
-      document.getElementById('scan-yarn-amount').value = suggestions.amount;
-      document.getElementById('scan-yarn-details').value = suggestions.details;
-      scanYarnReview.classList.remove('hidden');
-      setYarnScanStatus(translations[currentLanguage].scanYarnReady);
-    }
-  } catch (error) {
-    console.error('Could not scan yarn label:', error);
-    const status = Number(error?.context?.status || error?.status);
-    let errorCode = '';
-    if (error?.context instanceof Response) {
-      try {
-        const responseBody = await error.context.clone().json();
-        errorCode = String(responseBody?.error || '');
-      } catch (readError) {
-        console.error('Could not read yarn scanner error response:', readError);
-      }
-    }
-    let message = translations[currentLanguage].scanYarnFailed;
-    if (errorCode === 'GEMINI_MODEL_NOT_FOUND') {
-      message = translations[currentLanguage].scanYarnModelNotFound;
-    } else if (errorCode === 'GEMINI_BUSY') {
-      message = translations[currentLanguage].scanYarnBusy;
-    } else if (errorCode === 'GEMINI_RATE_LIMITED') {
-      message = translations[currentLanguage].scanYarnRateLimited;
-    } else if (status === 401) {
-      message = translations[currentLanguage].scanYarnAuthRequired;
-    } else if (status === 404) {
-      message = translations[currentLanguage].scanYarnFunctionMissing;
-    } else if (status >= 500) {
-      message = translations[currentLanguage].scanYarnServiceUnavailable;
-    }
-    setYarnScanStatus(message);
-  } finally {
-    scanYarnButton.disabled = false;
-    scanYarnInput.value = '';
-  }
-}
-
-async function openYarnCamera() {
-  yarnCameraModal.classList.remove('hidden');
-  yarnCameraCaptureButton.disabled = true;
-  renderYarnCameraPhotos();
-  setYarnCameraError('');
-  if (!navigator.mediaDevices?.getUserMedia) {
-    setYarnCameraError(translations[currentLanguage].scanYarnCameraUnsupported);
+let pendingYarnPhotoUploads = 0;
+async function uploadYarnPhotos(entry, files) {
+  if (!files.length) return;
+  if (!currentUser) {
+    showSyncToast(translations[currentLanguage].yarnPhotoLoginRequired);
     return;
   }
-
+  const userId = currentUser.id;
+  const editingId = currentEditingProjectId;
+  const buttons = entry.querySelectorAll('.yarn-photo-actions button');
+  const submitButton = form.querySelector('button[type="submit"]');
+  pendingYarnPhotoUploads++;
+  submitButton.disabled = true;
+  buttons.forEach(button => { button.disabled = true; });
   try {
-    yarnCameraStream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-    });
-    yarnCameraVideo.srcObject = yarnCameraStream;
-    await yarnCameraVideo.play();
-    yarnCameraCaptureButton.disabled = false;
-  } catch (error) {
-    console.error('Could not open the yarn label camera:', error);
-    if (yarnCameraStream) {
-      yarnCameraStream.getTracks().forEach((track) => track.stop());
-      yarnCameraStream = null;
-      yarnCameraVideo.srcObject = null;
+    for (const file of files) {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        throw new Error('Unsupported yarn photo format');
+      }
+      const dataUrl = await readImageAsDataURL(file);
+      const blob = dataURLToBlob(dataUrl);
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(blob.type) || blob.size > 10485760) {
+        throw new Error('Invalid or too large yarn photo');
+      }
+      const path = `${userId}/${crypto.randomUUID()}`;
+      const { error } = await sb.storage.from(YARN_PHOTO_BUCKET).upload(path, blob, {
+        contentType: blob.type,
+        upsert: false,
+      });
+      if (error) throw error;
+      if (!entry.isConnected || currentEditingProjectId !== editingId || currentUser?.id !== userId) {
+        const { error: cleanupError } = await sb.storage.from(YARN_PHOTO_BUCKET).remove([path]);
+        if (cleanupError) console.error('Could not remove unused yarn photo:', cleanupError);
+        throw new Error('Project changed while uploading yarn photo');
+      }
+      entry.yarnPhotos.push(path);
+      renderYarnPhotoPreview(entry);
+      autoSaveDraft();
+      autoSaveCurrentProject();
     }
-    const permissionDenied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
-    yarnCameraCaptureButton.disabled = true;
-    setYarnCameraError(translations[currentLanguage][
-      permissionDenied ? 'scanYarnCameraPermissionDenied' : 'scanYarnCameraUnavailable'
-    ]);
+  } catch (error) {
+    console.error('Could not save yarn photo:', error);
+    showSyncToast(translations[currentLanguage].yarnPhotoUploadFailed);
+  } finally {
+    buttons.forEach(button => { button.disabled = false; });
+    pendingYarnPhotoUploads--;
+    submitButton.disabled = pendingYarnPhotoUploads > 0;
   }
 }
 
-if (scanYarnButton && scanYarnInput && yarnCameraModal && yarnCameraVideo) {
-  scanYarnButton.addEventListener('click', openYarnCamera);
-  scanYarnInput.addEventListener('change', () => processYarnLabelImage(scanYarnInput.files));
-  document.getElementById('yarn-camera-cancel').addEventListener('click', cancelYarnCamera);
-  document.getElementById('yarn-camera-choose-file').addEventListener('click', () => {
-    cancelYarnCamera();
-    scanYarnInput.click();
-  });
-  yarnCameraModal.addEventListener('click', (event) => {
-    if (event.target === yarnCameraModal) cancelYarnCamera();
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !yarnCameraModal.classList.contains('hidden')) cancelYarnCamera();
-  });
-  yarnCameraCaptureButton.addEventListener('click', async () => {
-    if (!yarnCameraVideo.videoWidth || !yarnCameraVideo.videoHeight) {
-      setYarnCameraError(translations[currentLanguage].scanYarnCameraUnavailable);
-      return;
-    }
-    const scale = Math.min(1, 1800 / Math.max(yarnCameraVideo.videoWidth, yarnCameraVideo.videoHeight));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(yarnCameraVideo.videoWidth * scale);
-    canvas.height = Math.round(yarnCameraVideo.videoHeight * scale);
-    const context = canvas.getContext('2d');
-    if (!context) {
-      setYarnCameraError(translations[currentLanguage].scanYarnCameraUnavailable);
-      return;
-    }
-    context.drawImage(yarnCameraVideo, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.88));
-    if (!blob) {
-      setYarnCameraError(translations[currentLanguage].scanYarnCameraUnavailable);
-      return;
-    }
-    const file = new File([blob], `yarn-label-${yarnCameraPhotos.length + 1}.jpg`, { type: 'image/jpeg' });
-    yarnCameraPhotos.push({ file, url: URL.createObjectURL(blob) });
-    renderYarnCameraPhotos();
-  });
-  yarnCameraDoneButton.addEventListener('click', async () => {
-    const files = yarnCameraPhotos.map((photo) => photo.file);
-    closeYarnCamera();
-    clearYarnCameraPhotos();
-    await processYarnLabelImage(files);
-  });
+const yarnPhotoCamera = document.getElementById('yarn-photo-camera');
+const yarnPhotoVideo = document.getElementById('yarn-photo-video');
+const yarnPhotoCapture = document.getElementById('yarn-photo-capture');
+const yarnPhotoCameraError = document.getElementById('yarn-photo-camera-error');
+let yarnPhotoStream = null;
+let yarnPhotoCameraEntry = null;
+let yarnPhotoCameraSession = 0;
 
-  scanYarnAddButton.addEventListener('click', () => {
-    addYarnRow(
-      document.getElementById('scan-yarn-type').value.trim(),
-      document.getElementById('scan-yarn-group').value.trim(),
-      document.getElementById('scan-yarn-color').value.trim(),
-      document.getElementById('scan-yarn-amount').value.trim(),
-      document.getElementById('scan-yarn-details').value.trim()
-    );
-    autoSaveDraft();
-    autoSaveCurrentProject();
-    scanYarnReview.classList.add('hidden');
-    setYarnScanStatus('', false);
-  });
+function closeYarnPhotoCamera() {
+  yarnPhotoCameraSession++;
+  if (yarnPhotoStream) yarnPhotoStream.getTracks().forEach(track => track.stop());
+  yarnPhotoStream = null;
+  yarnPhotoVideo.srcObject = null;
+  yarnPhotoCamera.classList.add('hidden');
+  yarnPhotoCameraEntry = null;
 }
+
+async function openYarnPhotoCamera(entry) {
+  const session = ++yarnPhotoCameraSession;
+  yarnPhotoCameraEntry = entry;
+  yarnPhotoCamera.classList.remove('hidden');
+  yarnPhotoCapture.disabled = true;
+  yarnPhotoCameraError.textContent = '';
+  if (!navigator.mediaDevices?.getUserMedia) {
+    yarnPhotoCameraError.textContent = translations[currentLanguage].scanYarnCameraUnsupported;
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+    });
+    if (session !== yarnPhotoCameraSession) {
+      stream.getTracks().forEach(track => track.stop());
+      return;
+    }
+    yarnPhotoStream = stream;
+    yarnPhotoVideo.srcObject = stream;
+    await yarnPhotoVideo.play();
+    if (session === yarnPhotoCameraSession) yarnPhotoCapture.disabled = false;
+  } catch (error) {
+    console.error('Could not open yarn photo camera:', error);
+    if (session !== yarnPhotoCameraSession) return;
+    if (yarnPhotoStream) yarnPhotoStream.getTracks().forEach(track => track.stop());
+    yarnPhotoStream = null;
+    yarnPhotoVideo.srcObject = null;
+    yarnPhotoCameraError.textContent = translations[currentLanguage][
+      error?.name === 'NotAllowedError' || error?.name === 'SecurityError'
+        ? 'scanYarnCameraPermissionDenied' : 'scanYarnCameraUnavailable'
+    ];
+  }
+}
+
+document.getElementById('yarn-photo-cancel').addEventListener('click', closeYarnPhotoCamera);
+yarnPhotoCamera.addEventListener('click', event => { if (event.target === yarnPhotoCamera) closeYarnPhotoCamera(); });
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !yarnPhotoCamera.classList.contains('hidden')) closeYarnPhotoCamera();
+});
+yarnPhotoCapture.addEventListener('click', async () => {
+  if (!yarnPhotoVideo.videoWidth || !yarnPhotoVideo.videoHeight || !yarnPhotoCameraEntry) {
+    yarnPhotoCameraError.textContent = translations[currentLanguage].scanYarnCameraUnavailable;
+    return;
+  }
+  yarnPhotoCapture.disabled = true;
+  const entry = yarnPhotoCameraEntry;
+  const session = yarnPhotoCameraSession;
+  const canvas = document.createElement('canvas');
+  const scale = Math.min(1, 1800 / Math.max(yarnPhotoVideo.videoWidth, yarnPhotoVideo.videoHeight));
+  canvas.width = Math.round(yarnPhotoVideo.videoWidth * scale);
+  canvas.height = Math.round(yarnPhotoVideo.videoHeight * scale);
+  const context = canvas.getContext('2d');
+  if (!context) {
+    yarnPhotoCameraError.textContent = translations[currentLanguage].scanYarnCameraUnavailable;
+    yarnPhotoCapture.disabled = false;
+    return;
+  }
+  context.drawImage(yarnPhotoVideo, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+  if (session !== yarnPhotoCameraSession) return;
+  if (!blob) {
+    yarnPhotoCameraError.textContent = translations[currentLanguage].scanYarnCameraUnavailable;
+    yarnPhotoCapture.disabled = false;
+    return;
+  }
+  closeYarnPhotoCamera();
+  await uploadYarnPhotos(entry, [new File([blob], 'yarn-label.jpg', { type: 'image/jpeg' })]);
+});
+
+const patternFileInput = document.getElementById('pattern-file-input');
+const patternFileName = document.getElementById('pattern-file-name');
+const patternFileContentTypes = {
+  pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+  png: 'image/png', webp: 'image/webp',
+};
+let pendingPatternFile = null;
+document.getElementById('pattern-file-button')?.addEventListener('click', () => patternFileInput?.click());
 
 if (patternFileInput && patternFileName) {
   patternFileInput.addEventListener('change', () => {
@@ -412,12 +368,12 @@ function populateFormWithProject(project) {
 
   const yarns = project.yarns || [];
   yarnRowsContainer.innerHTML = '';
-  const yarnList = yarns.filter(y => y.type || y.group || y.color || y.amount || y.details);
+  const yarnList = yarns.filter(y => y.type || y.group || y.color || y.amount || y.details || y.photos?.length);
   if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
-  yarnList.forEach(yarn => addYarnRow(yarn.type || '', yarn.group || '', yarn.color || '', yarn.amount || '', yarn.details || ''));
+  yarnList.forEach(yarn => addYarnRow(yarn.type || '', yarn.group || '', yarn.color || '', yarn.amount || '', yarn.details || '', yarn.photos));
 
   const needles = project.needles || [];
-  needleInputs.forEach((needle, index) => { needle.value = needles[index] || ''; });
+  setNeedleRows(needles);
 }
 
 // ── Vis nuværende projekt ─────────────────────────────────────────────────
@@ -501,6 +457,7 @@ function renderCurrentProject() {
       <div class="card-col">
         <div class="card-col-main">
           ${yarnsDisplay}
+          ${renderYarnPhotoGallery(currentProject.yarns)}
           ${needlesDisplay}
         </div>
       </div>
@@ -525,6 +482,7 @@ function renderCurrentProject() {
   currentProjectCard.appendChild(card);
 
   bindProjectGallery(card);
+  bindYarnPhotoLinks(card);
   bindProjectPatternLinks(card);
   bindShareToggle(card, renderProjects);
   card.querySelector('.current-project-edit-btn').addEventListener('click', async () => {
@@ -576,7 +534,8 @@ function clearFormForNew() {
   Array.from(difficultyInput.querySelectorAll('.heart-btn')).forEach(btn => btn.classList.remove('active'));
   yarnRowsContainer.innerHTML = '';
   addYarnRow();
-  needleInputs.forEach(n => n.value = '');
+  setNeedleRows([]);
+  form.querySelectorAll('.project-form-section').forEach(section => { section.open = false; });
   pendingProjectImages = [];
   if (imageInput) imageInput.value = '';
   renderFormImages();
@@ -599,6 +558,7 @@ function autoSaveDraft() {
       color: y.color.value,
       amount: y.amount.value,
       details: y.details.value,
+      photos: y.photos,
     })),
     needles: needleInputs.map(n => n.value),
   };
@@ -630,10 +590,10 @@ function restoreDraft() {
     });
 
     yarnRowsContainer.innerHTML = '';
-    const yarnList = (draft.yarns || []).filter(y => y.type || y.group || y.color || y.amount || y.details);
+    const yarnList = (draft.yarns || []).filter(y => y.type || y.group || y.color || y.amount || y.details || y.photos?.length);
     if (yarnList.length === 0) yarnList.push({ type: '', color: '', amount: '' });
-    yarnList.forEach(y => addYarnRow(y.type, y.group || '', y.color, y.amount, y.details || ''));
-    (draft.needles || []).forEach((val, i) => { if (needleInputs[i]) needleInputs[i].value = val; });
+    yarnList.forEach(y => addYarnRow(y.type, y.group || '', y.color, y.amount, y.details || '', y.photos));
+    setNeedleRows(draft.needles || []);
   } catch (e) {}
 }
 
@@ -651,7 +611,7 @@ async function commitCurrentProjectEdits() {
     name: nameInput.value.trim() || project.name,
     pattern: patternInput.value.trim(),
     notes: notesInput.value.trim(),
-    patternLink: patternLinkInput.value.trim(),
+    patternLink: patternLinkInput.value.trim() || (String(project.patternLink || '').startsWith(PATTERN_STORAGE_PREFIX) ? project.patternLink : ''),
     status: statusInput.value,
     rating: Number(ratingValueInput.value) || project.rating,
     difficulty: Number(difficultyValueInput.value) || project.difficulty,
@@ -662,6 +622,7 @@ async function commitCurrentProjectEdits() {
       color: y.color.value.trim(),
       amount: y.amount.value.trim(),
       details: y.details.value.trim(),
+      photos: y.photos,
     })),
   };
   const becameFinished = shouldCelebrateFinishTransition(project.status, updatedProject.status);
@@ -694,7 +655,6 @@ setInterval(async () => {
   el.addEventListener('input', () => { autoSaveDraft(); autoSaveCurrentProject(); })
 );
 statusInput.addEventListener('change', () => { autoSaveDraft(); autoSaveCurrentProject(); });
-needleInputs.forEach(n => n.addEventListener('input', () => { autoSaveDraft(); autoSaveCurrentProject(); }));
 
 // ── Stjernebedømmelse ─────────────────────────────────────────────────────
 const starButtons = Array.from(ratingInput.querySelectorAll('.star-btn'));
@@ -781,6 +741,7 @@ form.addEventListener('submit', async (event) => {
     color: yarn.color.value.trim(),
     amount: yarn.amount.value.trim(),
     details: yarn.details.value.trim(),
+    photos: yarn.photos,
   }));
 
   if (!name || !pattern) return;

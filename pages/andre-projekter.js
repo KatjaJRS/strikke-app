@@ -52,6 +52,7 @@ function renderProjects() {
         <div class="card-col">
           <div class="card-col-main">
             ${yarnsDisplay}
+            ${renderYarnPhotoGallery(project.yarns)}
             ${needlesDisplay}
           </div>
           <div class="card-actions-stack">
@@ -96,6 +97,7 @@ function renderProjects() {
     }
 
     bindProjectGallery(card);
+    bindYarnPhotoLinks(card);
     bindProjectPatternLinks(card);
     bindShareToggle(card);
     card.addEventListener('click', openProjectForEditing);

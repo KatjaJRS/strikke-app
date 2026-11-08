@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261102-2" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261108-1" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261022-1" />
   </head>
   <body>
@@ -209,77 +209,33 @@
               <span data-i18n="patternLabel">Pattern</span>
               <input id="pattern-name" type="text" data-i18n-placeholder="patternPlaceholder" placeholder="e.g. Garter rib" required />
             </label>
-            <div class="yarns-section">
-              <h4 data-i18n="yarnsLabel">Yarns used</h4>
-              <div id="yarn-rows-container">
-                <div class="yarn-entry">
-                  <input type="text" class="yarn-type" data-i18n-placeholder="yarnTypePlaceholder" placeholder="Yarn type" />
-                  <input type="text" class="yarn-group" data-i18n-placeholder="yarnGroupPlaceholder" placeholder="Yarn group" />
-                  <input type="text" class="yarn-color" data-i18n-placeholder="yarnColorPlaceholder" placeholder="Colour" />
-                  <input type="text" class="yarn-amount" data-i18n-placeholder="yarnAmountPlaceholder" placeholder="Amount" />
-                  <input type="text" class="yarn-details" data-i18n-placeholder="scanYarnDetailsLabel" placeholder="Other label information" />
-                  <button type="button" class="yarn-remove-btn" data-i18n-title="removeYarnButton" title="Remove row">✕</button>
-                </div>
-              </div>
+            <details class="project-form-section">
+              <summary data-i18n="yarnsLabel">Yarns used</summary>
+              <div class="yarns-section">
+              <div id="yarn-rows-container"></div>
               <button type="button" id="add-yarn-btn" class="add-row-btn" data-i18n="addYarnButton">+ Add yarn</button>
-              <div class="yarn-scan-tools">
-                <button type="button" id="scan-yarn-btn" class="yarn-scan-btn" data-i18n="scanYarnButton">Scan yarn label</button>
-                <input id="scan-yarn-input" type="file" accept="image/*" multiple class="hidden-file-input" />
-                <p class="scan-yarn-privacy-hint" data-i18n="scanYarnPrivacyHint">The selected photo is sent to Google Gemini to read the label.</p>
-                <p id="scan-yarn-status" class="yarn-scan-status hidden" role="status" aria-live="polite"></p>
-                <div id="scan-yarn-review" class="yarn-scan-review hidden">
-                  <p data-i18n="scanYarnReviewHint">Check and edit the details before adding them.</p>
-                  <label>
-                    <span data-i18n="yarnTypePlaceholder">Yarn type</span>
-                    <input id="scan-yarn-type" type="text" />
-                  </label>
-                  <label>
-                    <span data-i18n="yarnGroupPlaceholder">Yarn group</span>
-                    <input id="scan-yarn-group" type="text" />
-                  </label>
-                  <label>
-                    <span data-i18n="yarnColorPlaceholder">Colour</span>
-                    <input id="scan-yarn-color" type="text" />
-                  </label>
-                  <label>
-                    <span data-i18n="yarnAmountPlaceholder">Amount</span>
-                    <input id="scan-yarn-amount" type="text" />
-                  </label>
-                  <label>
-                    <span data-i18n="scanYarnDetailsLabel">Other label information</span>
-                    <textarea id="scan-yarn-details" rows="3"></textarea>
-                  </label>
-                  <button type="button" id="scan-yarn-add-btn" data-i18n="scanYarnAddButton">Add yarn</button>
-                </div>
-              </div>
-              <div id="yarn-camera-modal" class="yarn-camera-modal hidden" role="dialog" aria-modal="true" aria-labelledby="yarn-camera-title">
+              <div id="yarn-photo-camera" class="yarn-camera-modal hidden" role="dialog" aria-modal="true" aria-labelledby="yarn-photo-camera-title">
                 <div class="yarn-camera-card">
-                  <h3 id="yarn-camera-title" data-i18n="scanYarnCameraTitle">Take a photo of the yarn label</h3>
-                  <p class="yarn-camera-tips" data-i18n="scanYarnCameraTips">Fill the frame with the label, hold the phone flat above it, use good light, and tap the screen to focus. For long labels, take several photos.</p>
-                  <video id="yarn-camera-video" autoplay playsinline muted></video>
-                  <div id="yarn-camera-thumbs" class="yarn-camera-thumbs hidden"></div>
-                  <p id="yarn-camera-error" class="yarn-camera-error hidden" role="alert"></p>
+                  <h3 id="yarn-photo-camera-title" data-i18n="yarnTakePhoto">Take photo</h3>
+                  <video id="yarn-photo-video" autoplay playsinline muted></video>
+                  <p id="yarn-photo-camera-error" role="alert"></p>
                   <div class="yarn-camera-actions">
-                    <button type="button" id="yarn-camera-capture" data-i18n="scanYarnCameraCapture">Take photo</button>
-                    <button type="button" id="yarn-camera-done" class="hidden"></button>
-                    <button type="button" id="yarn-camera-choose-file" data-i18n="scanYarnChoosePhoto">Choose an existing photo</button>
-                    <button type="button" id="yarn-camera-cancel" data-i18n="scanYarnCameraCancel">Cancel</button>
+                    <button type="button" id="yarn-photo-capture" data-i18n="yarnTakePhoto">Take photo</button>
+                    <button type="button" id="yarn-photo-cancel" data-i18n="scanYarnCameraCancel">Cancel</button>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="needles-section">
-              <h4 data-i18n="needleLabel">Knitting needles</h4>
-              <div class="needle-entry">
-                <input id="needle-1-type" type="text" class="needle-type" data-i18n-placeholder="needleTypePlaceholder" placeholder="Needle type" />
               </div>
-              <div class="needle-entry">
-                <input id="needle-2-type" type="text" class="needle-type" data-i18n-placeholder="needleTypePlaceholder" placeholder="Needle type" />
+            </details>
+            <details class="project-form-section">
+              <summary data-i18n="needleLabel">Knitting needles</summary>
+              <div class="needles-section">
+                <div id="needle-rows"></div>
+                <button type="button" id="add-needle-btn" class="add-row-btn" data-i18n="addNeedleButton">+ Add needle</button>
               </div>
-              <div class="needle-entry">
-                <input id="needle-3-type" type="text" class="needle-type" data-i18n-placeholder="needleTypePlaceholder" placeholder="Needle type" />
-              </div>
-            </div>
+            </details>
+            <details class="project-form-section">
+              <summary data-i18n="projectProgressSection">Progress and ratings</summary>
             <label>
               <span data-i18n="statusLabel">Progress</span>
               <select id="project-status">
@@ -310,10 +266,16 @@
               </div>
               <input type="hidden" id="project-difficulty-value" value="0" />
             </label>
+            </details>
+            <details class="project-form-section">
+              <summary data-i18n="notesLabel">Notes</summary>
             <label>
               <span data-i18n="notesLabel">Notes</span>
               <textarea id="project-notes" rows="3" data-i18n-placeholder="notesPlaceholder" placeholder="Add yarn details, gauge, or reminders..."></textarea>
             </label>
+            </details>
+            <details class="project-form-section">
+              <summary data-i18n="patternLinkLabel">Pattern link or file</summary>
             <label>
               <span data-i18n="patternLinkLabel">Pattern link or file</span>
               <input id="pattern-link" type="text" data-i18n-placeholder="patternLinkPlaceholder" placeholder="https://... or file name" />
@@ -323,11 +285,15 @@
               <input id="pattern-file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" class="hidden-file-input" />
               <span id="pattern-file-name" class="pattern-file-name" role="status" aria-live="polite"></span>
             </div>
+            </details>
+            <details class="project-form-section">
+              <summary data-i18n="imageLabel">Project photo</summary>
             <label>
               <span data-i18n="imageLabel">Project photo</span>
               <input id="project-image" type="file" accept="image/*" multiple />
               <div id="project-images-preview" class="project-images-preview"></div>
             </label>
+            </details>
             <button type="submit" data-i18n="saveNoteButton">Gem projekt</button>
           </form>
         </section>
@@ -444,22 +410,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261102-2"></script>
-    <script src="js/dom.js?v=20261008-1"></script>
+    <script src="js/config.js?v=20261108-1"></script>
+    <script src="js/dom.js?v=20261108-1"></script>
     <script src="js/utils.js?v=20261028-2"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260821-1"></script>
     <script src="data/billeder.js?v=20261022-2"></script>
-    <script src="data/projekter-data.js?v=20261030-4"></script>
+    <script src="data/projekter-data.js?v=20261108-1"></script>
     <script src="data/grupper-data.js?v=20261027-1"></script>
     <script src="data/profil.js?v=20260821-12"></script>
     <script src="data/members.js?v=20261008-1"></script>
-    <script src="data/auth.js?v=20260821-10"></script>
+    <script src="data/auth.js?v=20261108-1"></script>
     <!-- Sidelayout og UI -->
     <script src="pages/forside.js?v=20261030-4"></script>
-    <script src="pages/andre-projekter.js?v=20261030-4"></script>
-    <script src="pages/nuvaerende-projekt.js?v=20261102-2"></script>
-    <script src="pages/community-wall.js?v=20261027-1"></script>
+    <script src="pages/andre-projekter.js?v=20261108-1"></script>
+    <script src="pages/nuvaerende-projekt.js?v=20261108-1"></script>
+    <script src="pages/community-wall.js?v=20261108-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>
   </body>

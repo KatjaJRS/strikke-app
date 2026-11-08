@@ -379,6 +379,9 @@ async function registerAndLaunch(name, email, password, registerErrorId) {
 function launchApp(user, profile) {
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app-shell-wrapper').classList.remove('hidden');
+  if (typeof renderYarnPhotoPreview === 'function') {
+    document.querySelectorAll('#yarn-rows-container .yarn-entry').forEach(renderYarnPhotoPreview);
+  }
 
   if (typeof ensureProfileRealtimeSync === 'function') ensureProfileRealtimeSync();
   if (typeof ensureProfileSyncHeartbeat === 'function') ensureProfileSyncHeartbeat();

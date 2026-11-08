@@ -7,11 +7,7 @@ const patternInput = document.getElementById('pattern-name');
 const statusInput = document.getElementById('project-status');
 const notesInput = document.getElementById('project-notes');
 const patternLinkInput = document.getElementById('pattern-link');
-const needleInputs = [
-  document.getElementById('needle-1-type'),
-  document.getElementById('needle-2-type'),
-  document.getElementById('needle-3-type'),
-];
+const needleInputs = [];
 const yarnRowsContainer = document.getElementById('yarn-rows-container');
 const addYarnBtn = document.getElementById('add-yarn-btn');
 const ratingInput = document.getElementById('project-rating');

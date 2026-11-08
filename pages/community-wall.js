@@ -180,6 +180,7 @@ function renderMemberProjectCard(project) {
         <span class="status-badge">${escapeHTML(translateStatus(project.status))}</span>
         ${project.difficulty ? renderHearts(project.difficulty) : ''}
         ${renderYarns(project.yarns || [])}
+        ${renderYarnPhotoGallery(project.yarns)}
         ${renderNeedles(project.needles)}
         ${project.notes ? `<p><strong>${escapeHTML(t.notesLabel)}:</strong> ${escapeHTML(project.notes)}</p>` : ''}
       </div>
@@ -200,7 +201,10 @@ async function openMemberProjects(userId, name) {
     body.innerHTML = shared.length
       ? shared.map(renderMemberProjectCard).join('')
       : `<p class="chat-empty">${escapeHTML(t.noSharedProjects)}</p>`;
-    body.querySelectorAll('.member-project-card').forEach(bindProjectGallery);
+    body.querySelectorAll('.member-project-card').forEach((card) => {
+      bindProjectGallery(card);
+      bindYarnPhotoLinks(card);
+    });
   } catch (error) {
     console.error('Could not load shared projects:', error);
     body.innerHTML = `<p class="post-error" role="alert">${escapeHTML(t.sharedProjectsLoadFailed)}</p>`;

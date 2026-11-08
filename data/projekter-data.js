@@ -64,6 +64,36 @@ function bindShareToggle(card, onChange) {
 // ── Flere billeder pr. projekt ───────────────────────────────────────────
 const PATTERN_STORAGE_BUCKET = 'project-patterns';
 const PATTERN_STORAGE_PREFIX = 'storage://';
+const YARN_PHOTO_BUCKET = 'yarn-labels';
+
+function renderYarnPhotoGallery(yarns) {
+  const groups = (yarns || []).filter(yarn => Array.isArray(yarn.photos) && yarn.photos.length);
+  if (!groups.length) return '';
+  return `<div class="yarn-photo-galleries">${groups.map((yarn) => `
+    <div><strong>${escapeHTML(yarn.type || translations[currentLanguage].yarnPhotos)}</strong>
+      <div class="yarn-photo-preview">${yarn.photos.map(path => `
+        <a class="yarn-photo-link" data-yarn-photo-path="${escapeHTML(path)}" target="_blank" rel="noopener noreferrer">
+          <img alt="${escapeHTML(translations[currentLanguage].yarnPhotos)}" loading="lazy" />
+        </a>`).join('')}</div>
+    </div>`).join('')}</div>`;
+}
+
+function bindYarnPhotoLinks(container) {
+  container.querySelectorAll('.yarn-photo-link').forEach(async (link) => {
+    link.addEventListener('click', event => event.stopPropagation());
+    try {
+      const { data, error } = await sb.storage.from(YARN_PHOTO_BUCKET)
+        .createSignedUrl(link.dataset.yarnPhotoPath, 3600);
+      if (error || !data?.signedUrl) throw error || new Error('No signed URL returned.');
+      link.href = data.signedUrl;
+      link.querySelector('img').src = data.signedUrl;
+    } catch (error) {
+      console.error('Could not load yarn photo:', error);
+      link.textContent = translations[currentLanguage].yarnPhotoLoadFailed;
+      link.setAttribute('aria-disabled', 'true');
+    }
+  });
+}
 
 function getPatternFileName(patternLink) {
   const value = String(patternLink || '');
@@ -163,8 +193,7 @@ function bindProjectGallery(card) {
 }
 function normalizeProjects() {
   projects = projects.map((project, index) => {
-    const yarns = (project.yarns || []).slice(0, 3);
-    while (yarns.length < 3) yarns.push({ type: '', color: '', amount: '' });
+    const yarns = project.yarns || [];
     let needles = project.needles || [];
     if (typeof project.needleSize === 'string' && project.needleSize && needles.length === 0) {
       needles = [project.needleSize];
@@ -185,6 +214,7 @@ function normalizeProjects() {
         color: yarn.color || '',
         amount: yarn.amount || '',
         details: yarn.details || '',
+        photos: Array.isArray(yarn.photos) ? yarn.photos.filter(path => typeof path === 'string') : [],
       })),
       ...(() => { const list = getProjectImages(project); return { images: list, image: list[0] || '' }; })(),
     };
