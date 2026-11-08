@@ -140,23 +140,33 @@ async function uploadYarnPhotos(entry, files) {
   pendingYarnPhotoUploads++;
   submitButton.disabled = true;
   buttons.forEach(button => { button.disabled = true; });
+  let stage = 'format';
+  let storageStatus = '';
   try {
     for (const file of files) {
+      stage = 'format';
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
         throw new Error('Unsupported yarn photo format');
       }
+      stage = 'prepare';
       const dataUrl = await readImageAsDataURL(file);
       const blob = dataURLToBlob(dataUrl);
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(blob.type) || blob.size > 10485760) {
         throw new Error('Invalid or too large yarn photo');
       }
       const path = `${userId}/${crypto.randomUUID()}`;
+      stage = 'storage';
       const { error } = await sb.storage.from(YARN_PHOTO_BUCKET).upload(path, blob, {
         contentType: blob.type,
         upsert: false,
       });
-      if (error) throw error;
+      if (error) {
+        const status = Number(error.status || error.statusCode);
+        if (Number.isInteger(status) && status >= 100 && status <= 599) storageStatus = String(status);
+        throw error;
+      }
       if (!entry.isConnected || currentEditingProjectId !== editingId || currentUser?.id !== userId) {
+        stage = 'project';
         const { error: cleanupError } = await sb.storage.from(YARN_PHOTO_BUCKET).remove([path]);
         if (cleanupError) console.error('Could not remove unused yarn photo:', cleanupError);
         throw new Error('Project changed while uploading yarn photo');
@@ -168,7 +178,14 @@ async function uploadYarnPhotos(entry, files) {
     }
   } catch (error) {
     console.error('Could not save yarn photo:', error);
-    showSyncToast(translations[currentLanguage].yarnPhotoUploadFailed);
+    const errorKeys = {
+      format: 'yarnPhotoFormatFailed',
+      prepare: 'yarnPhotoPrepareFailed',
+      storage: 'yarnPhotoStorageFailed',
+      project: 'yarnPhotoProjectChanged',
+    };
+    const message = translations[currentLanguage][errorKeys[stage]];
+    showSyncToast(storageStatus ? `${message} (${storageStatus})` : message);
   } finally {
     buttons.forEach(button => { button.disabled = false; });
     pendingYarnPhotoUploads--;
