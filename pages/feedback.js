@@ -14,6 +14,12 @@ let feedbackLoading = false;
 function renderFeedback() {
   const isAdmin = currentUser && isAdminUser();
   const unread = isAdmin ? feedbackItems.filter(item => !item.read_at).length : 0;
+  feedbackOpen.dataset.feedbackUnread = unread ? 'true' : 'false';
+  const feedbackLabel = translations[currentLanguage].feedbackButton;
+  feedbackOpen.setAttribute('aria-label', unread
+    ? `${feedbackLabel}: ${unread} ${translations[currentLanguage].feedbackUnread}`
+    : feedbackLabel);
+  feedbackOpen.title = unread ? `${unread} ${translations[currentLanguage].feedbackUnread}` : feedbackLabel;
   const adminButton = document.getElementById('profile-mode-admin');
   const communityButton = document.querySelector('.nav-btn[data-section="groups-chats"]');
   [adminButton, communityButton].forEach(button => {
