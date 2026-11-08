@@ -35,7 +35,9 @@ function updateGroupsBadge() {
   const interactionCount = Number(notificationButton.dataset.interactionUnread || 0);
   wallButton.dataset.postUnread = String(postCount);
   wallButton.dataset.interactionUnread = String(interactionCount);
-  wallButton.setAttribute('aria-label', `${translations[currentLanguage].groupsHeading}. ${postCount} ${translations[currentLanguage].unreadPostsLabel}, ${interactionCount} ${translations[currentLanguage].unreadInteractionsLabel}`);
+  const feedbackCount = wallButton.dataset.feedbackUnread;
+  const feedbackLabel = feedbackCount ? `, ${feedbackCount === '?' ? translations[currentLanguage].feedbackLoadFailed : `${feedbackCount} ${translations[currentLanguage].feedbackUnread}`}` : '';
+  wallButton.setAttribute('aria-label', `${translations[currentLanguage].groupsHeading}. ${postCount} ${translations[currentLanguage].unreadPostsLabel}, ${interactionCount} ${translations[currentLanguage].unreadInteractionsLabel}${feedbackLabel}`);
   wallButton.title = wallButton.getAttribute('aria-label');
 
   const total = postCount + interactionCount;

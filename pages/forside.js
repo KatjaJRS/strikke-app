@@ -35,6 +35,7 @@ function applyLanguage(lang) {
 
   renderProjects();
   renderGroups();
+  if (typeof renderFeedback === 'function') renderFeedback();
 }
 
 function switchSection(sectionId) {

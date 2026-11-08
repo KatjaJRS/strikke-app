@@ -76,6 +76,7 @@ function applyProfileModeUI() {
   if (adminRequestsSection) adminRequestsSection.classList.toggle('hidden', !isAdminMode);
 
   if (typeof renderGroups === 'function') renderGroups();
+  if (typeof renderFeedback === 'function') renderFeedback();
 }
 
 let projects = [];
@@ -150,6 +151,22 @@ if (broadcastChannel) {
 // ── Translations ──────────────────────────────────────────────────────────
 const translations = {
   en: {
+    profileLanguage: 'Language',
+    feedbackButton: 'Feedback',
+    feedbackTitle: 'Send feedback',
+    feedbackDescription: 'Your message is private and can be read by the administrators.',
+    feedbackMessageLabel: 'Your message',
+    feedbackSend: 'Send feedback',
+    feedbackSent: 'Thank you! Your feedback has been sent.',
+    feedbackSendFailed: 'Could not send feedback. Please try again; your message is still here.',
+    feedbackEmptyMessage: 'Please write a message before sending.',
+    feedbackAdminHeading: 'Feedback',
+    feedbackEmpty: 'No feedback yet.',
+    feedbackLoadFailed: 'Could not load feedback. Please try again.',
+    feedbackMarkRead: 'Mark as read',
+    feedbackMarkFailed: 'Could not mark feedback as read. Please try again.',
+    feedbackUnread: 'Unread feedback',
+    feedbackRetry: 'Try again',
     heroEyebrow: 'Fru Sminge\'s Cozy Crafts Planner',
     heroTitle: 'Knitting My Day Away',
     heroSubtitle: 'Knit as if your life depended on it........ Plans, patterns, notes, etc.',
@@ -395,6 +412,22 @@ const translations = {
     profileErrorShortPw: 'New password must be at least 6 characters.',
   },
   da: {
+    profileLanguage: 'Sprog',
+    feedbackButton: 'Feedback',
+    feedbackTitle: 'Send feedback',
+    feedbackDescription: 'Din besked er privat og kan læses af administratorerne.',
+    feedbackMessageLabel: 'Din besked',
+    feedbackSend: 'Send feedback',
+    feedbackSent: 'Tak! Din feedback er sendt.',
+    feedbackSendFailed: 'Feedbacken kunne ikke sendes. Prøv igen – din besked er her stadig.',
+    feedbackEmptyMessage: 'Skriv en besked, før du sender.',
+    feedbackAdminHeading: 'Feedback',
+    feedbackEmpty: 'Der er endnu ingen feedback.',
+    feedbackLoadFailed: 'Feedback kunne ikke hentes. Prøv igen.',
+    feedbackMarkRead: 'Markér som læst',
+    feedbackMarkFailed: 'Feedbacken kunne ikke markeres som læst. Prøv igen.',
+    feedbackUnread: 'Ulæst feedback',
+    feedbackRetry: 'Prøv igen',
     heroEyebrow: 'Fru Sminges hyggelige håndværksplanlægger',
     heroTitle: 'Strikker min dag væk',
     heroSubtitle: 'Strik som om dit liv afhænger af det........ Planer, mønstre, noter, osv.',

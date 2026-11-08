@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-season', season);
       })();
     </script>
-    <link rel="stylesheet" href="styles-v16.css?v=20261108-2" />
+    <link rel="stylesheet" href="styles-v16.css?v=20261108-3" />
     <link rel="stylesheet" href="theme-bordeaux.css?v=20261108-1" />
   </head>
   <body>
@@ -42,10 +42,7 @@
     <!-- Fixed overlay bar — always on top regardless of scroll -->
     <div id="fixed-header" class="fixed-header">
       <div id="user-bar-slot"></div>
-      <div class="lang-switcher" role="group" aria-label="Language switcher">
-        <button type="button" class="lang-btn active" data-lang="en">EN</button>
-        <button type="button" class="lang-btn" data-lang="da">DA</button>
-      </div>
+      <button type="button" id="feedback-open" class="feedback-open hidden" data-i18n="feedbackButton">Feedback</button>
     </div>
 
     <!-- Auth overlay -->
@@ -137,6 +134,13 @@
         </div>
         <form id="profile-edit-form" class="profile-edit-form">
           <h2 data-i18n="profileHeading">My profile</h2>
+          <div class="profile-language">
+            <span data-i18n="profileLanguage">Language</span>
+            <div class="lang-switcher" role="group" aria-label="Language">
+              <button type="button" class="lang-btn active" data-lang="en">EN</button>
+              <button type="button" class="lang-btn" data-lang="da">DA</button>
+            </div>
+          </div>
           <label>
             <span data-i18n="authNameLabel">Your name</span>
             <input id="profile-edit-name" type="text" required />
@@ -160,6 +164,21 @@
           <div id="profile-edit-success" class="profile-success hidden" data-i18n="profileSaved">Changes saved!</div>
           <button type="submit" class="auth-btn" data-i18n="saveChangesButton">Save changes</button>
           <button type="button" id="delete-membership-data-btn" class="auth-link danger-link" data-i18n="deleteMembershipDataButton">Delete my membership data</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="feedback-modal" class="profile-modal hidden" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <div class="profile-modal-card">
+        <button type="button" id="feedback-close" class="profile-modal-close" aria-label="Close">✕</button>
+        <form id="feedback-form" class="feedback-form">
+          <h2 id="feedback-title" data-i18n="feedbackTitle">Send feedback</h2>
+          <p data-i18n="feedbackDescription">Your message is private and can be read by the administrators.</p>
+          <label for="feedback-message" data-i18n="feedbackMessageLabel">Your message</label>
+          <textarea id="feedback-message" rows="6" maxlength="4000" required></textarea>
+          <p id="feedback-error" class="auth-error hidden" role="alert"></p>
+          <p id="feedback-success" class="profile-success hidden" role="status" data-i18n="feedbackSent">Thank you! Your feedback has been sent.</p>
+          <button type="submit" class="auth-btn" data-i18n="feedbackSend">Send feedback</button>
         </form>
       </div>
     </div>
@@ -351,6 +370,10 @@
                 </h4>
                 <ul id="pending-requests-list" class="pending-requests-list"></ul>
               </div>
+              <section id="admin-feedback-section" class="admin-feedback-section hidden">
+                <h4 data-i18n="feedbackAdminHeading">Feedback</h4>
+                <div id="admin-feedback-list" aria-live="polite"></div>
+              </section>
               <h2 class="community-members-heading" data-i18n="allMembersHeading">All members</h2>
               <button type="button" id="members-toggle" class="members-toggle" aria-expanded="false"><span id="members-toggle-label"></span> <span id="members-toggle-count"></span></button>
               <ul id="all-members-list" class="group-members all-members-list"></ul>
@@ -409,22 +432,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Konfiguration og fælles data -->
-    <script src="js/config.js?v=20261108-3"></script>
+    <script src="js/config.js?v=20261108-4"></script>
     <script src="js/dom.js?v=20261108-1"></script>
     <script src="js/utils.js?v=20261028-2"></script>
     <!-- Data: Supabase-kald og logik -->
     <script src="data/indstillinger.js?v=20260821-1"></script>
     <script src="data/billeder.js?v=20261022-2"></script>
     <script src="data/projekter-data.js?v=20261108-1"></script>
-    <script src="data/grupper-data.js?v=20261027-1"></script>
+    <script src="data/grupper-data.js?v=20261108-2"></script>
     <script src="data/profil.js?v=20260821-12"></script>
     <script src="data/members.js?v=20261108-1"></script>
-    <script src="data/auth.js?v=20261108-1"></script>
+    <script src="data/auth.js?v=20261108-2"></script>
     <!-- Sidelayout og UI -->
-    <script src="pages/forside.js?v=20261108-2"></script>
+    <script src="pages/forside.js?v=20261108-3"></script>
     <script src="pages/andre-projekter.js?v=20261108-2"></script>
     <script src="pages/nuvaerende-projekt.js?v=20261108-4"></script>
     <script src="pages/community-wall.js?v=20261108-2"></script>
+    <script src="pages/feedback.js?v=20261108-1"></script>
     <!-- Initialisering -->
     <script src="app.js?v=20260821-1"></script>
   </body>
