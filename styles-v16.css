@@ -3346,6 +3346,8 @@ button:hover {
 .yarn-photo-privacy { margin-top: 8px; color: #795c67; font-size: 0.82rem; }
 .yarn-photo-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 .yarn-photo-item { position: relative; }
+.yarn-gallery-item, .yarn-photo-item { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.yarn-gallery-remove { padding: 6px 10px; font-size: 0.8rem; }
 .yarn-photo-link img { display: block; width: 78px; height: 78px; border-radius: 8px; object-fit: cover; }
 .yarn-photo-link[aria-disabled="true"] { color: #9c263d; }
 .needle-entry { display: flex; gap: 8px; margin-bottom: 8px; }

@@ -113,8 +113,8 @@ async function renderYarnPhotoPreview(entry) {
     link.append(image);
     const remove = document.createElement('button');
     remove.type = 'button';
-    remove.className = 'project-image-remove';
-    remove.textContent = '✕';
+    remove.className = 'yarn-gallery-remove';
+    remove.textContent = translations[currentLanguage].removeImageButton;
     remove.setAttribute('aria-label', translations[currentLanguage].removeImageButton);
     remove.addEventListener('click', () => {
       if (!confirm(translations[currentLanguage].confirmRemoveYarnPhoto)) return;
@@ -361,6 +361,47 @@ async function setFormImages(images) {
   }
 }
 
+function bindYarnPhotoRemoval(card, projectId) {
+  card.querySelectorAll('.yarn-gallery-remove').forEach(button => {
+    button.addEventListener('click', async event => {
+      event.stopPropagation();
+      if (pendingYarnPhotoUploads) {
+        alert(translations[currentLanguage].waitForYarnPhotos);
+        return;
+      }
+      if (!confirm(translations[currentLanguage].confirmRemoveYarnPhoto)) return;
+      button.disabled = true;
+      const yarnIndex = Number(button.dataset.yarnIndex);
+      const photoIndex = Number(button.dataset.photoIndex);
+      const originalProject = projects.find(project => project.id === projectId);
+      const path = originalProject?.yarns?.[yarnIndex]?.photos?.[photoIndex];
+      if (!path) {
+        showSyncToast(translations[currentLanguage].yarnPhotoProjectChanged);
+        button.disabled = false;
+        return;
+      }
+      if (currentEditingProjectId) await commitCurrentProjectEdits();
+      const project = projects.find(item => item.id === projectId);
+      const yarn = project?.yarns?.[yarnIndex];
+      if (!yarn?.photos || yarn.photos[photoIndex] !== path) {
+        showSyncToast(translations[currentLanguage].yarnPhotoProjectChanged);
+        button.disabled = false;
+        return;
+      }
+      projects = projects.map(item => item.id !== projectId ? item : {
+        ...item,
+        yarns: item.yarns.map((row, index) => index !== yarnIndex ? row : {
+          ...row,
+          photos: row.photos.filter((_, index) => index !== photoIndex)
+        })
+      });
+      await saveProjects({ showBusy: false });
+      renderProjects();
+      updateHeroImage();
+    });
+  });
+}
+
 // ── Populer formular med eksisterende projekt ─────────────────────────────
 function populateFormWithProject(project) {
   if (!project) return;
@@ -477,7 +518,7 @@ function renderCurrentProject() {
       <div class="card-col">
         <div class="card-col-main">
           ${yarnsDisplay}
-          ${renderYarnPhotoGallery(currentProject.yarns)}
+          ${renderYarnPhotoGallery(currentProject.yarns, true)}
           ${needlesDisplay}
         </div>
       </div>
@@ -503,6 +544,7 @@ function renderCurrentProject() {
 
   bindProjectGallery(card);
   bindYarnPhotoLinks(card);
+  bindYarnPhotoRemoval(card, currentProject.id);
   bindProjectPatternLinks(card);
   bindShareToggle(card, renderProjects);
   card.querySelector('.current-project-edit-btn').addEventListener('click', async () => {

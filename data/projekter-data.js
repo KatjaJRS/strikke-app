@@ -66,15 +66,19 @@ const PATTERN_STORAGE_BUCKET = 'project-patterns';
 const PATTERN_STORAGE_PREFIX = 'storage://';
 const YARN_PHOTO_BUCKET = 'yarn-labels';
 
-function renderYarnPhotoGallery(yarns) {
-  const groups = (yarns || []).filter(yarn => Array.isArray(yarn.photos) && yarn.photos.length);
+function renderYarnPhotoGallery(yarns, editable = false) {
+  const groups = (yarns || []).map((yarn, index) => ({ yarn, index }))
+    .filter(({ yarn }) => Array.isArray(yarn.photos) && yarn.photos.length);
   if (!groups.length) return '';
-  return `<div class="yarn-photo-galleries">${groups.map((yarn) => `
+  return `<div class="yarn-photo-galleries">${groups.map(({ yarn, index }) => `
     <div><strong>${escapeHTML(yarn.type || translations[currentLanguage].yarnPhotos)}</strong>
-      <div class="yarn-photo-preview">${yarn.photos.map(path => `
+      <div class="yarn-photo-preview">${yarn.photos.map((path, photoIndex) => `
+        <div class="yarn-gallery-item">
         <a class="yarn-photo-link" data-yarn-photo-path="${escapeHTML(path)}" target="_blank" rel="noopener noreferrer">
           <img alt="${escapeHTML(translations[currentLanguage].yarnPhotos)}" loading="lazy" />
-        </a>`).join('')}</div>
+        </a>
+        ${editable ? `<button type="button" class="yarn-gallery-remove" data-yarn-index="${index}" data-photo-index="${photoIndex}">${escapeHTML(translations[currentLanguage].removeImageButton)}</button>` : ''}
+        </div>`).join('')}</div>
     </div>`).join('')}</div>`;
 }
 

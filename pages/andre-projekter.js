@@ -52,7 +52,7 @@ function renderProjects() {
         <div class="card-col">
           <div class="card-col-main">
             ${yarnsDisplay}
-            ${renderYarnPhotoGallery(project.yarns)}
+            ${renderYarnPhotoGallery(project.yarns, true)}
             ${needlesDisplay}
           </div>
           <div class="card-actions-stack">
@@ -98,6 +98,7 @@ function renderProjects() {
 
     bindProjectGallery(card);
     bindYarnPhotoLinks(card);
+    bindYarnPhotoRemoval(card, project.id);
     bindProjectPatternLinks(card);
     bindShareToggle(card);
     card.addEventListener('click', openProjectForEditing);
@@ -132,12 +133,17 @@ function renderProjects() {
 
     card.querySelector('.delete-btn').addEventListener('click', (e) => {
       e.stopPropagation();
+      if (currentEditingProjectId === project.id && pendingYarnPhotoUploads > 0) {
+        alert(translations[currentLanguage].waitForYarnPhotos);
+        return;
+      }
       const confirmDelete = confirm(translations[currentLanguage].confirmDeleteProject.replace('{name}', project.name));
       if (confirmDelete) {
         lastDeletedProject = project;
         if (undoTimeoutId) clearTimeout(undoTimeoutId);
         projects = projects.filter((p) => p.id !== project.id);
         markProjectDeleted(project.id);
+        if (currentEditingProjectId === project.id) clearFormForNew();
         saveProjects({ showBusy: false });
         renderProjects();
         updateHeroImage();
