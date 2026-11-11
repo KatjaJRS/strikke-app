@@ -1,5 +1,7 @@
 // ── Andre projekter — projektkort, filtre og fortryd-sletning ─────────────
 
+const expandedProjectIds = new Set();
+
 function renderProjects() {
   renderCurrentProject();
 
@@ -37,6 +39,8 @@ function renderProjects() {
       : '';
 
     card.innerHTML = `
+      <details class="project-list-details"${expandedProjectIds.has(project.id) ? ' open' : ''}>
+      <summary class="project-list-summary"><span>${escapeHTML(project.name)}</span></summary>
       <div class="card-header">
         <div class="header-with-rating">
           <div class="title-stars-row">
@@ -77,7 +81,14 @@ function renderProjects() {
         </div>
         ${renderProjectGallery(project)}
       </div>
+      </details>
     `;
+    const details = card.querySelector('.project-list-details');
+    details.addEventListener('toggle', () => {
+      if (!details.isConnected) return;
+      if (details.open) expandedProjectIds.add(project.id);
+      else expandedProjectIds.delete(project.id);
+    });
 
     async function openProjectForEditing() {
       if (currentEditingProjectId && currentEditingProjectId !== project.id) await commitCurrentProjectEdits();
@@ -101,8 +112,6 @@ function renderProjects() {
     bindYarnPhotoRemoval(card, project.id);
     bindProjectPatternLinks(card);
     bindShareToggle(card);
-    card.addEventListener('click', openProjectForEditing);
-
     card.querySelector('.edit-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       openProjectForEditing();
@@ -142,6 +151,7 @@ function renderProjects() {
         lastDeletedProject = project;
         if (undoTimeoutId) clearTimeout(undoTimeoutId);
         projects = projects.filter((p) => p.id !== project.id);
+        expandedProjectIds.delete(project.id);
         markProjectDeleted(project.id);
         if (currentEditingProjectId === project.id) clearFormForNew();
         saveProjects({ showBusy: false });

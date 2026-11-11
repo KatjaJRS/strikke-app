@@ -3324,6 +3324,30 @@ button:hover {
   padding: 12px;
   background: #fff9f6;
 }
+
+#project-form.add-project-form {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #e6cbbd;
+  border-radius: 18px;
+  background: var(--preview-surface, #fff9f6);
+}
+
+.project-list-details {
+  min-width: 0;
+}
+
+.project-list-summary {
+  cursor: pointer;
+  color: var(--theme-accent, #7a2742);
+  font-weight: 700;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.project-list-details[open] > .project-list-summary {
+  margin-bottom: 14px;
+}
 .project-form-section > summary,
 .yarn-entry summary {
   cursor: pointer;
